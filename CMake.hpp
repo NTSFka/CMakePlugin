@@ -1,0 +1,284 @@
+/* ************************************************************************ */
+/*                                                                          */
+/* CMakePlugin for Codelite                                                 */
+/* Copyright (C) 2013 Jiří Fatka <ntsfka@gmail.com>                         */
+/*                                                                          */
+/* This program is free software: you can redistribute it and/or modify     */
+/* it under the terms of the GNU General Public License as published by     */
+/* the Free Software Foundation, either version 3 of the License, or        */
+/* (at your option) any later version.                                      */
+/*                                                                          */
+/* This program is distributed in the hope that it will be useful,          */
+/* but WITHOUT ANY WARRANTY; without even the implied warranty of           */
+/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the             */
+/* GNU General Public License for more details.                             */
+/*                                                                          */
+/* You should have received a copy of the GNU General Public License        */
+/* along with this program. If not, see <http://www.gnu.org/licenses/>.     */
+/*                                                                          */
+/* ************************************************************************ */
+
+#ifndef CMAKE_HPP_
+#define CMAKE_HPP_
+
+/* ************************************************************************ */
+/* INCLUDES                                                                 */
+/* ************************************************************************ */
+
+// wxWidgets
+#include <wx/string.h>
+#include <wx/filename.h>
+#include <wx/arrstr.h>
+
+/* ************************************************************************ */
+/* CLASSES                                                                  */
+/* ************************************************************************ */
+
+/**
+ * @brief Class representing the cmake application.
+ *
+ * Class can be used for extracting help data from current installed
+ * version of CMake like supported commands, modules, etc.
+ *
+ * @todo Use Unix Man output from CMake to get help.
+ */
+class CMake
+{
+
+// Public Ctors
+public:
+
+
+    /**
+     * @brief Constructor.
+     *
+     * @param path Path to cmake application.
+     */
+    explicit CMake(const wxFileName& path = wxFileName());
+
+
+// Public Accessors
+public:
+
+
+    /**
+     * @brief Returns a list of CMake versions.
+     *
+     * The list is hard-written and must be manually updated.
+     *
+     * @return
+     */
+    static wxArrayString GetVersions() noexcept;
+
+
+    /**
+     * @brief Returns path to the CMake application.
+     *
+     * Default value is 'cmake'.
+     *
+     * @return
+     */
+    inline const wxFileName& GetPath() const noexcept
+    {
+        return m_path;
+    }
+
+
+    /**
+     * @brief Check if CMake path is OK.
+     *
+     * @return
+     */
+    bool IsOk() const noexcept;
+
+
+    /**
+     * @brief Returns if data is dirty.
+     *
+     * @return
+     */
+    inline bool IsDirty() const noexcept
+    {
+        return m_dirty;
+    }
+
+
+    /**
+     * @brief Returns CMake version.
+     *
+     * @return
+     */
+    inline const wxString& GetVersion() const noexcept
+    {
+        return m_version;
+    }
+
+
+    /**
+     * @brief Returns a list of available commands.
+     *
+     * @return
+     */
+    inline const wxArrayString& GetCommands() const noexcept
+    {
+        return m_commands;
+    }
+
+
+    /**
+     * @brief Returns a list of available modules.
+     *
+     * @return
+     */
+    inline const wxArrayString& GetModules() const noexcept
+    {
+        return m_modules;
+    }
+
+
+    /**
+     * @brief Returns a list of available properties.
+     *
+     * @return
+     */
+    inline const wxArrayString& GetProperties() const noexcept
+    {
+        return m_properties;
+    }
+
+
+    /**
+     * @brief Returns a list of available variables.
+     *
+     * @return
+     */
+    inline const wxArrayString& GetVariables() const noexcept
+    {
+        return m_variables;
+    }
+
+
+    /**
+     * @brief Returns CMake copyright.
+     *
+     * @return
+     */
+    inline const wxString& GetCopyright() const noexcept
+    {
+        return m_copyright;
+    }
+
+
+    /**
+     * @brief Returns CMake generators.
+     *
+     * @return
+     */
+    inline const wxArrayString& GetGenerators() const noexcept
+    {
+        return m_generators;
+    }
+
+
+    /**
+     * @brief Returns help text for module with name.
+     *
+     * @param name Module name
+     *
+     * @return
+     */
+    wxString GetModuleHelp(const wxString& name) const noexcept;
+
+
+    /**
+     * @brief Returns help text for command with name.
+     *
+     * @param name Module name
+     *
+     * @return
+     */
+    wxString GetCommandHelp(const wxString& name) const noexcept;
+
+
+    /**
+     * @brief Returns help text for property with name.
+     *
+     * @param name Module name
+     *
+     * @return
+     */
+    wxString GetPropertyHelp(const wxString& name) const noexcept;
+
+
+    /**
+     * @brief Returns help text for variable with name.
+     *
+     * @param name Module name
+     *
+     * @return
+     */
+    wxString GetVariableHelp(const wxString& name) const noexcept;
+
+
+// Public Mutators
+public:
+
+
+    /**
+     * @brief Changes cmake application path.
+     *
+     * @param path
+     */
+    void SetPath(const wxFileName& path) noexcept
+    {
+        m_path = path;
+        m_dirty = true;
+    }
+
+
+// Public Operations
+public:
+
+
+    /**
+     * @brief Loads data from CMake application.
+     */
+    void LoadData() noexcept;
+
+
+// Private Data Members
+private:
+
+
+    /// If data is dirty and need to be reloaded.
+    bool m_dirty;
+
+    /// CMake application path.
+    wxFileName m_path;
+
+    /// Cached CMake version.
+    wxString m_version;
+
+    /// List of commands.
+    wxArrayString m_commands;
+
+    /// List of modules.
+    wxArrayString m_modules;
+
+    /// List of properties.
+    wxArrayString m_properties;
+
+    /// List of variables.
+    wxArrayString m_variables;
+
+    /// CMake copyright.
+    wxString m_copyright;
+
+    /// List of generators.
+    wxArrayString m_generators;
+
+};
+
+/* ************************************************************************ */
+
+#endif // CMAKE_BUILDER_HPP_
