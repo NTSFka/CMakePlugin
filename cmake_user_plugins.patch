@@ -1,0 +1,65 @@
+From 442ba81d349aa2cbdf917967bcaea1f8a465eb9b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Ji=C5=99=C3=AD=20Fatka?= <ntsfka@gmail.com>
+Date: Sat, 23 Nov 2013 12:00:15 +0100
+Subject: [PATCH 1/2] Added an option to specify user plugins build with
+ CodeLite (CMake)
+
+---
+ CMakeLists.txt | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1fec260..30be8cc 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -24,6 +24,7 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+ ##      -DGTK_USE_NATIVEBOOK=1|0                   // Under GTK, use wxNotebook instead of wxAuiNotebook. Default is set to 0                                         #
+ ##      -DWITH_WXPATH=<fullpath>                   // Specify a particular wxWidgets build to use. The format must be /path/to/different_wx-config/directory/         #
+ ##      -DMAKE_DEB=1|0                             // When set to 1, you can use make package to create .deb file for codelite                                        #
++##      -DPLUGINS=<plugin1>;<plugin2>...           // Specify semi-colon separated user plugin list                                                                   #
+ #######################################################################################################################################################################
+ 
+ 
+@@ -383,6 +384,14 @@ if ( NOT NO_CPP_PLUGINS )
+         message("-- Adding MacBundler...")
+         add_subdirectory(MacBundler)
+     endif ( APPLE )
++
++    if ( PLUGINS )
++        FOREACH ( PLUGIN ${PLUGINS} )
++            message("-- User plugin: ${PLUGIN}")
++            add_subdirectory(${PLUGIN})
++        ENDFOREACH ( PLUGIN )
++    endif ( PLUGINS )
++
+ endif ( NOT NO_CPP_PLUGINS )
+ 
+ add_subdirectory(Tweaks)
+-- 
+1.8.1.2
+
+
+From e774848a4170377de71f3e6b2754f1b62b14ddf1 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Ji=C5=99=C3=AD=20Fatka?= <ntsfka@gmail.com>
+Date: Sat, 23 Nov 2013 13:39:55 +0100
+Subject: [PATCH 2/2] Removed caching of the PLUGINS variable
+
+---
+ CMakeLists.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 30be8cc..c6f0d8d 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -390,6 +390,7 @@ if ( NOT NO_CPP_PLUGINS )
+             message("-- User plugin: ${PLUGIN}")
+             add_subdirectory(${PLUGIN})
+         ENDFOREACH ( PLUGIN )
++	unset(PLUGINS CACHE)
+     endif ( PLUGINS )
+ 
+ endif ( NOT NO_CPP_PLUGINS )
+-- 
+1.8.1.2
+
