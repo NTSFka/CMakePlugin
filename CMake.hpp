@@ -246,6 +246,17 @@ public:
     void LoadData() noexcept;
 
 
+// Private Operations
+private:
+
+
+    /**
+     * @brief Parses CMake man page and fill internal structures
+     * with available data.
+     */
+    void ParseCMakeManPage();
+
+
 // Private Data Members
 private:
 

@@ -148,6 +148,38 @@ wxString CacheHelp(std::map<wxString, wxString>& cache,
 }
 
 /* ************************************************************************ */
+
+/**
+ * @brief Parses man page block with available generators.
+ *
+ * @param line Current parsed line imutable iterator.
+ *
+ * @return A list of available generators.
+ */
+static
+wxArrayString ParseManGenerators(wxArrayString::const_iterator& line)
+{
+    wxArrayString generators;
+
+    // Read until another section is found
+    for (++line; !line->StartsWith(".SH"); ++line)
+    {
+        wxString name;
+
+        // .B marks generator name
+        if (line->StartsWith(".B ", &name))
+        {
+            // Remove trailing newline
+            name.Trim();
+            // Store generator name
+            generators.push_back(name);
+        }
+    }
+
+    return generators;
+}
+
+/* ************************************************************************ */
 /* CLASSES                                                                  */
 /* ************************************************************************ */
 
@@ -203,7 +235,7 @@ CMake::IsOk() const noexcept
     ProcUtils::SafeExecuteCommand(GetPath().GetFullPath() + " -h", output);
 
     // SafeExecuteCommand doesn't return status code so the only way
-    // to test the success is output emptiness.
+    // to test the success is the output emptiness.
     return !output.empty();
 }
 
@@ -344,6 +376,10 @@ CMake::LoadData() noexcept
         m_copyright = Join(output);
     }
 
+    // Parse data from CMake manual page
+    ParseCMakeManPage();
+
+#if DEPRECATED
     // Generators
     {
         // TODO improve
@@ -403,8 +439,32 @@ CMake::LoadData() noexcept
             break;
         }
     }
-
+#endif
     m_dirty = false;
+}
+
+/* ************************************************************************ */
+
+void
+CMake::ParseCMakeManPage()
+{
+    // Get cmake program path
+    const wxString program = GetPath().GetFullPath();
+
+    // Get CMake man page
+    wxArrayString output;
+    ProcUtils::SafeExecuteCommand(program + " --help-man", output);
+
+    // Foreach lines
+    for (wxArrayString::const_iterator line = output.begin();
+        line != output.end(); ++line)
+    {
+        // Generators
+        if (line->StartsWith(".SH GENERATORS"))
+        {
+            m_generators = ParseManGenerators(line);
+        }
+    }
 }
 
 /* ************************************************************************ */
