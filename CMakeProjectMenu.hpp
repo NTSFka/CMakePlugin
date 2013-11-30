@@ -52,7 +52,9 @@ public:
         ID_EXPORT_CMAKELISTS,
         ID_CONFIGURE,
         ID_BUILD,
-        ID_CLEAR
+        ID_CLEAR,
+        ID_TEST,
+        ID_TEST_VERBOSE
     };
 
 
@@ -82,17 +84,24 @@ public:
         Append(new wxMenuItem(this, ID_CONFIGURE, _("Configure")));
         Append(new wxMenuItem(this, ID_BUILD, _("Build")));
         Append(new wxMenuItem(this, ID_CLEAR, _("Clear")));
+        Append(new wxMenuItem(this, ID_TEST, _("Test")));
+        Append(new wxMenuItem(this, ID_TEST_VERBOSE, _("Test Verbose")));
 
+        // Binding directly to the wxMenu doesn't work
         wxTheApp->Bind(wxEVT_MENU, &CMakeProjectMenu::OnCMakeListsOpen, this, ID_OPEN_CMAKELISTS);
         wxTheApp->Bind(wxEVT_MENU, &CMakeProjectMenu::OnExport, this, ID_EXPORT_CMAKELISTS);
         wxTheApp->Bind(wxEVT_MENU, &CMakeProjectMenu::OnConfigure, this, ID_CONFIGURE);
         wxTheApp->Bind(wxEVT_MENU, &CMakeProjectMenu::OnBuild, this, ID_BUILD);
         wxTheApp->Bind(wxEVT_MENU, &CMakeProjectMenu::OnClear, this, ID_CLEAR);
+        wxTheApp->Bind(wxEVT_MENU, &CMakeProjectMenu::OnTest, this, ID_TEST);
+        wxTheApp->Bind(wxEVT_MENU, &CMakeProjectMenu::OnTestVerbose, this, ID_TEST_VERBOSE);
 
         wxTheApp->Bind(wxEVT_UPDATE_UI, &CMakeProjectMenu::OnFileExists, this, ID_OPEN_CMAKELISTS);
         wxTheApp->Bind(wxEVT_UPDATE_UI, &CMakeProjectMenu::OnEnabled, this, ID_CONFIGURE);
         wxTheApp->Bind(wxEVT_UPDATE_UI, &CMakeProjectMenu::OnEnabled, this, ID_BUILD);
         wxTheApp->Bind(wxEVT_UPDATE_UI, &CMakeProjectMenu::OnEnabled, this, ID_CLEAR);
+        wxTheApp->Bind(wxEVT_UPDATE_UI, &CMakeProjectMenu::OnEnabled, this, ID_TEST);
+        wxTheApp->Bind(wxEVT_UPDATE_UI, &CMakeProjectMenu::OnEnabled, this, ID_TEST_VERBOSE);
     }
 
 
@@ -105,12 +114,16 @@ public:
         wxTheApp->Unbind(wxEVT_UPDATE_UI, &CMakeProjectMenu::OnEnabled, this, ID_CONFIGURE);
         wxTheApp->Unbind(wxEVT_UPDATE_UI, &CMakeProjectMenu::OnEnabled, this, ID_BUILD);
         wxTheApp->Unbind(wxEVT_UPDATE_UI, &CMakeProjectMenu::OnEnabled, this, ID_CLEAR);
+        wxTheApp->Unbind(wxEVT_MENU, &CMakeProjectMenu::OnTest, this, ID_TEST);
+        wxTheApp->Unbind(wxEVT_MENU, &CMakeProjectMenu::OnTestVerbose, this, ID_TEST_VERBOSE);
 
         wxTheApp->Unbind(wxEVT_MENU, &CMakeProjectMenu::OnCMakeListsOpen, this, ID_OPEN_CMAKELISTS);
         wxTheApp->Unbind(wxEVT_MENU, &CMakeProjectMenu::OnExport, this, ID_EXPORT_CMAKELISTS);
         wxTheApp->Unbind(wxEVT_MENU, &CMakeProjectMenu::OnConfigure, this, ID_CONFIGURE);
         wxTheApp->Unbind(wxEVT_MENU, &CMakeProjectMenu::OnBuild, this, ID_BUILD);
         wxTheApp->Unbind(wxEVT_MENU, &CMakeProjectMenu::OnClear, this, ID_CLEAR);
+        wxTheApp->Unbind(wxEVT_UPDATE_UI, &CMakeProjectMenu::OnEnabled, this, ID_TEST);
+        wxTheApp->Unbind(wxEVT_UPDATE_UI, &CMakeProjectMenu::OnEnabled, this, ID_TEST_VERBOSE);
 
     }
 
@@ -191,6 +204,22 @@ public:
      * @param event
      */
     void OnClear(wxCommandEvent& event) noexcept;
+
+
+    /**
+     * @brief On project test request.
+     *
+     * @param event
+     */
+    void OnTest(wxCommandEvent& event) noexcept;
+
+
+    /**
+     * @brief On project verbose test request.
+     *
+     * @param event
+     */
+    void OnTestVerbose(wxCommandEvent& event) noexcept;
 
 
     /**

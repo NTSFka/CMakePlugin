@@ -42,6 +42,64 @@
 /* CLASSES                                                                  */
 /* ************************************************************************ */
 
+/**
+ * @brief Call make program for currently selected project.
+ *
+ * @param plugin A pointer to CMake plugin.
+ * @param target Make target.
+ */
+static void CallMake(CMakePlugin* plugin, const wxString& target = "")
+{
+    // Get settings
+    const CMakeProjectSettings* settings = plugin->GetSelectedProjectSettings();
+
+    // Doesn't exists or not enabled
+    if (!settings || !settings->enabled)
+        return;
+
+    // Macro manager
+    MacroManager* macro = MacroManager::Instance();
+    wxASSERT(macro);
+
+    const ProjectPtr project = plugin->GetSelectedProject();
+    const wxString config = plugin->GetSelectedProjectConfig();
+
+    // Get workspace
+    Workspace* workspace = plugin->GetManager()->GetWorkspace();
+    // Get build configuration
+    BuildConfigPtr bldConf = workspace->GetProjBuildConf(project->GetName(), config);
+
+    // Get Make
+    const wxString make = bldConf->GetCompiler()->GetTool("MAKE");
+
+    // Create command and Expand macros
+    const wxString cmd = macro->Expand(
+        CMakeBuilder::CreateBuildCmd(make, *settings, target),
+        plugin->GetManager(), project->GetName(), config
+    );
+
+    const wxString buildDir = macro->Expand(settings->buildDirectory,
+        plugin->GetManager(), project->GetName(), config);
+
+    // Get builder
+    CMakeBuilder* builder = plugin->GetBuilder();
+    wxASSERT(builder);
+
+    {
+        DirSaver dir;
+
+        // FIXME buildDir can be absolute
+        wxSetWorkingDirectory(wxGetCwd() + "/" + buildDir);
+
+        // Build
+        builder->Run(cmd);
+    }
+}
+
+/* ************************************************************************ */
+/* CLASSES                                                                  */
+/* ************************************************************************ */
+
 void
 CMakeProjectMenu::OnExport(wxCommandEvent& event) noexcept
 {
@@ -104,49 +162,7 @@ CMakeProjectMenu::OnConfigure(wxCommandEvent& event) noexcept
 void
 CMakeProjectMenu::OnBuild(wxCommandEvent& event) noexcept
 {
-    // Get settings
-    const CMakeProjectSettings* settings = m_plugin->GetSelectedProjectSettings();
-
-    // Doesn't exists or not enabled
-    if (!settings || !settings->enabled)
-        return;
-
-    // Macro manager
-    MacroManager* macro = MacroManager::Instance();
-    wxASSERT(macro);
-
-    const ProjectPtr project = m_plugin->GetSelectedProject();
-    const wxString config = m_plugin->GetSelectedProjectConfig();
-
-    // Get workspace
-    Workspace* workspace = m_plugin->GetManager()->GetWorkspace();
-    // Get build configuration
-    BuildConfigPtr bldConf = workspace->GetProjBuildConf(project->GetName(), config);
-
-    // Get Make
-    const wxString make = bldConf->GetCompiler()->GetTool("MAKE");
-
-    // Create command and Expand macros
-    const wxString cmd = macro->Expand(
-        CMakeBuilder::CreateBuildCmd(make, *settings),
-        m_plugin->GetManager(), project->GetName(), config
-    );
-
-    const wxString buildDir = macro->Expand(settings->buildDirectory,
-        m_plugin->GetManager(), project->GetName(), config);
-
-    // Get builder
-    CMakeBuilder* builder = m_plugin->GetBuilder();
-    wxASSERT(builder);
-
-    {
-        DirSaver dir;
-
-        wxSetWorkingDirectory(wxGetCwd() + "/" + buildDir);
-
-        // Build
-        builder->Run(cmd);
-    }
+    CallMake(m_plugin);
 }
 
 /* ************************************************************************ */
@@ -154,49 +170,23 @@ CMakeProjectMenu::OnBuild(wxCommandEvent& event) noexcept
 void
 CMakeProjectMenu::OnClear(wxCommandEvent& event) noexcept
 {
-    // Get settings
-    const CMakeProjectSettings* settings = m_plugin->GetSelectedProjectSettings();
+    CallMake(m_plugin, "clean");
+}
 
-    // Doesn't exists or not enabled
-    if (!settings || !settings->enabled)
-        return;
+/* ************************************************************************ */
 
-    // Macro manager
-    MacroManager* macro = MacroManager::Instance();
-    wxASSERT(macro);
+void
+CMakeProjectMenu::OnTest(wxCommandEvent& event) noexcept
+{
+    CallMake(m_plugin, "test");
+}
 
-    const ProjectPtr project = m_plugin->GetSelectedProject();
-    const wxString config = m_plugin->GetSelectedProjectConfig();
+/* ************************************************************************ */
 
-    // Get workspace
-    Workspace* workspace = m_plugin->GetManager()->GetWorkspace();
-    // Get build configuration
-    BuildConfigPtr bldConf = workspace->GetProjBuildConf(project->GetName(), config);
-
-    // Get Make
-    const wxString make = bldConf->GetCompiler()->GetTool("MAKE");
-
-    // Create command and Expand macros
-    const wxString cmd = macro->Expand(
-        CMakeBuilder::CreateBuildCmd(make, *settings, "clean"),
-        m_plugin->GetManager(), project->GetName(), config
-    );
-
-    const wxString buildDir = macro->Expand(settings->buildDirectory,
-        m_plugin->GetManager(), project->GetName(), config);
-
-    // Get builder
-    CMakeBuilder* builder = m_plugin->GetBuilder();
-    wxASSERT(builder);
-
-    {
-        DirSaver dir;
-
-        wxSetWorkingDirectory(wxGetCwd() + "/" + buildDir);
-
-        // Build
-        builder->Run(cmd);
-    }
+void
+CMakeProjectMenu::OnTestVerbose(wxCommandEvent& event) noexcept
+{
+    CallMake(m_plugin, "test ARGS=\"-V\"");
 }
 
 /* ************************************************************************ */
