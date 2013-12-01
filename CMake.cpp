@@ -145,7 +145,12 @@ wxString CacheHelp(std::map<wxString, wxString>& cache,
     // The second line is the command name
     output.RemoveAt(0);
 
-    return Join(output);
+    wxString value = Join(output);
+
+    // Store value
+    cache[name] = value;
+
+    return value;
 }
 
 /* ************************************************************************ */
