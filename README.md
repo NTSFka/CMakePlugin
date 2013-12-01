@@ -11,7 +11,7 @@ Building this plugin requires:
 * CodeLite sources.
 * wxWidgets (> 2.9.5).
 * Placing plugin's sources into "CMakePlugin" directory inside CodeLite's sources directory.
-* C++11 compiler (> GCC 4.6, Clang).
+* C++98 compiler.
 * CMake for Linux build.
 
 ### Windows
