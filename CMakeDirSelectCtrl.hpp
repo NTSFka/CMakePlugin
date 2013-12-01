@@ -51,7 +51,7 @@ public:
      *
      * @param parent A pointer to parent widget.
      */
-    explicit CMakeDirSelectCtrl(wxWindow* parent) noexcept
+    explicit CMakeDirSelectCtrl(wxWindow* parent)
         : wxPanel(parent)
     {
         SetSizer(new wxBoxSizer(wxHORIZONTAL));
@@ -78,7 +78,7 @@ public:
      *
      * @return
      */
-    wxString GetDirectory() const noexcept
+    wxString GetDirectory() const
     {
         return m_textCtrlPath->GetValue();
     }
@@ -89,7 +89,7 @@ public:
      *
      * @return
      */
-    wxString GetRootDirectory() const noexcept
+    wxString GetRootDirectory() const
     {
         return m_rootDirectory;
     }
@@ -104,7 +104,7 @@ public:
      *
      * @param dir
      */
-    void SetDirectory(const wxString& dir) noexcept
+    void SetDirectory(const wxString& dir)
     {
         m_textCtrlPath->SetValue(dir);
     }
@@ -115,7 +115,7 @@ public:
      *
      * @param dir
      */
-    void SetRootDirectory(const wxString& dir) noexcept
+    void SetRootDirectory(const wxString& dir)
     {
         m_rootDirectory = dir;
     }
@@ -130,7 +130,7 @@ public:
      *
      * @param event
      */
-    void OnDirectorySelect(wxCommandEvent& event) noexcept
+    void OnDirectorySelect(wxCommandEvent& event)
     {
         wxUnusedVar(event);
 

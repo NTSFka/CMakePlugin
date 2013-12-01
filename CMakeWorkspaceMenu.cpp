@@ -33,7 +33,7 @@
 /* ************************************************************************ */
 
 void
-CMakeWorkspaceMenu::OnExport(wxCommandEvent& event) noexcept
+CMakeWorkspaceMenu::OnExport(wxCommandEvent& event)
 {
     m_plugin->GetGenerator()->Generate(
         m_plugin->GetManager()->GetWorkspace()

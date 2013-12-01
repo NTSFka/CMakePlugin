@@ -93,7 +93,7 @@ static void CreatePanel(wxNotebook* notebook, wxTextCtrl*& textCtrl,
 /* CLASSES                                                                  */
 /* ************************************************************************ */
 
-CMakeHelpDialog::CMakeHelpDialog(wxWindow* parent, CMake* cmake) noexcept
+CMakeHelpDialog::CMakeHelpDialog(wxWindow* parent, CMake* cmake)
     : wxDialog(parent, wxID_ANY, _("CMake Help"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
     , m_cmake(cmake)
 {
@@ -148,21 +148,21 @@ CMakeHelpDialog::CMakeHelpDialog(wxWindow* parent, CMake* cmake) noexcept
     SetSizeHints(GetSize());
 
     // Load window layout
-    WindowAttrManager::Load(this, "CMakeHelpDialog", nullptr);
+    WindowAttrManager::Load(this, "CMakeHelpDialog", NULL);
 }
 
 /* ************************************************************************ */
 
-CMakeHelpDialog::~CMakeHelpDialog() noexcept
+CMakeHelpDialog::~CMakeHelpDialog()
 {
     // Save window layout
-    WindowAttrManager::Save(this, "CMakeHelpDialog", nullptr);
+    WindowAttrManager::Save(this, "CMakeHelpDialog", NULL);
 }
 
 /* ************************************************************************ */
 
 void
-CMakeHelpDialog::OnModuleSelect(wxCommandEvent& event) noexcept
+CMakeHelpDialog::OnModuleSelect(wxCommandEvent& event)
 {
     m_textCtrlModule->SetValue(m_cmake->GetModuleHelp(event.GetString()));
 }
@@ -170,7 +170,7 @@ CMakeHelpDialog::OnModuleSelect(wxCommandEvent& event) noexcept
 /* ************************************************************************ */
 
 void
-CMakeHelpDialog::OnCommandSelect(wxCommandEvent& event) noexcept
+CMakeHelpDialog::OnCommandSelect(wxCommandEvent& event)
 {
     m_textCtrlCommand->SetValue(m_cmake->GetCommandHelp(event.GetString()));
 }
@@ -178,7 +178,7 @@ CMakeHelpDialog::OnCommandSelect(wxCommandEvent& event) noexcept
 /* ************************************************************************ */
 
 void
-CMakeHelpDialog::OnPropertySelect(wxCommandEvent& event) noexcept
+CMakeHelpDialog::OnPropertySelect(wxCommandEvent& event)
 {
     m_textCtrlProperty->SetValue(m_cmake->GetPropertyHelp(event.GetString()));
 }
@@ -186,7 +186,7 @@ CMakeHelpDialog::OnPropertySelect(wxCommandEvent& event) noexcept
 /* ************************************************************************ */
 
 void
-CMakeHelpDialog::OnVariableSelect(wxCommandEvent& event) noexcept
+CMakeHelpDialog::OnVariableSelect(wxCommandEvent& event)
 {
     m_textCtrlVariable->SetValue(m_cmake->GetVariableHelp(event.GetString()));
 }

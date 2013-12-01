@@ -101,7 +101,7 @@ static void CallMake(CMakePlugin* plugin, const wxString& target = "")
 /* ************************************************************************ */
 
 void
-CMakeProjectMenu::OnExport(wxCommandEvent& event) noexcept
+CMakeProjectMenu::OnExport(wxCommandEvent& event)
 {
     m_plugin->GetGenerator()->Generate(
         m_plugin->GetSelectedProject(),
@@ -112,7 +112,7 @@ CMakeProjectMenu::OnExport(wxCommandEvent& event) noexcept
 /* ************************************************************************ */
 
 void
-CMakeProjectMenu::OnConfigure(wxCommandEvent& event) noexcept
+CMakeProjectMenu::OnConfigure(wxCommandEvent& event)
 {
     // Get settings
     const CMakeProjectSettings* settings = m_plugin->GetSelectedProjectSettings();
@@ -160,7 +160,7 @@ CMakeProjectMenu::OnConfigure(wxCommandEvent& event) noexcept
 /* ************************************************************************ */
 
 void
-CMakeProjectMenu::OnBuild(wxCommandEvent& event) noexcept
+CMakeProjectMenu::OnBuild(wxCommandEvent& event)
 {
     CallMake(m_plugin);
 }
@@ -168,7 +168,7 @@ CMakeProjectMenu::OnBuild(wxCommandEvent& event) noexcept
 /* ************************************************************************ */
 
 void
-CMakeProjectMenu::OnClear(wxCommandEvent& event) noexcept
+CMakeProjectMenu::OnClear(wxCommandEvent& event)
 {
     CallMake(m_plugin, "clean");
 }
@@ -176,7 +176,7 @@ CMakeProjectMenu::OnClear(wxCommandEvent& event) noexcept
 /* ************************************************************************ */
 
 void
-CMakeProjectMenu::OnTest(wxCommandEvent& event) noexcept
+CMakeProjectMenu::OnTest(wxCommandEvent& event)
 {
     CallMake(m_plugin, "test");
 }
@@ -184,7 +184,7 @@ CMakeProjectMenu::OnTest(wxCommandEvent& event) noexcept
 /* ************************************************************************ */
 
 void
-CMakeProjectMenu::OnTestVerbose(wxCommandEvent& event) noexcept
+CMakeProjectMenu::OnTestVerbose(wxCommandEvent& event)
 {
     CallMake(m_plugin, "test ARGS=\"-V\"");
 }

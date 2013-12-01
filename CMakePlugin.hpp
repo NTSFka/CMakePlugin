@@ -80,13 +80,13 @@ public:
      *
      * @param manager
      */
-    explicit CMakePlugin(IManager* manager) noexcept;
+    explicit CMakePlugin(IManager* manager);
 
 
     /**
      * @brief Destructor.
      */
-    virtual ~CMakePlugin() noexcept;
+    virtual ~CMakePlugin();
 
 
 // Public Accessors
@@ -98,7 +98,7 @@ public:
      *
      * @return
      */
-    IManager* GetManager() const noexcept
+    IManager* GetManager() const
     {
         return m_mgr;
     }
@@ -109,7 +109,7 @@ public:
      *
      * @return
      */
-    CMake* GetCMake() const noexcept
+    CMake* GetCMake() const
     {
         return m_cmake.get();
     }
@@ -120,7 +120,7 @@ public:
      *
      * @return
      */
-    CMakeBuilder* GetBuilder() const noexcept
+    CMakeBuilder* GetBuilder() const
     {
         return m_builder.get();
     }
@@ -131,7 +131,7 @@ public:
      *
      * @return
      */
-    CMakeSettingsManager* GetSettingsManager() const noexcept
+    CMakeSettingsManager* GetSettingsManager() const
     {
         return m_settingsManager.get();
     }
@@ -142,7 +142,7 @@ public:
      *
      * @return
      */
-    CMakeConfiguration* GetConfiguration() const noexcept
+    CMakeConfiguration* GetConfiguration() const
     {
         return m_configuration.get();
     }
@@ -153,7 +153,7 @@ public:
      *
      * @return
      */
-    CMakeOutput* GetOutput() const noexcept
+    CMakeOutput* GetOutput() const
     {
         return m_output;
     }
@@ -164,7 +164,7 @@ public:
      *
      * @return
      */
-    CMakeGenerator* GetGenerator() const noexcept
+    CMakeGenerator* GetGenerator() const
     {
         return m_generator.get();
     }
@@ -175,7 +175,7 @@ public:
      *
      * @return
      */
-    wxString GetWorkspaceDirectory() const noexcept;
+    wxString GetWorkspaceDirectory() const;
 
 
     /**
@@ -185,7 +185,7 @@ public:
      *
      * @return
      */
-    wxString GetProjectDirectory(const wxString& projectName) const noexcept;
+    wxString GetProjectDirectory(const wxString& projectName) const;
 
 
     /**
@@ -193,7 +193,7 @@ public:
      *
      * @return Pointer to project.
      */
-    ProjectPtr GetSelectedProject() const noexcept
+    ProjectPtr GetSelectedProject() const
     {
         return m_mgr->GetSelectedProject();
     }
@@ -204,7 +204,7 @@ public:
      *
      * @return
      */
-    wxString GetSelectedProjectConfig() const noexcept;
+    wxString GetSelectedProjectConfig() const;
 
 
     /**
@@ -212,7 +212,7 @@ public:
      *
      * @return
      */
-    BuildConfigPtr GetSelectedBuildConfig() const noexcept;
+    BuildConfigPtr GetSelectedBuildConfig() const;
 
 
     /**
@@ -220,7 +220,7 @@ public:
      *
      * @return Pointer to settings or nullptr if no project is seleted.
      */
-    const CMakeProjectSettings* GetSelectedProjectSettings() const noexcept;
+    const CMakeProjectSettings* GetSelectedProjectSettings() const;
 
 
     /**
@@ -228,7 +228,7 @@ public:
      *
      * @return
      */
-    bool IsSeletedProjectEnabled() const noexcept;
+    bool IsSeletedProjectEnabled() const;
 
 
 // Public Operations
@@ -242,7 +242,7 @@ public:
      *
      * @return Codelite tool bar or NULL.
      */
-    clToolBar* CreateToolBar(wxWindow* parent) override;
+    clToolBar* CreateToolBar(wxWindow* parent);
 
 
     /**
@@ -250,7 +250,7 @@ public:
      *
      * @param pluginsMenu
      */
-    void CreatePluginMenu(wxMenu* pluginsMenu) override;
+    void CreatePluginMenu(wxMenu* pluginsMenu);
 
 
     /**
@@ -259,7 +259,7 @@ public:
      * @param menu
      * @param type
      */
-    void HookPopupMenu(wxMenu* menu, MenuType type) override;
+    void HookPopupMenu(wxMenu* menu, MenuType type);
 
 
     /**
@@ -270,7 +270,7 @@ public:
      */
     void HookProjectSettingsTab(wxBookCtrlBase* notebook,
                                 const wxString& projectName,
-                                const wxString& configName) override;
+                                const wxString& configName);
 
 
     /**
@@ -281,13 +281,13 @@ public:
      */
     void UnHookProjectSettingsTab(wxBookCtrlBase* notebook,
                                   const wxString& projectName,
-                                  const wxString& configName) override;
+                                  const wxString& configName);
 
 
     /**
      * @brief Unplug plugin.
      */
-    void UnPlug() override;
+    void UnPlug();
 
 
     /**
@@ -295,7 +295,7 @@ public:
      *
      * @param directory
      */
-    bool ExistsCMakeLists(const wxString& directory) const noexcept;
+    bool ExistsCMakeLists(const wxString& directory) const;
 
 
     /**
@@ -303,7 +303,7 @@ public:
      *
      * @param directory
      */
-    void OpenCMakeLists(const wxString& directory) const noexcept;
+    void OpenCMakeLists(const wxString& directory) const;
 
 
 // Public Events
@@ -315,7 +315,7 @@ public:
      *
      * @param event
      */
-    void OnSettings(wxCommandEvent& event) noexcept;
+    void OnSettings(wxCommandEvent& event);
 
 
     /**
@@ -323,7 +323,7 @@ public:
      *
      * @param event
      */
-    void OnHelp(wxCommandEvent& event) noexcept;
+    void OnHelp(wxCommandEvent& event);
 
 
     /**
@@ -331,7 +331,7 @@ public:
      *
      * @param event
      */
-    void OnSaveConfig(wxCommandEvent& event) noexcept;
+    void OnSaveConfig(wxCommandEvent& event);
 
 
     /**
@@ -339,7 +339,7 @@ public:
      *
      * @param event
      */
-    void OnBuildStarting(wxCommandEvent& event) noexcept;
+    void OnBuildStarting(wxCommandEvent& event);
 
 
     /**
@@ -347,7 +347,7 @@ public:
      *
      * @param event
      */
-    void OnGetCleanCommand(wxCommandEvent& event) noexcept;
+    void OnGetCleanCommand(wxCommandEvent& event);
 
 
     /**
@@ -355,13 +355,13 @@ public:
      *
      * @param event
      */
-    void OnGetBuildCommand(wxCommandEvent& event) noexcept;
+    void OnGetBuildCommand(wxCommandEvent& event);
 
 
     /**
      * @brief Returns if custom makefile is generated.
      */
-    void OnGetIsPluginMakefile(wxCommandEvent& event) noexcept;
+    void OnGetIsPluginMakefile(wxCommandEvent& event);
 
 
     /**
@@ -369,7 +369,7 @@ public:
      *
      * @param event
      */
-    void OnExportMakefile(wxCommandEvent& event) noexcept;
+    void OnExportMakefile(wxCommandEvent& event);
 
 
     /**
@@ -377,7 +377,7 @@ public:
      *
      * @param event
      */
-    void OnWorkspaceLoaded(wxCommandEvent& event) noexcept;
+    void OnWorkspaceLoaded(wxCommandEvent& event);
 
 
 // Private Operations
@@ -391,7 +391,7 @@ private:
      *
      * @return A pointer to project settings or nullptr.
      */
-    const CMakeProjectSettings* GetSettings(wxCommandEvent& event) noexcept;
+    const CMakeProjectSettings* GetSettings(wxCommandEvent& event);
 
 
 // Private Data Members

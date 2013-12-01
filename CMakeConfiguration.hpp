@@ -72,7 +72,7 @@ public:
      *
      * @return
      */
-    inline wxString GetProgramPath() const noexcept
+    inline wxString GetProgramPath() const
     {
         return Read("CMakePath", "cmake");
     }
@@ -87,7 +87,7 @@ public:
      *
      * @param path
      */
-    inline void SetProgramPath(const wxString& path) noexcept
+    inline void SetProgramPath(const wxString& path)
     {
         Write("CMakePath", path);
     }

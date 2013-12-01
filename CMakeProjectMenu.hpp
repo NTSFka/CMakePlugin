@@ -67,7 +67,7 @@ public:
      *
      * @param plugin A pointer to CMake Plugin.
      */
-    explicit CMakeProjectMenu(CMakePlugin* plugin) noexcept
+    explicit CMakeProjectMenu(CMakePlugin* plugin)
         : wxMenu()
         , m_plugin(plugin)
     {
@@ -108,7 +108,7 @@ public:
     /**
      * @brief Destructor.
      */
-    ~CMakeProjectMenu() noexcept
+    ~CMakeProjectMenu()
     {
         wxTheApp->Unbind(wxEVT_UPDATE_UI, &CMakeProjectMenu::OnFileExists, this, ID_OPEN_CMAKELISTS);
         wxTheApp->Unbind(wxEVT_UPDATE_UI, &CMakeProjectMenu::OnEnabled, this, ID_CONFIGURE);
@@ -137,7 +137,7 @@ public:
      *
      * @return A pointer to selected project.
      */
-    ProjectPtr GetProject() const noexcept
+    ProjectPtr GetProject() const
     {
         return m_plugin->GetSelectedProject();
     }
@@ -152,7 +152,7 @@ public:
      *
      * @param event
      */
-    void OnCMakeListsOpen(wxCommandEvent& event) noexcept
+    void OnCMakeListsOpen(wxCommandEvent& event)
     {
         wxUnusedVar(event);
 
@@ -168,7 +168,7 @@ public:
      *
      * @param event
      */
-    void OnExport(wxCommandEvent& event) noexcept;
+    void OnExport(wxCommandEvent& event);
 
 
     /**
@@ -176,7 +176,7 @@ public:
      *
      * @param event
      */
-    void OnEnabled(wxUpdateUIEvent& event) noexcept
+    void OnEnabled(wxUpdateUIEvent& event)
     {
         event.Enable(m_plugin->IsSeletedProjectEnabled());
     }
@@ -187,7 +187,7 @@ public:
      *
      * @param event
      */
-    void OnConfigure(wxCommandEvent& event) noexcept;
+    void OnConfigure(wxCommandEvent& event);
 
 
     /**
@@ -195,7 +195,7 @@ public:
      *
      * @param event
      */
-    void OnBuild(wxCommandEvent& event) noexcept;
+    void OnBuild(wxCommandEvent& event);
 
 
     /**
@@ -203,7 +203,7 @@ public:
      *
      * @param event
      */
-    void OnClear(wxCommandEvent& event) noexcept;
+    void OnClear(wxCommandEvent& event);
 
 
     /**
@@ -211,7 +211,7 @@ public:
      *
      * @param event
      */
-    void OnTest(wxCommandEvent& event) noexcept;
+    void OnTest(wxCommandEvent& event);
 
 
     /**
@@ -219,7 +219,7 @@ public:
      *
      * @param event
      */
-    void OnTestVerbose(wxCommandEvent& event) noexcept;
+    void OnTestVerbose(wxCommandEvent& event);
 
 
     /**
@@ -227,7 +227,7 @@ public:
      *
      * @param
      */
-    void OnFileExists(wxUpdateUIEvent& event) noexcept
+    void OnFileExists(wxUpdateUIEvent& event)
     {
         ProjectPtr project = GetProject();
 

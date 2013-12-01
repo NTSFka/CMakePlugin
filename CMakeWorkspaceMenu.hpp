@@ -60,7 +60,7 @@ public:
      *
      * @param plugin A pointer to CMake Plugin
      */
-    explicit CMakeWorkspaceMenu(CMakePlugin* plugin) noexcept
+    explicit CMakeWorkspaceMenu(CMakePlugin* plugin)
         : wxMenu()
         , m_plugin(plugin)
     {
@@ -83,7 +83,7 @@ public:
     /**
      * @brief Destructor.
      */
-    ~CMakeWorkspaceMenu() noexcept
+    ~CMakeWorkspaceMenu()
     {
         wxTheApp->Unbind(wxEVT_UPDATE_UI, &CMakeWorkspaceMenu::OnFileExists, this, ID_OPEN_CMAKELISTS);
     }
@@ -98,7 +98,7 @@ public:
      *
      * @param event
      */
-    void OnCMakeListsOpen(wxCommandEvent& event) noexcept
+    void OnCMakeListsOpen(wxCommandEvent& event)
     {
         wxUnusedVar(event);
         m_plugin->OpenCMakeLists(m_plugin->GetWorkspaceDirectory());
@@ -110,7 +110,7 @@ public:
      *
      * @param
      */
-    void OnFileExists(wxUpdateUIEvent& event) noexcept
+    void OnFileExists(wxUpdateUIEvent& event)
     {
         event.Enable(m_plugin->ExistsCMakeLists(m_plugin->GetWorkspaceDirectory()));
     }
@@ -121,7 +121,7 @@ public:
      *
      * @param event
      */
-    void OnExport(wxCommandEvent& event) noexcept;
+    void OnExport(wxCommandEvent& event);
 
 
 

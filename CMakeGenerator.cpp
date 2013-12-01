@@ -118,10 +118,11 @@ CMakeGenerator::Generate(Workspace* workspace)
             // Split into a list of pairs
             const wxArrayString list = wxStringTokenize(variables, "\n;");
 
-            for (const wxString item : list)
+            for (wxArrayString::const_iterator it = list.begin(),
+                ite = list.end(); it != ite; ++it)
             {
                 // Split into name, value pair
-                const wxArrayString pair = wxSplit(item, '=');
+                const wxArrayString pair = wxSplit(*it, '=');
 
                 const wxString& name = pair[0];
                 const wxString value = (pair.GetCount() >= 2) ? pair[1] : "";
@@ -140,9 +141,10 @@ CMakeGenerator::Generate(Workspace* workspace)
     const wxArrayString projects = workspace->GetAllProjectPaths();
 
     // Foreach projects path
-    for (const wxString& path : projects)
+    for (wxArrayString::const_iterator it = projects.begin(),
+        ite = projects.end(); it != ite; ++it)
     {
-        wxFileName fullpath = path;
+        wxFileName fullpath = *it;
         fullpath.MakeRelativeTo(workspaceDir.GetPath());
 
         // Create path to CMakeLists.txt in the project

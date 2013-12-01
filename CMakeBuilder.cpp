@@ -42,7 +42,7 @@
 
 CMakeBuilder::CMakeBuilder(CMakePlugin* plugin)
     : m_plugin(plugin)
-    , m_asyncCmd(nullptr)
+    , m_asyncCmd(NULL)
 {
     wxASSERT(m_plugin);
 }
@@ -80,8 +80,11 @@ CMakeBuilder::CreateConfigureCmd(const wxString& cmake, const CMakeProjectSettin
         args.Add("-DCMAKE_BUILD_TYPE=" + settings.buildType);
 
     // Copy additional arguments
-    for (const wxString& str : settings.arguments)
-        args.Add(str);
+    for (wxArrayString::const_iterator it = settings.arguments.begin(),
+        ite = settings.arguments.end(); it != ite; ++it)
+    {
+        args.Add(*it);
+    }
 
     return CreateConfigureCmd(cmake, sourceDir, buildDir, args);
 }
@@ -116,7 +119,7 @@ void
 CMakeBuilder::Configure(const wxString& cmake,
                         const wxString& sourceDir,
                         const wxString& buildDir,
-                        const wxArrayString& args) noexcept
+                        const wxArrayString& args)
 {
     // Create directory if missing
     if (!wxDir::Exists(buildDir))
@@ -136,7 +139,7 @@ CMakeBuilder::Configure(const wxString& cmake,
 
 void
 CMakeBuilder::Build(const wxString& make, const wxString& buildDir,
-                    const wxString& target) noexcept
+                    const wxString& target)
 {
     // TODO detect if configuration wasn't performed
 
@@ -153,7 +156,7 @@ CMakeBuilder::Build(const wxString& make, const wxString& buildDir,
 /* ************************************************************************ */
 
 void
-CMakeBuilder::Run(const wxString& command) noexcept
+CMakeBuilder::Run(const wxString& command)
 {
     // Create on-demand
     if (!m_asyncCmd)
@@ -180,7 +183,7 @@ CMakeBuilder::Run(const wxString& command) noexcept
 /* ************************************************************************ */
 
 void
-CMakeBuilder::OnProcessEnd(wxProcessEvent& event) noexcept
+CMakeBuilder::OnProcessEnd(wxProcessEvent& event)
 {
     m_asyncCmd->ProcessEnd(event);
     m_asyncCmd->GetProcess()->Unbind(wxEVT_END_PROCESS, &CMakeBuilder::OnProcessEnd, this);

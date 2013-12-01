@@ -62,7 +62,7 @@ public:
      * @return A pointer to project settings for specific config or
      * nullptr if config doesn't exists.
      */
-    CMakeProjectSettingsMap* GetProjectSettings(const wxString& project, bool create = false) noexcept;
+    CMakeProjectSettingsMap* GetProjectSettings(const wxString& project, bool create = false);
 
 
     /**
@@ -73,7 +73,7 @@ public:
      * @return A pointer to project settings for specific config or
      * nullptr if config doesn't exists.
      */
-    const CMakeProjectSettingsMap* GetProjectSettings(const wxString& project) const noexcept;
+    const CMakeProjectSettingsMap* GetProjectSettings(const wxString& project) const;
 
 
     /**
@@ -87,7 +87,7 @@ public:
      * nullptr if config doesn't exists.
      */
     CMakeProjectSettings* GetProjectSettings(const wxString& project,
-        const wxString& config, bool create = false) noexcept;
+        const wxString& config, bool create = false);
 
 
     /**
@@ -99,7 +99,7 @@ public:
      * @return A pointer to project settings for specific config or
      * nullptr if config doesn't exists.
      */
-    const CMakeProjectSettings* GetProjectSettings(const wxString& project, const wxString& config) const noexcept;
+    const CMakeProjectSettings* GetProjectSettings(const wxString& project, const wxString& config) const;
 
 
     /**
@@ -110,7 +110,7 @@ public:
      *
      * @return
      */
-    bool IsProjectEnabled(const wxString& project, const wxString& config) const noexcept;
+    bool IsProjectEnabled(const wxString& project, const wxString& config) const;
 
 
 // Public Operations

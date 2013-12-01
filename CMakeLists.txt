@@ -46,10 +46,6 @@ file(GLOB SRCS "*.cpp")
 # Define the output - shared library
 add_library(${PLUGIN_NAME} SHARED ${SRCS})
 
-# Add compiler flags
-# C++11 support is required
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
 # Codelite plugins doesn't use the "lib" prefix.
 set_target_properties(${PLUGIN_NAME} PROPERTIES PREFIX "")
 target_link_libraries(${PLUGIN_NAME}

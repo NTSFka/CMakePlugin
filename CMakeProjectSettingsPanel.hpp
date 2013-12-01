@@ -68,7 +68,7 @@ public:
      * @param project Project pointer.
      */
     explicit CMakeProjectSettingsPanel(wxWindow* parent, ProjectPtr project,
-                                       CMakePlugin* plugin) noexcept;
+                                       CMakePlugin* plugin);
 
 
 // Public Accessors
@@ -80,7 +80,7 @@ public:
      *
      * @return
      */
-    bool IsCMakeEnabled() const noexcept
+    bool IsCMakeEnabled() const
     {
         return m_checkBoxEnable->IsChecked();
     }
@@ -91,7 +91,7 @@ public:
      *
      * @return
      */
-    wxString GetSourceDirectory() const noexcept
+    wxString GetSourceDirectory() const
     {
         return m_dirSelectCtrlSourceDirectory->GetDirectory();
     }
@@ -102,7 +102,7 @@ public:
      *
      * @return
      */
-    wxString GetBuildDirectory() const noexcept
+    wxString GetBuildDirectory() const
     {
         return m_dirSelectCtrlBuildDirectory->GetDirectory();
     }
@@ -113,7 +113,7 @@ public:
      *
      * @return
      */
-    wxString GetGenerator() const noexcept
+    wxString GetGenerator() const
     {
         return m_choiceGenerator->GetStringSelection();
     }
@@ -124,7 +124,7 @@ public:
      *
      * @return
      */
-    wxString GetBuildType() const noexcept
+    wxString GetBuildType() const
     {
         return m_choiceBuildType->GetStringSelection();
     }
@@ -135,7 +135,7 @@ public:
      *
      * @return
      */
-    wxArrayString GetArguments() const noexcept
+    wxArrayString GetArguments() const
     {
         return wxSplit(m_textCtrlArguments->GetValue(), '\n');
     }
@@ -146,7 +146,7 @@ public:
      *
      * @return
      */
-    CMakeProjectSettings* GetSettings() const noexcept
+    CMakeProjectSettings* GetSettings() const
     {
         return m_settings;
     }
@@ -161,7 +161,7 @@ public:
      *
      * @param value
      */
-    void SetCMakeEnabled(bool value) const noexcept
+    void SetCMakeEnabled(bool value) const
     {
         m_checkBoxEnable->SetValue(value);
     }
@@ -172,7 +172,7 @@ public:
      *
      * @param dir Directory.
      */
-    void SetSourceDirectory(const wxString& dir) noexcept
+    void SetSourceDirectory(const wxString& dir)
     {
         m_dirSelectCtrlSourceDirectory->SetDirectory(dir);
     }
@@ -183,7 +183,7 @@ public:
      *
      * @param dir Directory.
      */
-    void SetBuildDirectory(const wxString& dir) noexcept
+    void SetBuildDirectory(const wxString& dir)
     {
         m_dirSelectCtrlBuildDirectory->SetDirectory(dir);
     }
@@ -194,7 +194,7 @@ public:
      *
      * @param generator
      */
-    void SetGenerator(const wxString& generator) noexcept
+    void SetGenerator(const wxString& generator)
     {
         m_choiceGenerator->SetStringSelection(generator);
     }
@@ -205,7 +205,7 @@ public:
      *
      * @param buildType
      */
-    void SetBuildType(const wxString& buildType) noexcept
+    void SetBuildType(const wxString& buildType)
     {
         m_choiceBuildType->SetStringSelection(buildType);
     }
@@ -216,7 +216,7 @@ public:
      *
      * @param arguments
      */
-    void SetArguments(const wxArrayString& arguments) noexcept
+    void SetArguments(const wxArrayString& arguments)
     {
         m_textCtrlArguments->SetValue(wxJoin(arguments, '\n'));
     }
@@ -227,7 +227,7 @@ public:
      *
      * @param settings
      */
-    void SetSettings(CMakeProjectSettings* settings) noexcept
+    void SetSettings(CMakeProjectSettings* settings)
     {
         m_settings = settings;
         LoadSettings();
@@ -243,7 +243,7 @@ public:
      *
      * @param event
      */
-    void OnCheck(wxUpdateUIEvent& event) noexcept
+    void OnCheck(wxUpdateUIEvent& event)
     {
         event.Enable(m_checkBoxEnable->IsChecked());
     }

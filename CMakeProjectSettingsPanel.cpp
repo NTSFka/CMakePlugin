@@ -40,7 +40,7 @@
 
 CMakeProjectSettingsPanel::CMakeProjectSettingsPanel(wxWindow* parent,
                                                      ProjectPtr project,
-                                                     CMakePlugin* plugin) noexcept
+                                                     CMakePlugin* plugin)
     : wxPanel(parent, wxID_ANY)
     , m_project(project)
     , m_plugin(plugin)

@@ -55,13 +55,13 @@ public:
      * @param parent Pointer to parent window.
      * @param cmake  CMake pointer.
      */
-    explicit CMakeHelpDialog(wxWindow* parent, CMake* cmake) noexcept;
+    explicit CMakeHelpDialog(wxWindow* parent, CMake* cmake);
 
 
     /**
      * @brief Destructor
      */
-    ~CMakeHelpDialog() noexcept;
+    ~CMakeHelpDialog();
 
 
 // Public Events
@@ -73,7 +73,7 @@ public:
      *
      * @param event
      */
-    void OnModuleSelect(wxCommandEvent& event) noexcept;
+    void OnModuleSelect(wxCommandEvent& event);
 
 
     /**
@@ -81,7 +81,7 @@ public:
      *
      * @param event
      */
-    void OnCommandSelect(wxCommandEvent& event) noexcept;
+    void OnCommandSelect(wxCommandEvent& event);
 
 
     /**
@@ -89,7 +89,7 @@ public:
      *
      * @param event
      */
-    void OnPropertySelect(wxCommandEvent& event) noexcept;
+    void OnPropertySelect(wxCommandEvent& event);
 
 
     /**
@@ -97,7 +97,7 @@ public:
      *
      * @param event
      */
-    void OnVariableSelect(wxCommandEvent& event) noexcept;
+    void OnVariableSelect(wxCommandEvent& event);
 
 
 // Private Data Members

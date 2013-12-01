@@ -67,7 +67,7 @@ public:
      */
     static void Generate(ProjectPtr project,
                          BuildConfigPtr configuration,
-                         CompilerPtr compiler = nullptr);
+                         CompilerPtr compiler = NULL);
 
 };
 

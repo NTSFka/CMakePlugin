@@ -57,13 +57,13 @@ public:
      * @param parent Pointer to parent window.
      * @param cmake  CMake pointer.
      */
-    explicit CMakeSettingsDialog(wxWindow* parent, CMake* cmake) noexcept;
+    explicit CMakeSettingsDialog(wxWindow* parent, CMake* cmake);
 
 
     /**
      * @brief Destructor.
      */
-    virtual ~CMakeSettingsDialog() noexcept;
+    virtual ~CMakeSettingsDialog();
 
 
 // Public Accessors
@@ -75,7 +75,7 @@ public:
      *
      * @return
      */
-    wxString GetCMakePath() const noexcept
+    wxString GetCMakePath() const
     {
         return m_textCtrlCMake->GetValue();
     }
@@ -90,9 +90,9 @@ public:
      *
      * @param path
      */
-    void SetCMakePath(wxString path) noexcept
+    void SetCMakePath(const wxString& path)
     {
-        m_textCtrlCMake->SetValue(std::move(path));
+        m_textCtrlCMake->SetValue(path);
     }
 
 
@@ -105,7 +105,7 @@ public:
      *
      * @param event
      */
-    void OnCMakeFind(wxCommandEvent& event) noexcept;
+    void OnCMakeFind(wxCommandEvent& event);
 
 
     /**
@@ -113,7 +113,7 @@ public:
      *
      * @param event
      */
-    void OnShowHelp(wxCommandEvent& event) noexcept;
+    void OnShowHelp(wxCommandEvent& event);
 
 
 // Private Data Members

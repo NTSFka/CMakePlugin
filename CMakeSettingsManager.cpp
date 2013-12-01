@@ -29,7 +29,7 @@ CMakeSettingsManager::CMakeSettingsManager(CMakePlugin* plugin)
 /* ************************************************************************ */
 
 CMakeProjectSettingsMap*
-CMakeSettingsManager::GetProjectSettings(const wxString& project, bool create) noexcept
+CMakeSettingsManager::GetProjectSettings(const wxString& project, bool create)
 {
     if (create)
     {
@@ -37,10 +37,10 @@ CMakeSettingsManager::GetProjectSettings(const wxString& project, bool create) n
     }
     else
     {
-        auto it = m_projectSettings.find(project);
+        std::map<wxString, CMakeProjectSettingsMap>::iterator it = m_projectSettings.find(project);
 
         if (it == m_projectSettings.end())
-            return nullptr;
+            return NULL;
 
         return &(it->second);
     }
@@ -49,12 +49,12 @@ CMakeSettingsManager::GetProjectSettings(const wxString& project, bool create) n
 /* ************************************************************************ */
 
 const CMakeProjectSettingsMap*
-CMakeSettingsManager::GetProjectSettings(const wxString& project) const noexcept
+CMakeSettingsManager::GetProjectSettings(const wxString& project) const
 {
-    auto it = m_projectSettings.find(project);
+    std::map<wxString, CMakeProjectSettingsMap>::const_iterator it = m_projectSettings.find(project);
 
     if (it == m_projectSettings.end())
-        return nullptr;
+        return NULL;
 
     return &(it->second);
 }
@@ -62,7 +62,7 @@ CMakeSettingsManager::GetProjectSettings(const wxString& project) const noexcept
 /* ************************************************************************ */
 
 CMakeProjectSettings*
-CMakeSettingsManager::GetProjectSettings(const wxString& project, const wxString& config, bool create) noexcept
+CMakeSettingsManager::GetProjectSettings(const wxString& project, const wxString& config, bool create)
 {
     // Get project settings
     CMakeProjectSettingsMap* settings = GetProjectSettings(project, create);
@@ -79,14 +79,14 @@ CMakeSettingsManager::GetProjectSettings(const wxString& project, const wxString
     {
         // Not found
         if (!settings)
-            return nullptr;
+            return NULL;
 
         // Find configuration
-        auto it = settings->find(config);
+        CMakeProjectSettingsMap::iterator it = settings->find(config);
 
         // Not found
         if (it == settings->end())
-            return nullptr;
+            return NULL;
 
         return &(it->second);
     }
@@ -95,21 +95,21 @@ CMakeSettingsManager::GetProjectSettings(const wxString& project, const wxString
 /* ************************************************************************ */
 
 const CMakeProjectSettings*
-CMakeSettingsManager::GetProjectSettings(const wxString& project, const wxString& config) const noexcept
+CMakeSettingsManager::GetProjectSettings(const wxString& project, const wxString& config) const
 {
     // Get project settings
     const CMakeProjectSettingsMap* settings = GetProjectSettings(project);
 
     // Not found
     if (!settings)
-        return nullptr;
+        return NULL;
 
     // Find configuration
-    auto it = settings->find(config);
+    CMakeProjectSettingsMap::const_iterator it = settings->find(config);
 
     // Not found
     if (it == settings->end())
-        return nullptr;
+        return NULL;
 
     return &(it->second);
 }
@@ -117,7 +117,7 @@ CMakeSettingsManager::GetProjectSettings(const wxString& project, const wxString
 /* ************************************************************************ */
 
 bool
-CMakeSettingsManager::IsProjectEnabled(const wxString& project, const wxString& config) const noexcept
+CMakeSettingsManager::IsProjectEnabled(const wxString& project, const wxString& config) const
 {
     // Get project settings
     const CMakeProjectSettings* settings = GetProjectSettings(project, config);
@@ -136,9 +136,10 @@ CMakeSettingsManager::SaveProjects()
     wxArrayString projects;
     workspace->GetProjectList(projects);
 
-    for (const auto& project : projects)
+    for (wxArrayString::const_iterator it = projects.begin(),
+        ite = projects.end(); it != ite; ++it)
     {
-        SaveProject(project);
+        SaveProject(*it);
     }
 }
 
@@ -157,26 +158,27 @@ CMakeSettingsManager::SaveProject(const wxString& name)
         return;
 
     // Find project settings
-    auto it = m_projectSettings.find(name);
+    std::map<wxString, CMakeProjectSettingsMap>::const_iterator itSettings = m_projectSettings.find(name);
 
     // Ehm...
-    if (it == m_projectSettings.end())
+    if (itSettings == m_projectSettings.end())
         return;
 
     // Create JSON object
     JSONElement json = JSONElement::createArray("configurations");
 
     // Foreach settings
-    for (const auto& pair : it->second)
+    for (std::map<wxString, CMakeProjectSettings>::const_iterator it = itSettings->second.begin(),
+        ite = itSettings->second.end(); it != ite; ++it)
     {
         // Get settings
-        const CMakeProjectSettings& settings = pair.second;
+        const CMakeProjectSettings& settings = it->second;
 
         // Create item
         JSONElement item = JSONElement::createObject("configuration");
 
         // Store name
-        item.addProperty("name", pair.first);
+        item.addProperty("name", it->first);
 
         // Store settings
         item.addProperty("enabled", settings.enabled);
@@ -208,9 +210,10 @@ CMakeSettingsManager::LoadProjects()
     wxArrayString projects;
     workspace->GetProjectList(projects);
 
-    for (const auto& project : projects)
+    for (wxArrayString::const_iterator it = projects.begin(),
+        ite = projects.end(); it != ite; ++it)
     {
-        LoadProject(project);
+        LoadProject(*it);
     }
 }
 

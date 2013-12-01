@@ -138,7 +138,7 @@ public:
     void Configure(const wxString& cmake,
                    const wxString& sourceDir,
                    const wxString& buildDir,
-                   const wxArrayString& args) noexcept;
+                   const wxArrayString& args);
 
 
     /**
@@ -149,13 +149,13 @@ public:
      * @param target    Build target.
      */
     void Build(const wxString& make, const wxString& buildDir,
-               const wxString& target = wxEmptyString) noexcept;
+               const wxString& target = wxEmptyString);
 
 
     /**
      * @brief Run given program asynchronously.
      */
-    void Run(const wxString& command) noexcept;
+    void Run(const wxString& command);
 
 
 // Public Events
@@ -167,7 +167,7 @@ public:
      *
      * @param event
      */
-    void OnProcessEnd(wxProcessEvent& event) noexcept;
+    void OnProcessEnd(wxProcessEvent& event);
 
 
 // Private Data Members

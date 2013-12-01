@@ -43,7 +43,7 @@
 /* CLASSES                                                                  */
 /* ************************************************************************ */
 
-CMakeSettingsDialog::CMakeSettingsDialog(wxWindow* parent, CMake* cmake) noexcept
+CMakeSettingsDialog::CMakeSettingsDialog(wxWindow* parent, CMake* cmake)
     : wxDialog(parent, wxID_ANY, _("CMake Plugin Settings"))
     , m_cmake(cmake)
 {
@@ -81,21 +81,21 @@ CMakeSettingsDialog::CMakeSettingsDialog(wxWindow* parent, CMake* cmake) noexcep
     Bind(wxEVT_BUTTON, &CMakeSettingsDialog::OnShowHelp, this, wxID_HELP);
 
     // Load window layout
-    WindowAttrManager::Load(this, "CMakeSettingsDialog", nullptr);
+    WindowAttrManager::Load(this, "CMakeSettingsDialog", NULL);
 }
 
 /* ************************************************************************ */
 
-CMakeSettingsDialog::~CMakeSettingsDialog() noexcept
+CMakeSettingsDialog::~CMakeSettingsDialog()
 {
     // Save window layout
-    WindowAttrManager::Save(this, "CMakeSettingsDialog", nullptr);
+    WindowAttrManager::Save(this, "CMakeSettingsDialog", NULL);
 }
 
 /* ************************************************************************ */
 
 void
-CMakeSettingsDialog::OnCMakeFind(wxCommandEvent& event) noexcept
+CMakeSettingsDialog::OnCMakeFind(wxCommandEvent& event)
 {
     wxString filename = wxFileSelector("CMake program");
 
@@ -106,7 +106,7 @@ CMakeSettingsDialog::OnCMakeFind(wxCommandEvent& event) noexcept
 /* ************************************************************************ */
 
 void
-CMakeSettingsDialog::OnShowHelp(wxCommandEvent& event) noexcept
+CMakeSettingsDialog::OnShowHelp(wxCommandEvent& event)
 {
     wxASSERT(m_cmake);
 
@@ -119,7 +119,7 @@ CMakeSettingsDialog::OnShowHelp(wxCommandEvent& event) noexcept
     if (m_cmake->IsDirty())
         m_cmake->LoadData();
 
-    CMakeHelpDialog(nullptr, m_cmake).ShowModal();
+    CMakeHelpDialog(NULL, m_cmake).ShowModal();
 }
 
 /* ************************************************************************ */

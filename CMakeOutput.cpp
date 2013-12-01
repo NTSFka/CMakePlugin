@@ -48,7 +48,7 @@
 
 CMakeOutput::CMakeOutput(wxWindow* parent, wxWindowID id, CMakePlugin* plugin)
     : wxPanel(parent, id)
-    , m_command(nullptr)
+    , m_command(NULL)
     , m_plugin(plugin)
 {
     SetSizer(new wxBoxSizer(wxVERTICAL));
@@ -58,10 +58,10 @@ CMakeOutput::CMakeOutput(wxWindow* parent, wxWindowID id, CMakePlugin* plugin)
 
     // Bind events
     // FIXME Codelite defined events cannot be used within Bind
-    Connect(wxEVT_ASYNC_PROC_STARTED, wxCommandEventHandler(CMakeOutput::OnProcStarted), nullptr, this);
-    Connect(wxEVT_ASYNC_PROC_ADDLINE, wxCommandEventHandler(CMakeOutput::OnProcOutput), nullptr, this);
-    Connect(wxEVT_ASYNC_PROC_ADDERRLINE, wxCommandEventHandler(CMakeOutput::OnProcError), nullptr, this);
-    Connect(wxEVT_ASYNC_PROC_ENDED, wxCommandEventHandler(CMakeOutput::OnProcEnded), nullptr, this);
+    Connect(wxEVT_ASYNC_PROC_STARTED, wxCommandEventHandler(CMakeOutput::OnProcStarted), NULL, this);
+    Connect(wxEVT_ASYNC_PROC_ADDLINE, wxCommandEventHandler(CMakeOutput::OnProcOutput), NULL, this);
+    Connect(wxEVT_ASYNC_PROC_ADDERRLINE, wxCommandEventHandler(CMakeOutput::OnProcError), NULL, this);
+    Connect(wxEVT_ASYNC_PROC_ENDED, wxCommandEventHandler(CMakeOutput::OnProcEnded), NULL, this);
     Bind(wxEVT_UPDATE_UI, &CMakeOutput::OnHoldOpenUpdateUI, this, XRCID("hold_pane_open"));
 
     // Default style
@@ -145,10 +145,10 @@ CMakeOutput::AppendText(const wxString& text)
         const wxArrayString codes = wxSplit(formatCode, ';', 0);
 
         // Foreach codes
-        for (const wxString& code : codes)
+        for (wxArrayString::const_iterator it = codes.begin(), ite = codes.end(); it != ite; ++it)
         {
             /// @see http://misc.flogisoft.com/bash/tip_colors_and_formatting
-            switch (wxAtoi(code))
+            switch (wxAtoi(*it))
             {
                 default: break;
                 // Reset all attributes
@@ -262,7 +262,7 @@ CMakeOutput::Clear()
 void
 CMakeOutput::OnProcStarted(wxCommandEvent& event)
 {
-    if ((m_command != nullptr) && m_command->IsBusy())
+    if ((m_command != NULL) && m_command->IsBusy())
     {
         // TODO: log message: already running a process
         return;
@@ -321,7 +321,7 @@ CMakeOutput::OnProcEnded(wxCommandEvent& event)
     }
 
     AppendText(event.GetString());
-    m_command = nullptr;
+    m_command = NULL;
 }
 
 /* ************************************************************************ */

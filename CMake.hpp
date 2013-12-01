@@ -68,7 +68,7 @@ public:
      *
      * @return
      */
-    static wxArrayString GetVersions() noexcept;
+    static wxArrayString GetVersions();
 
 
     /**
@@ -78,7 +78,7 @@ public:
      *
      * @return
      */
-    inline const wxFileName& GetPath() const noexcept
+    inline const wxFileName& GetPath() const
     {
         return m_path;
     }
@@ -89,7 +89,7 @@ public:
      *
      * @return
      */
-    bool IsOk() const noexcept;
+    bool IsOk() const;
 
 
     /**
@@ -97,7 +97,7 @@ public:
      *
      * @return
      */
-    inline bool IsDirty() const noexcept
+    inline bool IsDirty() const
     {
         return m_dirty;
     }
@@ -108,7 +108,7 @@ public:
      *
      * @return
      */
-    inline const wxString& GetVersion() const noexcept
+    inline const wxString& GetVersion() const
     {
         return m_version;
     }
@@ -119,7 +119,7 @@ public:
      *
      * @return
      */
-    inline const wxArrayString& GetCommands() const noexcept
+    inline const wxArrayString& GetCommands() const
     {
         return m_commands;
     }
@@ -130,7 +130,7 @@ public:
      *
      * @return
      */
-    inline const wxArrayString& GetModules() const noexcept
+    inline const wxArrayString& GetModules() const
     {
         return m_modules;
     }
@@ -141,7 +141,7 @@ public:
      *
      * @return
      */
-    inline const wxArrayString& GetProperties() const noexcept
+    inline const wxArrayString& GetProperties() const
     {
         return m_properties;
     }
@@ -152,7 +152,7 @@ public:
      *
      * @return
      */
-    inline const wxArrayString& GetVariables() const noexcept
+    inline const wxArrayString& GetVariables() const
     {
         return m_variables;
     }
@@ -163,7 +163,7 @@ public:
      *
      * @return
      */
-    inline const wxString& GetCopyright() const noexcept
+    inline const wxString& GetCopyright() const
     {
         return m_copyright;
     }
@@ -174,7 +174,7 @@ public:
      *
      * @return
      */
-    inline const wxArrayString& GetGenerators() const noexcept
+    inline const wxArrayString& GetGenerators() const
     {
         return m_generators;
     }
@@ -187,7 +187,7 @@ public:
      *
      * @return
      */
-    wxString GetModuleHelp(const wxString& name) const noexcept;
+    wxString GetModuleHelp(const wxString& name) const;
 
 
     /**
@@ -197,7 +197,7 @@ public:
      *
      * @return
      */
-    wxString GetCommandHelp(const wxString& name) const noexcept;
+    wxString GetCommandHelp(const wxString& name) const;
 
 
     /**
@@ -207,7 +207,7 @@ public:
      *
      * @return
      */
-    wxString GetPropertyHelp(const wxString& name) const noexcept;
+    wxString GetPropertyHelp(const wxString& name) const;
 
 
     /**
@@ -217,7 +217,7 @@ public:
      *
      * @return
      */
-    wxString GetVariableHelp(const wxString& name) const noexcept;
+    wxString GetVariableHelp(const wxString& name) const;
 
 
 // Public Mutators
@@ -229,7 +229,7 @@ public:
      *
      * @param path
      */
-    void SetPath(const wxFileName& path) noexcept
+    void SetPath(const wxFileName& path)
     {
         m_path = path;
         m_dirty = true;
@@ -243,7 +243,7 @@ public:
     /**
      * @brief Loads data from CMake application.
      */
-    void LoadData() noexcept;
+    void LoadData();
 
 
 // Private Operations

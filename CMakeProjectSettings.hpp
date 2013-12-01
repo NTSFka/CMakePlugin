@@ -47,15 +47,15 @@
 struct CMakeProjectSettings
 {
     /// If CMake build is enabled.
-    bool enabled = false;
+    bool enabled;
 
     /// Source directory.
     /// Directory where the root CMakeLists.txt is located.
-    wxString sourceDirectory = "$(ProjectPath)";
+    wxString sourceDirectory;
 
     /// Build directory.
     /// Directory where sources are compiled and builded.
-    wxString buildDirectory = "build";
+    wxString buildDirectory;
 
     /// CMake generator.
     wxString generator;
@@ -65,6 +65,16 @@ struct CMakeProjectSettings
 
     /// Configure arguments.
     wxArrayString arguments;
+
+
+    /**
+     * @brief Constructor.
+     */
+    CMakeProjectSettings()
+        : enabled(false), sourceDirectory("$(ProjectPath)"), buildDirectory("build")
+        , generator(), buildType(), arguments()
+    {}
+
 };
 
 /* ************************************************************************ */

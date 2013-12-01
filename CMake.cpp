@@ -100,10 +100,11 @@ wxArrayString Trim(const wxArrayString& arr)
     wxArrayString res;
     res.reserve(arr.size());
 
-    for (auto item : arr)
+    for (wxArrayString::const_iterator it = arr.begin(), ite = arr.end(); it != ite; ++it)
     {
+        wxString item = *it;
         item.Trim();
-        res.push_back(std::move(item));
+        res.push_back(item);
     }
 
     return res;
@@ -126,7 +127,7 @@ wxString CacheHelp(std::map<wxString, wxString>& cache,
                    const wxString& command)
 {
     // Try to find in cache
-    auto it = cache.find(name);
+    std::map<wxString, wxString>::const_iterator it = cache.find(name);
 
     // Found in cache
     if (it != cache.end())
@@ -192,7 +193,7 @@ CMake::CMake(const wxFileName& path)
 /* ************************************************************************ */
 
 wxArrayString
-CMake::GetVersions() noexcept
+CMake::GetVersions()
 {
     static const wxString VERSIONS[] = {
         "2.8.11",
@@ -223,13 +224,13 @@ CMake::GetVersions() noexcept
         "1.8.3"
     };
 
-    return {sizeof(VERSIONS) / sizeof(VERSIONS[0]), VERSIONS};
+    return wxArrayString(sizeof(VERSIONS) / sizeof(VERSIONS[0]), VERSIONS);
 }
 
 /* ************************************************************************ */
 
 bool
-CMake::IsOk() const noexcept
+CMake::IsOk() const
 {
     wxArrayString output;
     ProcUtils::SafeExecuteCommand(GetPath().GetFullPath() + " -h", output);
@@ -242,7 +243,7 @@ CMake::IsOk() const noexcept
 /* ************************************************************************ */
 
 wxString
-CMake::GetModuleHelp(const wxString& name) const noexcept
+CMake::GetModuleHelp(const wxString& name) const
 {
     static std::map<wxString, wxString> cache;
 
@@ -253,7 +254,7 @@ CMake::GetModuleHelp(const wxString& name) const noexcept
 /* ************************************************************************ */
 
 wxString
-CMake::GetCommandHelp(const wxString& name) const noexcept
+CMake::GetCommandHelp(const wxString& name) const
 {
     static std::map<wxString, wxString> cache;
 
@@ -264,7 +265,7 @@ CMake::GetCommandHelp(const wxString& name) const noexcept
 /* ************************************************************************ */
 
 wxString
-CMake::GetPropertyHelp(const wxString& name) const noexcept
+CMake::GetPropertyHelp(const wxString& name) const
 {
     static std::map<wxString, wxString> cache;
 
@@ -275,7 +276,7 @@ CMake::GetPropertyHelp(const wxString& name) const noexcept
 /* ************************************************************************ */
 
 wxString
-CMake::GetVariableHelp(const wxString& name) const noexcept
+CMake::GetVariableHelp(const wxString& name) const
 {
     static std::map<wxString, wxString> cache;
 
@@ -286,7 +287,7 @@ CMake::GetVariableHelp(const wxString& name) const noexcept
 /* ************************************************************************ */
 
 void
-CMake::LoadData() noexcept
+CMake::LoadData()
 {
     // Clear old data
     m_version.clear();
