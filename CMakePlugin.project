@@ -29,6 +29,13 @@
     <File Name="CMake.hpp"/>
     <File Name="CMakeProjectSettings.hpp"/>
     <File Name="CMakeSettingsManager.hpp"/>
+    <File Name="CMakePlugin.h"/>
+    <File Name="CMake.h"/>
+    <File Name="CMakeBuilder.h"/>
+    <File Name="CMakeProjectSettings.h"/>
+    <File Name="CMakeSettingsManager.h"/>
+    <File Name="CMakeConfiguration.h"/>
+    <File Name="CMakeGenerator.h"/>
   </VirtualDirectory>
   <Dependencies/>
   <VirtualDirectory Name="UI">
@@ -52,6 +59,9 @@
     <File Name="CMakeHelpDialog.h"/>
     <File Name="../../CMakePlugin/CMakeSettingsDialog.h"/>
     <File Name="CMakeProjectSettingsPanel.h"/>
+    <File Name="CMakeWorkspaceMenu.h"/>
+    <File Name="CMakeProjectMenu.h"/>
+    <File Name="CMakeOutput.h"/>
   </VirtualDirectory>
   <Dependencies Name="DebugUnicode"/>
   <Dependencies Name="ReleaseUnicode"/>
