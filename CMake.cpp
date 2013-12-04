@@ -23,7 +23,7 @@
 /* ************************************************************************ */
 
 // Declaration
-#include "CMake.hpp"
+#include "CMake.h"
 
 // C++
 #include <map>

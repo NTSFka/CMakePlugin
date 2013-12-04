@@ -31,7 +31,7 @@
 #include <wx/arrstr.h>
 
 // Codelite
-#include "macros.h"
+#include "macros.h" // for wxStringMap_t
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */

@@ -22,13 +22,6 @@
     <File Name="CMakeSettingsManager.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="include">
-    <File Name="CMakePlugin.hpp"/>
-    <File Name="CMakeConfiguration.hpp"/>
-    <File Name="CMakeGenerator.hpp"/>
-    <File Name="CMakeBuilder.hpp"/>
-    <File Name="CMake.hpp"/>
-    <File Name="CMakeProjectSettings.hpp"/>
-    <File Name="CMakeSettingsManager.hpp"/>
     <File Name="CMakePlugin.h"/>
     <File Name="CMake.h"/>
     <File Name="CMakeBuilder.h"/>
@@ -40,24 +33,17 @@
   <Dependencies/>
   <VirtualDirectory Name="UI">
     <File Name="CMakeSettingsDialog.cpp"/>
-    <File Name="CMakeSettingsDialog.hpp"/>
-    <File Name="CMakeWorkspaceMenu.hpp"/>
     <File Name="CMakeWorkspaceMenu.cpp"/>
-    <File Name="CMakeProjectMenu.hpp"/>
     <File Name="CMakeProjectMenu.cpp"/>
-    <File Name="CMakeHelpDialog.hpp"/>
     <File Name="CMakeHelpDialog.cpp"/>
-    <File Name="CMakeProjectSettingsPanel.hpp"/>
     <File Name="CMakeProjectSettingsPanel.cpp"/>
-    <File Name="CMakeDirSelectCtrl.hpp"/>
-    <File Name="CMakeOutput.hpp"/>
     <File Name="CMakeOutput.cpp"/>
     <File Name="CMakePluginUi.cpp"/>
     <File Name="CMakePluginUi.h"/>
     <File Name="CMakeHelpPanel.h"/>
     <File Name="CMakeHelpPanel.cpp"/>
     <File Name="CMakeHelpDialog.h"/>
-    <File Name="../../CMakePlugin/CMakeSettingsDialog.h"/>
+    <File Name="CMakeSettingsDialog.h"/>
     <File Name="CMakeProjectSettingsPanel.h"/>
     <File Name="CMakeWorkspaceMenu.h"/>
     <File Name="CMakeProjectMenu.h"/>

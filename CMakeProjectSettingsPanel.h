@@ -32,7 +32,7 @@
 #include "CMakePluginUi.h"
 
 // CMakePlugin
-#include "CMakeProjectSettings.hpp"
+#include "CMakeProjectSettings.h"
 
 /* ************************************************************************ */
 /* FORWARD DECLARATIONS                                                     */
@@ -166,7 +166,7 @@ public:
      *
      * @param project
      */
-    inline void SetParent(const wxString& project) {
+    inline void SetParentProject(const wxString& project) {
         m_choiceParent->SetStringSelection(project);
     }
 
@@ -225,9 +225,11 @@ public:
      * @brief Set project setting pointer.
      *
      * @param settings
+     * @param project
      * @param config
      */
-    void SetSettings(CMakeProjectSettings* settings, const wxString& config);
+    void SetSettings(CMakeProjectSettings* settings, const wxString& project,
+        const wxString& config);
 
 
 // Public Events

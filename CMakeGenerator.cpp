@@ -23,7 +23,7 @@
 /* ************************************************************************ */
 
 // Declarations
-#include "CMakeGenerator.hpp"
+#include "CMakeGenerator.h"
 
 // wxWidgets
 #include <wx/tokenzr.h>
@@ -32,7 +32,7 @@
 #include <wx/msgdlg.h>
 
 // Plugin
-#include "CMakePlugin.hpp"
+#include "CMakePlugin.h"
 
 /* ************************************************************************ */
 /* FUNCTIONS                                                                */

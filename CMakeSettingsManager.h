@@ -33,7 +33,7 @@
 #include <wx/scopedptr.h>
 
 // CMakePlugin
-#include "CMakeProjectSettings.hpp"
+#include "CMakeProjectSettings.h"
 
 /* ************************************************************************ */
 /* FORWARD DECLARATIONS                                                     */

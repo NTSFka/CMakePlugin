@@ -36,9 +36,10 @@
 #include "plugin.h"
 #include "project.h"
 #include "build_config.h"
+#include "cl_command_event.h"
 
 // CMakePlugin
-#include "CMakeConfiguration.hpp"
+#include "CMakeConfiguration.h"
 
 /* ************************************************************************ */
 /* FORWARD DECLARATIONS                                                     */
@@ -339,7 +340,7 @@ public:
      *
      * @param event
      */
-    void OnBuildStarting(wxCommandEvent& event);
+    void OnBuildStarting(clBuildEvent& event);
 
 
     /**
@@ -347,7 +348,7 @@ public:
      *
      * @param event
      */
-    void OnGetCleanCommand(wxCommandEvent& event);
+    void OnGetCleanCommand(clBuildEvent& event);
 
 
     /**
@@ -355,13 +356,13 @@ public:
      *
      * @param event
      */
-    void OnGetBuildCommand(wxCommandEvent& event);
+    void OnGetBuildCommand(clBuildEvent& event);
 
 
     /**
      * @brief Returns if custom makefile is generated.
      */
-    void OnGetIsPluginMakefile(wxCommandEvent& event);
+    void OnGetIsPluginMakefile(clBuildEvent& event);
 
 
     /**
@@ -369,7 +370,7 @@ public:
      *
      * @param event
      */
-    void OnExportMakefile(wxCommandEvent& event);
+    void OnExportMakefile(clBuildEvent& event);
 
 
     /**
@@ -385,13 +386,12 @@ private:
 
 
     /**
-     * @brief Returns project setting based on event values.
+     * @brief Processes build event.
      *
      * @param event
-     *
-     * @return A pointer to project settings or nullptr.
+     * @param param
      */
-    const CMakeProjectSettings* GetSettings(wxCommandEvent& event);
+    void ProcessBuildEvent(clBuildEvent& event, const wxString& param = "");
 
 
 // Private Data Members

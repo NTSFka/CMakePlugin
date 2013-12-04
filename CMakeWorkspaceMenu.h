@@ -30,7 +30,7 @@
 #include <wx/app.h>
 
 // CMakePlugin
-#include "CMakePlugin.hpp"
+#include "CMakePlugin.h"
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */

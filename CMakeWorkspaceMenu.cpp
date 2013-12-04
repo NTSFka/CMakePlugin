@@ -23,10 +23,10 @@
 /* ************************************************************************ */
 
 // Declaration
-#include "CMakeWorkspaceMenu.hpp"
+#include "CMakeWorkspaceMenu.h"
 
 // CMakePlugin
-#include "CMakeGenerator.hpp"
+#include "CMakeGenerator.h"
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */

@@ -29,7 +29,7 @@
 #include "windowattrmanager.h"
 
 // CMakePlugin
-#include "CMake.hpp"
+#include "CMake.h"
 #include "CMakeHelpPanel.h"
 
 /* ************************************************************************ */

@@ -23,7 +23,7 @@
 /* ************************************************************************ */
 
 // Declaration
-#include "CMakeBuilder.hpp"
+#include "CMakeBuilder.h"
 
 // wxWidgets
 #include <wx/dir.h>
@@ -32,9 +32,9 @@
 #include "dirsaver.h"
 
 // CMakePlugin
-#include "CMakePlugin.hpp"
-#include "CMakeOutput.hpp"
-#include "CMakeProjectSettings.hpp"
+#include "CMakePlugin.h"
+#include "CMakeOutput.h"
+#include "CMakeProjectSettings.h"
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
@@ -58,7 +58,7 @@ CMakeBuilder::CreateConfigureCmd(const wxString& cmake,
     /// cd $buildDir && $cmake $args $sourceDir
 
     // Build cmd
-    //return "cd \"" + buildDir + "\" && " + cmake + " " << wxJoin(args, ' ') << " " << sourceDir;
+    //return "@cd \"" + buildDir + "\" && " + cmake + " " << wxJoin(args, ' ', '\0') << " " << sourceDir;
     return cmake + " " << wxJoin(args, ' ', '\0') << " " << sourceDir;
 }
 
@@ -99,8 +99,8 @@ CMakeBuilder::CreateBuildCmd(const wxString& make,
     /// cd $buildDir && $make
 
     // Build cmd
-    //return "@cd \"" + buildDir + "\" && " + make + " " + target;
-    return make + " " + target;
+    return "@cd \"" + buildDir + "\" && " + make + " " + target;
+    //return make + " " + target;
 }
 
 /* ************************************************************************ */

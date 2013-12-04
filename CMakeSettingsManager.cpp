@@ -23,7 +23,7 @@
 /* ************************************************************************ */
 
 // Declaration
-#include "CMakeSettingsManager.hpp"
+#include "CMakeSettingsManager.h"
 
 // wxWidgets
 #include <wx/arrstr.h>
@@ -33,7 +33,7 @@
 #include "workspace.h"
 
 // CMakePlugin
-#include "CMakePlugin.hpp"
+#include "CMakePlugin.h"
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
@@ -206,6 +206,7 @@ CMakeSettingsManager::SaveProject(const wxString& name)
         item.addProperty("generator", settings.generator);
         item.addProperty("buildType", settings.buildType);
         item.addProperty("arguments", settings.arguments);
+        item.addProperty("parentProject", settings.parentProject);
 
         // Add array
         json.arrayAppend(item);
@@ -290,6 +291,7 @@ CMakeSettingsManager::LoadProject(const wxString& name)
         settings.generator = item.namedObject("generator").toString();
         settings.buildType = item.namedObject("buildType").toString();
         settings.arguments = item.namedObject("arguments").toArrayString();
+        settings.parentProject = item.namedObject("parentProject").toString();
     }
 }
 

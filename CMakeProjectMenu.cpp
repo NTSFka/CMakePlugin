@@ -23,78 +23,12 @@
 /* ************************************************************************ */
 
 // Declaration
-#include "CMakeProjectMenu.hpp"
-
-// Codelite
-#include "manager.h"
-#include "project.h"
-#include "workspace.h"
-#include "build_config.h"
-#include "macromanager.h"
-#include "dirsaver.h"
+#include "CMakeProjectMenu.h"
 
 // CMakePlugin
-#include "CMakeBuilder.hpp"
-#include "CMakeProjectSettings.hpp"
-#include "CMakeGenerator.hpp"
-
-/* ************************************************************************ */
-/* CLASSES                                                                  */
-/* ************************************************************************ */
-
-/**
- * @brief Call make program for currently selected project.
- *
- * @param plugin A pointer to CMake plugin.
- * @param target Make target.
- */
-static void CallMake(CMakePlugin* plugin, const wxString& target = "")
-{
-    // Get settings
-    const CMakeProjectSettings* settings = plugin->GetSelectedProjectSettings();
-
-    // Doesn't exists or not enabled
-    if (!settings || !settings->enabled)
-        return;
-
-    // Macro manager
-    MacroManager* macro = MacroManager::Instance();
-    wxASSERT(macro);
-
-    const ProjectPtr project = plugin->GetSelectedProject();
-    const wxString config = plugin->GetSelectedProjectConfig();
-
-    // Get workspace
-    Workspace* workspace = plugin->GetManager()->GetWorkspace();
-    // Get build configuration
-    BuildConfigPtr bldConf = workspace->GetProjBuildConf(project->GetName(), config);
-
-    // Get Make
-    const wxString make = bldConf->GetCompiler()->GetTool("MAKE");
-
-    // Create command and Expand macros
-    const wxString cmd = macro->Expand(
-        CMakeBuilder::CreateBuildCmd(make, *settings, target),
-        plugin->GetManager(), project->GetName(), config
-    );
-
-    const wxString buildDir = macro->Expand(settings->buildDirectory,
-        plugin->GetManager(), project->GetName(), config);
-
-    // Get builder
-    CMakeBuilder* builder = plugin->GetBuilder();
-    wxASSERT(builder);
-
-    {
-        DirSaver dir;
-
-        // FIXME buildDir can be absolute
-        wxSetWorkingDirectory(wxGetCwd() + "/" + buildDir);
-
-        // Build
-        builder->Run(cmd);
-    }
-}
+#include "CMakeBuilder.h"
+#include "CMakeProjectSettings.h"
+#include "CMakeGenerator.h"
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
@@ -107,86 +41,6 @@ CMakeProjectMenu::OnExport(wxCommandEvent& event)
         m_plugin->GetSelectedProject(),
         m_plugin->GetSelectedBuildConfig()
     );
-}
-
-/* ************************************************************************ */
-
-void
-CMakeProjectMenu::OnConfigure(wxCommandEvent& event)
-{
-    // Get settings
-    const CMakeProjectSettings* settings = m_plugin->GetSelectedProjectSettings();
-
-    // Doesn't exists or not enabled
-    if (!settings || !settings->enabled)
-        return;
-
-    // Macro manager
-    MacroManager* macro = MacroManager::Instance();
-    wxASSERT(macro);
-
-    // Get CMAKE
-    const wxString cmake = m_plugin->GetConfiguration()->GetProgramPath();
-    const ProjectPtr project = m_plugin->GetSelectedProject();
-    const wxString config = m_plugin->GetSelectedProjectConfig();
-
-    // Create command and Expand macros
-    const wxString cmd = macro->Expand(
-        CMakeBuilder::CreateConfigureCmd(cmake, *settings),
-        m_plugin->GetManager(), project->GetName(), config
-    );
-
-    const wxString buildDir = macro->Expand(settings->buildDirectory,
-        m_plugin->GetManager(), project->GetName(), config);
-
-    // Get builder
-    CMakeBuilder* builder = m_plugin->GetBuilder();
-    wxASSERT(builder);
-
-    // Create directory if missing
-    if (!wxDir::Exists(buildDir))
-        wxDir::Make(buildDir);
-
-    {
-        DirSaver dir;
-
-        wxSetWorkingDirectory(wxGetCwd() + "/" + buildDir);
-
-        // Configure
-        builder->Run(cmd);
-    }
-}
-
-/* ************************************************************************ */
-
-void
-CMakeProjectMenu::OnBuild(wxCommandEvent& event)
-{
-    CallMake(m_plugin);
-}
-
-/* ************************************************************************ */
-
-void
-CMakeProjectMenu::OnClear(wxCommandEvent& event)
-{
-    CallMake(m_plugin, "clean");
-}
-
-/* ************************************************************************ */
-
-void
-CMakeProjectMenu::OnTest(wxCommandEvent& event)
-{
-    CallMake(m_plugin, "test");
-}
-
-/* ************************************************************************ */
-
-void
-CMakeProjectMenu::OnTestVerbose(wxCommandEvent& event)
-{
-    CallMake(m_plugin, "test ARGS=\"-V\"");
 }
 
 /* ************************************************************************ */

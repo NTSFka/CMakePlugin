@@ -23,7 +23,7 @@
 /* ************************************************************************ */
 
 // Declaration
-#include "CMakeOutput.hpp"
+#include "CMakeOutput.h"
 
 // wxWidgets
 #include <wx/textctrl.h>
@@ -40,7 +40,7 @@
 #include "notebook_ex.h"
 
 // CMakePlugin
-#include "CMakePlugin.hpp"
+#include "CMakePlugin.h"
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */

@@ -30,9 +30,48 @@
 #include "imanager.h"
 
 // CMakePlugin
-#include "CMake.hpp"
-#include "CMakeSettingsManager.hpp"
-#include "CMakePlugin.hpp"
+#include "CMake.h"
+#include "CMakeSettingsManager.h"
+#include "CMakePlugin.h"
+
+/* ************************************************************************ */
+/* FUNCTIONS                                                                */
+/* ************************************************************************ */
+
+/**
+ * @brief Find workspace config name for project - config pair.
+ *
+ * @param configs
+ * @param project
+ * @param config
+ *
+ * @return
+ */
+static
+wxString FindWorkspaceConfig(const std::list<WorkspaceConfigurationPtr>& configs,
+    const wxString& project, const wxString& config)
+{
+    // Name of workspace config
+    wxString workspaceConfig;
+
+    // Foreach all workspace configurations
+    for (std::list<WorkspaceConfigurationPtr>::const_iterator it = configs.begin(), ite = configs.end();
+        it != ite; ++it) {
+        const WorkspaceConfiguration::ConfigMappingList& mapping = (*it)->GetMapping();
+
+        // Let's talk about how easy and readable C++98/03 is.
+        for (WorkspaceConfiguration::ConfigMappingList::const_iterator it2 = mapping.begin(), ite2 = mapping.end();
+            it2 != ite2; ++it2) {
+            if (it2->m_project == project && it2->m_name == config) {
+                // Config name found
+                return (*it)->GetName();
+            }
+        }
+    }
+
+    // Not found WHAT??
+    return "";
+}
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
@@ -59,7 +98,7 @@ CMakeProjectSettingsPanel::CMakeProjectSettingsPanel(wxWindow* parent,
 /* ************************************************************************ */
 
 void
-CMakeProjectSettingsPanel::SetSettings(CMakeProjectSettings* settings, const wxString& config)
+CMakeProjectSettingsPanel::SetSettings(CMakeProjectSettings* settings, const wxString& project, const wxString& config)
 {
     // Remove old projects
     m_choiceParent->Clear();
@@ -68,16 +107,36 @@ CMakeProjectSettingsPanel::SetSettings(CMakeProjectSettings* settings, const wxS
     wxArrayString projects;
     m_plugin->GetManager()->GetWorkspace()->GetProjectList(projects);
 
+    // Get build matrix
+    // Required for translation between current config and other projects' configs.
+    BuildMatrixPtr matrix = m_plugin->GetManager()->GetWorkspace()->GetBuildMatrix();
+
+    // We have to find name of workspace configuration by project name and selected config
+    // Name of workspace config
+    const wxString workspaceConfig = FindWorkspaceConfig(
+        matrix->GetConfigurations(), project, config
+    );
+
     // Foreach projects
     for (wxArrayString::const_iterator it = projects.begin(),
         ite = projects.end(); it != ite; ++it)
     {
+        // Translate project config
+        const wxString projectConfig = matrix->GetProjectSelectedConf(workspaceConfig, *it);
+
         const CMakeSettingsManager* mgr = m_plugin->GetSettingsManager();
         wxASSERT(mgr);
-        const CMakeProjectSettings* projectSettings = mgr->GetProjectSettings(*it, config);
+        const CMakeProjectSettings* projectSettings = mgr->GetProjectSettings(*it, projectConfig);
+
+        const bool append =
+            projectSettings &&
+            projectSettings->enabled &&
+            projectSettings != settings &&
+            projectSettings->parentProject.IsEmpty()
+        ;
 
         // Add project if CMake is enabled for it
-        if (projectSettings && projectSettings->enabled && projectSettings != settings)
+        if (append)
             m_choiceParent->Append(*it);
     }
 
@@ -99,6 +158,7 @@ CMakeProjectSettingsPanel::LoadSettings()
         SetGenerator(m_settings->generator);
         SetBuildType(m_settings->buildType);
         SetArguments(m_settings->arguments);
+        SetParentProject(m_settings->parentProject);
     }
 }
 
@@ -116,6 +176,7 @@ CMakeProjectSettingsPanel::StoreSettings()
     m_settings->generator = GetGenerator();
     m_settings->buildType = GetBuildType();
     m_settings->arguments = GetArguments();
+    m_settings->parentProject = GetParentProject();
 }
 
 /* ************************************************************************ */
@@ -128,6 +189,7 @@ CMakeProjectSettingsPanel::ClearSettings()
     SetBuildDirectory("");
     SetGenerator("");
     SetArguments(wxArrayString());
+    SetParentProject("");
 }
 
 /* ************************************************************************ */

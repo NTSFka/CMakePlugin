@@ -23,7 +23,7 @@
 /* ************************************************************************ */
 
 // Declaration
-#include "CMakePlugin.hpp"
+#include "CMakePlugin.h"
 
 // wxWidgets
 #include <wx/app.h>
@@ -53,18 +53,18 @@
 #include "macromanager.h"
 
 // CMakePlugin
-#include "CMake.hpp"
-#include "CMakeGenerator.hpp"
-#include "CMakeWorkspaceMenu.hpp"
-#include "CMakeProjectMenu.hpp"
-#include "CMakeBuilder.hpp"
+#include "CMake.h"
+#include "CMakeGenerator.h"
+#include "CMakeWorkspaceMenu.h"
+#include "CMakeProjectMenu.h"
+#include "CMakeBuilder.h"
 #include "CMakeHelpDialog.h"
 #include "CMakeSettingsDialog.h"
-#include "CMakeSettingsManager.hpp"
-#include "CMakeProjectSettings.hpp"
+#include "CMakeSettingsManager.h"
+#include "CMakeProjectSettings.h"
 #include "CMakeProjectSettingsPanel.h"
-#include "CMakeOutput.hpp"
-#include "CMakeGenerator.hpp"
+#include "CMakeOutput.h"
+#include "CMakeGenerator.h"
 
 /* ************************************************************************ */
 /* VARIABLES                                                                */
@@ -89,8 +89,7 @@ const wxString CMakePlugin::CMAKELISTS_FILE = "CMakeLists.txt";
  */
 extern "C" EXPORT IPlugin* CreatePlugin(IManager* manager)
 {
-    if (g_plugin == NULL)
-    {
+    if (!g_plugin) {
         g_plugin = new CMakePlugin(manager);
     }
 
@@ -160,11 +159,11 @@ CMakePlugin::CMakePlugin(IManager* manager)
 
     // Bind events
     EventNotifier::Get()->Bind(wxEVT_CMD_PROJ_SETTINGS_SAVED, wxCommandEventHandler(CMakePlugin::OnSaveConfig), this);
-    //EventNotifier::Get()->Bind(wxEVT_BUILD_STARTING, wxCommandEventHandler(CMakePlugin::OnBuildStarting), this);
-    //EventNotifier::Get()->Bind(wxEVT_GET_PROJECT_BUILD_CMD, wxCommandEventHandler(CMakePlugin::OnGetBuildCommand), this);
-    //EventNotifier::Get()->Bind(wxEVT_GET_PROJECT_CLEAN_CMD, wxCommandEventHandler(CMakePlugin::OnGetCleanCommand), this);
-    //EventNotifier::Get()->Bind(wxEVT_GET_IS_PLUGIN_MAKEFILE, wxCommandEventHandler(CMakePlugin::OnGetIsPluginMakefile), this);
-    //EventNotifier::Get()->Bind(wxEVT_PLUGIN_EXPORT_MAKEFILE, wxCommandEventHandler(CMakePlugin::OnExportMakefile), this);
+    EventNotifier::Get()->Bind(wxEVT_BUILD_STARTING, clBuildEventHandler(CMakePlugin::OnBuildStarting), this);
+    EventNotifier::Get()->Bind(wxEVT_GET_PROJECT_BUILD_CMD, clBuildEventHandler(CMakePlugin::OnGetBuildCommand), this);
+    EventNotifier::Get()->Bind(wxEVT_GET_PROJECT_CLEAN_CMD, clBuildEventHandler(CMakePlugin::OnGetCleanCommand), this);
+    EventNotifier::Get()->Bind(wxEVT_GET_IS_PLUGIN_MAKEFILE, clBuildEventHandler(CMakePlugin::OnGetIsPluginMakefile), this);
+    EventNotifier::Get()->Bind(wxEVT_PLUGIN_EXPORT_MAKEFILE, clBuildEventHandler(CMakePlugin::OnExportMakefile), this);
     EventNotifier::Get()->Bind(wxEVT_WORKSPACE_LOADED, wxCommandEventHandler(CMakePlugin::OnWorkspaceLoaded), this);
 }
 
@@ -180,7 +179,10 @@ CMakePlugin::~CMakePlugin()
 wxString
 CMakePlugin::GetWorkspaceDirectory() const
 {
-    return m_mgr->GetWorkspace()->GetWorkspaceFileName().GetPath(wxPATH_GET_SEPARATOR | wxPATH_GET_VOLUME);
+    const Workspace* workspace = m_mgr->GetWorkspace();
+    wxASSERT(workspace);
+
+    return workspace->GetWorkspaceFileName().GetPath(wxPATH_GET_SEPARATOR | wxPATH_GET_VOLUME);
 }
 
 /* ************************************************************************ */
@@ -188,8 +190,12 @@ CMakePlugin::GetWorkspaceDirectory() const
 wxString
 CMakePlugin::GetProjectDirectory(const wxString& projectName) const
 {
+    const Workspace* workspace = m_mgr->GetWorkspace();
+    wxASSERT(workspace);
+
     wxString errMsg;
-    ProjectPtr proj = m_mgr->GetWorkspace()->FindProjectByName(projectName, errMsg);
+    const ProjectPtr proj = workspace->FindProjectByName(projectName, errMsg);
+    wxASSERT(proj);
 
     return proj->GetFileName().GetPath(wxPATH_GET_SEPARATOR | wxPATH_GET_VOLUME);
 }
@@ -212,8 +218,13 @@ CMakePlugin::GetSelectedProjectConfig() const
 BuildConfigPtr
 CMakePlugin::GetSelectedBuildConfig() const
 {
-    ProjectPtr projectPtr = GetSelectedProject();
-    return m_mgr->GetWorkspace()->GetProjBuildConf(projectPtr->GetName(), wxEmptyString);
+    const Workspace* workspace = m_mgr->GetWorkspace();
+    wxASSERT(workspace);
+
+    const ProjectPtr projectPtr = GetSelectedProject();
+    wxASSERT(projectPtr);
+
+    return workspace->GetProjBuildConf(projectPtr->GetName(), wxEmptyString);
 }
 
 /* ************************************************************************ */
@@ -221,12 +232,13 @@ CMakePlugin::GetSelectedBuildConfig() const
 const CMakeProjectSettings*
 CMakePlugin::GetSelectedProjectSettings() const
 {
-    ProjectPtr projectPtr = GetSelectedProject();
+    const ProjectPtr projectPtr = GetSelectedProject();
     wxASSERT(projectPtr);
 
-    wxString project = projectPtr->GetName();
-    wxString config = GetSelectedProjectConfig();
+    const wxString project = projectPtr->GetName();
+    const wxString config = GetSelectedProjectConfig();
 
+    wxASSERT(m_settingsManager);
     return m_settingsManager->GetProjectSettings(project, config);
 }
 
@@ -271,18 +283,13 @@ void
 CMakePlugin::HookPopupMenu(wxMenu* menu, MenuType type)
 {
     // Add menu to project menu
-    if (type == MenuTypeFileView_Project)
-    {
-        if (!menu->FindItem(XRCID("cmake_project_menu")))
-        {
+    if (type == MenuTypeFileView_Project) {
+        if (!menu->FindItem(XRCID("cmake_project_menu"))) {
             menu->PrependSeparator();
             menu->Prepend(XRCID("cmake_project_menu"), _("CMake"), new CMakeProjectMenu(this));
         }
-    }
-    else if (type == MenuTypeFileView_Workspace)
-    {
-        if (!menu->FindItem(XRCID("cmake_workspace_menu")))
-        {
+    } else if (type == MenuTypeFileView_Workspace) {
+        if (!menu->FindItem(XRCID("cmake_workspace_menu"))) {
             menu->PrependSeparator();
             menu->Prepend(XRCID("cmake_workspace_menu"), _("CMake"), new CMakeWorkspaceMenu(this));
         }
@@ -303,8 +310,7 @@ CMakePlugin::HookProjectSettingsTab(wxBookCtrlBase* notebook,
      * configurations.
      */
 
-    if (!m_panel)
-    {
+    if (!m_panel) {
         wxASSERT(m_mgr);
         wxASSERT(m_mgr->GetWorkspace());
 
@@ -325,6 +331,7 @@ CMakePlugin::HookProjectSettingsTab(wxBookCtrlBase* notebook,
     // Find settings or create new one
     m_panel->SetSettings(
         m_settingsManager->GetProjectSettings(projectName, configName, true),
+        projectName,
         configName
     );
 }
@@ -345,8 +352,7 @@ CMakePlugin::UnHookProjectSettingsTab(wxBookCtrlBase* notebook,
     // Try to find panel
     int pos = notebook->FindPage(m_panel);
 
-    if (pos != wxNOT_FOUND)
-    {
+    if (pos != wxNOT_FOUND) {
         // Remove and destroy
         notebook->RemovePage(pos);
         m_panel->Destroy();
@@ -370,11 +376,11 @@ CMakePlugin::UnPlug()
     wxTheApp->Unbind(wxEVT_COMMAND_MENU_SELECTED, &CMakePlugin::OnHelp, this, XRCID("cmake_help"));
 
     EventNotifier::Get()->Unbind(wxEVT_CMD_PROJ_SETTINGS_SAVED, wxCommandEventHandler(CMakePlugin::OnSaveConfig), this);
-    //EventNotifier::Get()->Unbind(wxEVT_BUILD_STARTING, wxCommandEventHandler(CMakePlugin::OnBuildStarting), this);
-    //EventNotifier::Get()->Unbind(wxEVT_GET_PROJECT_BUILD_CMD, wxCommandEventHandler(CMakePlugin::OnGetBuildCommand), this);
-    //EventNotifier::Get()->Unbind(wxEVT_GET_PROJECT_CLEAN_CMD, wxCommandEventHandler(CMakePlugin::OnGetCleanCommand), this);
-    //EventNotifier::Get()->Unbind(wxEVT_GET_IS_PLUGIN_MAKEFILE, wxCommandEventHandler(CMakePlugin::OnGetIsPluginMakefile), this);
-    //EventNotifier::Get()->Unbind(wxEVT_PLUGIN_EXPORT_MAKEFILE, wxCommandEventHandler(CMakePlugin::OnExportMakefile), this);
+    EventNotifier::Get()->Unbind(wxEVT_BUILD_STARTING, clBuildEventHandler(CMakePlugin::OnBuildStarting), this);
+    EventNotifier::Get()->Unbind(wxEVT_GET_PROJECT_BUILD_CMD, clBuildEventHandler(CMakePlugin::OnGetBuildCommand), this);
+    EventNotifier::Get()->Unbind(wxEVT_GET_PROJECT_CLEAN_CMD, clBuildEventHandler(CMakePlugin::OnGetCleanCommand), this);
+    EventNotifier::Get()->Unbind(wxEVT_GET_IS_PLUGIN_MAKEFILE, clBuildEventHandler(CMakePlugin::OnGetIsPluginMakefile), this);
+    EventNotifier::Get()->Unbind(wxEVT_PLUGIN_EXPORT_MAKEFILE, clBuildEventHandler(CMakePlugin::OnExportMakefile), this);
     EventNotifier::Get()->Unbind(wxEVT_WORKSPACE_LOADED, wxCommandEventHandler(CMakePlugin::OnWorkspaceLoaded), this);
 }
 
@@ -406,8 +412,7 @@ CMakePlugin::OnSettings(wxCommandEvent& event)
     dlg.SetCMakePath(m_configuration->GetProgramPath());
 
     // Store change
-    if (dlg.ShowModal() == wxID_OK)
-    {
+    if (dlg.ShowModal() == wxID_OK) {
         m_configuration->SetProgramPath(dlg.GetCMakePath());
     }
 }
@@ -419,8 +424,7 @@ CMakePlugin::OnHelp(wxCommandEvent& event)
 {
     wxASSERT(m_cmake);
 
-    if (!m_cmake->IsOk())
-    {
+    if (!m_cmake->IsOk()) {
         wxMessageBox(_("CMake program not found! Please check if cmake path is set properly."),
                      wxMessageBoxCaptionStr, wxOK | wxCENTER | wxICON_ERROR);
         return;
@@ -462,120 +466,53 @@ CMakePlugin::OnSaveConfig(wxCommandEvent& event)
 /* ************************************************************************ */
 
 void
-CMakePlugin::OnBuildStarting(wxCommandEvent& event)
+CMakePlugin::OnBuildStarting(clBuildEvent& event)
 {
     // call Skip() to allow the standard compilation to take place
     event.Skip();
 
+    wxString project = event.GetProjectName();
+    const wxString config  = event.GetConfigurationName();
+
     // Get settings
-    const CMakeProjectSettings* settings = GetSettings(event);
+    const CMakeProjectSettings* settings = GetSettingsManager()->GetProjectSettings(project, config);
 
     // Doesn't exists or not enabled
     if (!settings || !settings->enabled)
         return;
 
-    // TODO check if buildDir exists
+    // Perform configuration
 }
 
 /* ************************************************************************ */
 
 void
-CMakePlugin::OnGetCleanCommand(wxCommandEvent& event)
+CMakePlugin::OnGetCleanCommand(clBuildEvent& event)
 {
-    // Get settings
-    const CMakeProjectSettings* settings = GetSettings(event);
-
-    // Doesn't exists or not enabled
-    if (!settings || !settings->enabled)
-    {
-        // Cannot provide clean command
-        event.Skip();
-        return;
-    }
-
-    // Set clean command
-    // cd $(BuildDir) && $(MAKE) -j8 clean
-
-    const wxString* cd = reinterpret_cast<wxString*>(event.GetClientData());
-    wxASSERT(cd);
-    const wxString project = *cd;
-    const wxString config  = event.GetString();
-
-    // Macro expander
-    MacroManager* macro = MacroManager::Instance();
-    wxASSERT(macro);
-
-    wxASSERT(m_mgr);
-    Workspace* workspace = m_mgr->GetWorkspace();
-    wxASSERT(workspace);
-    BuildConfigPtr bldConf = workspace->GetProjBuildConf(project, config);
-    wxASSERT(bldConf);
-    CompilerPtr compiler = bldConf->GetCompiler();
-    wxASSERT(compiler);
-
-    // Arguments
-    const wxString buildDir = macro->Expand(settings->buildDirectory, m_mgr, project, config);
-    const wxString make = compiler->GetTool("MAKE");
-
-    // Clean project command
-    event.SetString(CMakeBuilder::CreateBuildCmd(make, buildDir, "clean"));
+    ProcessBuildEvent(event, "clean");
 }
 
 /* ************************************************************************ */
 
 void
-CMakePlugin::OnGetBuildCommand(wxCommandEvent& event)
+CMakePlugin::OnGetBuildCommand(clBuildEvent& event)
 {
-    // Get settings
-    const CMakeProjectSettings* settings = GetSettings(event);
-
-    // Doesn't exists or not enabled
-    if (!settings || !settings->enabled)
-    {
-        // Cannot provide build command
-        event.Skip();
-        return;
-    }
-
-    // TODO set build command
-    // cd $(BuildDir) && $(MAKE) clean
-
-    const wxString* cd = reinterpret_cast<wxString*>(event.GetClientData());
-    wxASSERT(cd);
-    const wxString project = *cd;
-    const wxString config  = event.GetString();
-
-    // Macro expander
-    MacroManager* macro = MacroManager::Instance();
-    wxASSERT(macro);
-
-    wxASSERT(m_mgr);
-    Workspace* workspace = m_mgr->GetWorkspace();
-    wxASSERT(workspace);
-    BuildConfigPtr bldConf = workspace->GetProjBuildConf(project, config);
-    wxASSERT(bldConf);
-    CompilerPtr compiler = bldConf->GetCompiler();
-    wxASSERT(compiler);
-
-    // Arguments
-    const wxString buildDir = macro->Expand(settings->buildDirectory, m_mgr, project, config);
-    const wxString make = compiler->GetTool("MAKE");
-
-    // Clean project command
-    event.SetString(CMakeBuilder::CreateBuildCmd(make, buildDir));
+    ProcessBuildEvent(event);
 }
 
 /* ************************************************************************ */
 
 void
-CMakePlugin::OnGetIsPluginMakefile(wxCommandEvent& event)
+CMakePlugin::OnGetIsPluginMakefile(clBuildEvent& event)
 {
+    wxString project = event.GetProjectName();
+    const wxString config  = event.GetConfigurationName();
+
     // Get settings
-    const CMakeProjectSettings* settings = GetSettings(event);
+    const CMakeProjectSettings* settings = GetSettingsManager()->GetProjectSettings(project, config);
 
     // Doesn't exists or not enabled
-    if (!settings || !settings->enabled)
-    {
+    if (!settings || !settings->enabled) {
         // Cannot provide custom makefile
         event.Skip();
         return;
@@ -587,54 +524,63 @@ CMakePlugin::OnGetIsPluginMakefile(wxCommandEvent& event)
 /* ************************************************************************ */
 
 void
-CMakePlugin::OnExportMakefile(wxCommandEvent& event)
+CMakePlugin::OnExportMakefile(clBuildEvent& event)
 {
+    wxString project = event.GetProjectName();
+    const wxString config  = event.GetConfigurationName();
+
     // Get settings
-    const CMakeProjectSettings* settings = GetSettings(event);
+    const CMakeProjectSettings* settings = GetSettingsManager()->GetProjectSettings(project, config);
 
     // Doesn't exists or not enabled
-    if (!settings || !settings->enabled)
-    {
+    if (!settings || !settings->enabled) {
         // Unable to export makefile
         event.Skip();
         return;
     }
 
-    const wxString* cd = reinterpret_cast<wxString*>(event.GetClientData());
-    wxASSERT(cd);
-    const wxString project = *cd;
-    const wxString config  = event.GetString();
+    // Parent project is set
+    if (!settings->parentProject.IsEmpty()) {
+        // Configure parent project instead
+        project = settings->parentProject;
+        settings = GetSettingsManager()->GetProjectSettings(project, config);
+    }
 
     // Macro expander
+    // FIXME use IMacroManager (unable to find it yet)
     MacroManager* macro = MacroManager::Instance();
     wxASSERT(macro);
 
-    // Generate makefiles
-    // cd $(BuildDir) && $(CMAKE) $(Arguments) $(SourceDir)
-
     // Get CMAKE
     const wxString cmake = GetConfiguration()->GetProgramPath();
-    const wxString sourceDir = macro->Expand(settings->sourceDirectory, m_mgr, project, config);
-    const wxString buildDir = macro->Expand(settings->buildDirectory, m_mgr, project, config);
+    const wxString sourceDir = settings->sourceDirectory;
+    const wxString buildDir = settings->buildDirectory;
     wxArrayString args;
 
-    // Generator
-    if (!settings->generator.IsEmpty())
-        args.Add("-G " + settings->generator);
+    // Create command and Expand macros
+    const wxString cmd = macro->Expand(
+        CMakeBuilder::CreateConfigureCmd(cmake, *settings),
+        GetManager(), project, config
+    );
 
-    // Build Type
-    if (!settings->buildType.IsEmpty())
-        args.Add("-DCMAKE_BUILD_TYPE=" + settings->buildType);
+    wxASSERT(GetBuilder());
 
-    // Copy additional arguments
-    for (wxArrayString::const_iterator it = settings->arguments.begin(),
-        ite = settings->arguments.end(); it != ite; ++it)
+    // Create build directory if missing
+    if (!wxDir::Exists(buildDir))
+        wxDir::Make(buildDir);
+
     {
-        args.Add(macro->Expand(*it, m_mgr, project, config));
-    }
+        DirSaver dir;
 
-    // Configure project
-    event.SetString(CMakeBuilder::CreateConfigureCmd(cmake, sourceDir, buildDir, args));
+        // TODO use wxFileName
+        wxSetWorkingDirectory(wxGetCwd() + "/" + buildDir);
+
+        // Configure
+        // FIXME where goes the output?
+        // TODO how we get information about configuration failure?
+        wxArrayString output;
+        ProcUtils::SafeExecuteCommand(cmd, output);
+    }
 }
 
 /* ************************************************************************ */
@@ -651,21 +597,51 @@ CMakePlugin::OnWorkspaceLoaded(wxCommandEvent& event)
 
 /* ************************************************************************ */
 
-const CMakeProjectSettings*
-CMakePlugin::GetSettings(wxCommandEvent& event)
+void
+CMakePlugin::ProcessBuildEvent(clBuildEvent& event, const wxString& param)
 {
-    // Get project name
-    const wxString* proj = reinterpret_cast<wxString*>(event.GetClientData());
-    wxASSERT(proj);
+    wxString project = event.GetProjectName();
+    const wxString config  = event.GetConfigurationName();
 
-    const wxString project = *proj;
-    const wxString config = event.GetString();
+    // Get settings
+    const CMakeProjectSettings* settings = GetSettingsManager()->GetProjectSettings(project, config);
 
-    const CMakeSettingsManager* mgr = m_settingsManager.get();
-    wxASSERT(mgr);
+    // Doesn't exists or not enabled
+    if (!settings || !settings->enabled) {
+        // Unable to export makefile
+        event.Skip();
+        return;
+    }
 
-    // Get project settings
-    return mgr->GetProjectSettings(project, config);
+    // Parent project is set
+    if (!settings->parentProject.IsEmpty()) {
+        if (!event.IsProjectOnly()) {
+            // Empty command
+            event.SetCommand("@echo \"Handled by parent project: " + settings->parentProject + "\"");
+            return;
+        }
+
+        settings = GetSettingsManager()->GetProjectSettings(settings->parentProject, config);
+    }
+
+    wxString target = param;
+
+    // Build only project
+    if (event.IsProjectOnly())
+        target += " " + project;
+
+    // Macro expander
+    MacroManager* macro = MacroManager::Instance();
+    wxASSERT(macro);
+
+    // Create build command
+    const wxString cmd = macro->Expand(
+        CMakeBuilder::CreateBuildCmd("$(MAKE)", settings->buildDirectory, target),
+        GetManager(), project, config
+    );
+
+    // Clean project command
+    event.SetCommand(cmd);
 }
 
 /* ************************************************************************ */
