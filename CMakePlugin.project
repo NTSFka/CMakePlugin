@@ -45,6 +45,13 @@
     <File Name="CMakeDirSelectCtrl.hpp"/>
     <File Name="CMakeOutput.hpp"/>
     <File Name="CMakeOutput.cpp"/>
+    <File Name="CMakePluginUi.cpp"/>
+    <File Name="CMakePluginUi.h"/>
+    <File Name="CMakeHelpPanel.h"/>
+    <File Name="CMakeHelpPanel.cpp"/>
+    <File Name="CMakeHelpDialog.h"/>
+    <File Name="../../CMakePlugin/CMakeSettingsDialog.h"/>
+    <File Name="CMakeProjectSettingsPanel.h"/>
   </VirtualDirectory>
   <Dependencies Name="DebugUnicode"/>
   <Dependencies Name="ReleaseUnicode"/>
@@ -220,4 +227,9 @@
       </Completion>
     </Configuration>
   </Settings>
+  <VirtualDirectory Name="wxCrafter">
+    <File Name="CMakePlugin_cmakeplugin_bitmaps.cpp"/>
+    <File Name="CMakePlugin_cmakeplugin_bitmaps.xrc"/>
+    <File Name="CMakePlugin.wxcp"/>
+  </VirtualDirectory>
 </CodeLite_Project>

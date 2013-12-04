@@ -30,6 +30,9 @@
 #include <wx/filename.h>
 #include <wx/arrstr.h>
 
+// Codelite
+#include "macros.h"
+
 /* ************************************************************************ */
 /* CLASSES                                                                  */
 /* ************************************************************************ */
@@ -78,8 +81,7 @@ public:
      *
      * @return
      */
-    inline const wxFileName& GetPath() const
-    {
+    inline const wxFileName& GetPath() const {
         return m_path;
     }
 
@@ -97,8 +99,7 @@ public:
      *
      * @return
      */
-    inline bool IsDirty() const
-    {
+    inline bool IsDirty() const {
         return m_dirty;
     }
 
@@ -108,8 +109,7 @@ public:
      *
      * @return
      */
-    inline const wxString& GetVersion() const
-    {
+    inline const wxString& GetVersion() const {
         return m_version;
     }
 
@@ -119,8 +119,7 @@ public:
      *
      * @return
      */
-    inline const wxArrayString& GetCommands() const
-    {
+    inline const wxStringMap_t& GetCommands() const {
         return m_commands;
     }
 
@@ -130,8 +129,7 @@ public:
      *
      * @return
      */
-    inline const wxArrayString& GetModules() const
-    {
+    inline const wxStringMap_t& GetModules() const {
         return m_modules;
     }
 
@@ -141,8 +139,7 @@ public:
      *
      * @return
      */
-    inline const wxArrayString& GetProperties() const
-    {
+    inline const wxStringMap_t& GetProperties() const {
         return m_properties;
     }
 
@@ -152,8 +149,7 @@ public:
      *
      * @return
      */
-    inline const wxArrayString& GetVariables() const
-    {
+    inline const wxStringMap_t& GetVariables() const {
         return m_variables;
     }
 
@@ -163,8 +159,7 @@ public:
      *
      * @return
      */
-    inline const wxString& GetCopyright() const
-    {
+    inline const wxString& GetCopyright() const {
         return m_copyright;
     }
 
@@ -174,50 +169,9 @@ public:
      *
      * @return
      */
-    inline const wxArrayString& GetGenerators() const
-    {
+    inline const wxArrayString& GetGenerators() const {
         return m_generators;
     }
-
-
-    /**
-     * @brief Returns help text for module with name.
-     *
-     * @param name Module name
-     *
-     * @return
-     */
-    wxString GetModuleHelp(const wxString& name) const;
-
-
-    /**
-     * @brief Returns help text for command with name.
-     *
-     * @param name Module name
-     *
-     * @return
-     */
-    wxString GetCommandHelp(const wxString& name) const;
-
-
-    /**
-     * @brief Returns help text for property with name.
-     *
-     * @param name Module name
-     *
-     * @return
-     */
-    wxString GetPropertyHelp(const wxString& name) const;
-
-
-    /**
-     * @brief Returns help text for variable with name.
-     *
-     * @param name Module name
-     *
-     * @return
-     */
-    wxString GetVariableHelp(const wxString& name) const;
 
 
 // Public Mutators
@@ -229,8 +183,7 @@ public:
      *
      * @param path
      */
-    void SetPath(const wxFileName& path)
-    {
+    void SetPath(const wxFileName& path) {
         m_path = path;
         m_dirty = true;
     }
@@ -271,16 +224,16 @@ private:
     wxString m_version;
 
     /// List of commands.
-    wxArrayString m_commands;
+    wxStringMap_t m_commands;
 
     /// List of modules.
-    wxArrayString m_modules;
+    wxStringMap_t m_modules;
 
     /// List of properties.
-    wxArrayString m_properties;
+    wxStringMap_t m_properties;
 
     /// List of variables.
-    wxArrayString m_variables;
+    wxStringMap_t m_variables;
 
     /// CMake copyright.
     wxString m_copyright;

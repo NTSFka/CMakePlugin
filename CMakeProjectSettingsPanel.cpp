@@ -23,15 +23,15 @@
 /* ************************************************************************ */
 
 // Declaration
-#include "CMakeProjectSettingsPanel.hpp"
+#include "CMakeProjectSettingsPanel.h"
 
-// wxWidgets
-#include <wx/sizer.h>
-#include <wx/dirdlg.h>
-#include <wx/filename.h>
+// Codelite
+#include "workspace.h"
+#include "imanager.h"
 
 // CMakePlugin
 #include "CMake.hpp"
+#include "CMakeSettingsManager.hpp"
 #include "CMakePlugin.hpp"
 
 /* ************************************************************************ */
@@ -39,97 +39,18 @@
 /* ************************************************************************ */
 
 CMakeProjectSettingsPanel::CMakeProjectSettingsPanel(wxWindow* parent,
-                                                     ProjectPtr project,
                                                      CMakePlugin* plugin)
-    : wxPanel(parent, wxID_ANY)
-    , m_project(project)
+    : CMakeProjectSettingsPanelBase(parent, wxID_ANY)
     , m_plugin(plugin)
 {
-    SetSizer(new wxBoxSizer(wxVERTICAL));
+    if (m_plugin->GetCMake()->IsDirty())
+        m_plugin->GetCMake()->LoadData();
 
-    // Flags for one row
-    wxSizerFlags checkFlags = wxSizerFlags().Expand().Border(wxTOP | wxLEFT | wxRIGHT);
+    // Set available generators
+    m_comboBoxGenerator->Insert("", 0);
+    m_comboBoxGenerator->Append(m_plugin->GetCMake()->GetGenerators());
 
-    // Enable checkbox
-    m_checkBoxEnable = new wxCheckBox(this, wxID_ANY, _("Enable CMake for this project"));
-    m_checkBoxEnable->SetValue(false);
-    GetSizer()->Add(m_checkBoxEnable, checkFlags);
-
-    // Settings
-    {
-        wxFlexGridSizer* flexSizer = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder(), 0);
-        flexSizer->SetFlexibleDirection(wxBOTH);
-        flexSizer->SetNonFlexibleGrowMode(wxFLEX_GROWMODE_SPECIFIED);
-        flexSizer->AddGrowableCol(1);
-        GetSizer()->Add(flexSizer, wxSizerFlags().Expand().Border());
-
-        {
-            // Flags for staticText
-            wxSizerFlags textFlags = wxSizerFlags().Right().Align(wxALIGN_CENTER_VERTICAL).Right().Border(wxRIGHT);
-
-            // Working directory
-            m_staticTextSourceDirectory = new wxStaticText(this, wxID_ANY, _("Sources directory:"));
-            m_staticTextSourceDirectory->SetHelpText("Directory must contains CMakeLists.txt");
-            flexSizer->Add(m_staticTextSourceDirectory, textFlags);
-
-            m_dirSelectCtrlSourceDirectory = new CMakeDirSelectCtrl(this);
-            flexSizer->Add(m_dirSelectCtrlSourceDirectory, wxSizerFlags().Expand());
-
-            // Build directory
-            m_staticTextBuildDirectory = new wxStaticText(this, wxID_ANY, _("Build directory:"));
-            flexSizer->Add(m_staticTextBuildDirectory, textFlags);
-
-            m_dirSelectCtrlBuildDirectory = new CMakeDirSelectCtrl(this);
-            flexSizer->Add(m_dirSelectCtrlBuildDirectory, wxSizerFlags().Expand());
-
-            // Generator
-            m_staticTextGenerator = new wxStaticText(this, wxID_ANY, _("Generator:"));
-            flexSizer->Add(m_staticTextGenerator, textFlags);
-
-            m_choiceGenerator = new wxComboBox(this, wxID_ANY);
-            m_choiceGenerator->SetHelpText("Only Unix Makefile is supported for building now");
-            m_choiceGenerator->Append("");  // No generator
-            m_choiceGenerator->Append(m_plugin->GetCMake()->GetGenerators());
-            flexSizer->Add(m_choiceGenerator, wxSizerFlags().Expand());
-
-            // Build type
-            m_staticTextBuildType = new wxStaticText(this, wxID_ANY, _("Build Type:"));
-            flexSizer->Add(m_staticTextBuildType, textFlags);
-
-            m_choiceBuildType = new wxComboBox(this, wxID_ANY);
-            m_choiceBuildType->Append("");  // Do not use it
-            m_choiceBuildType->Append("None");
-            m_choiceBuildType->Append("Debug");
-            m_choiceBuildType->Append("Release");
-            m_choiceBuildType->Append("RelWithDebInfo");
-            m_choiceBuildType->Append("MinSizeRel");
-            flexSizer->Add(m_choiceBuildType, wxSizerFlags().Expand());
-
-        }
-
-        m_staticTextArguments = new wxStaticText(this, wxID_ANY, _("CMake arguments (used for configuration)"));
-        GetSizer()->Add(m_staticTextArguments, wxSizerFlags().Expand().Border());
-
-        m_textCtrlArguments = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
-        GetSizer()->Add(m_textCtrlArguments, wxSizerFlags(1).Expand().Border());
-    }
-
-    // Minimum size by calculated size
-    SetSizeHints(GetSize());
-
-    GetSizer()->Fit(this);
-
-    // Bind events
-    m_staticTextSourceDirectory->Bind(wxEVT_UPDATE_UI, &CMakeProjectSettingsPanel::OnCheck, this);
-    m_dirSelectCtrlSourceDirectory->Bind(wxEVT_UPDATE_UI, &CMakeProjectSettingsPanel::OnCheck, this);
-    m_staticTextBuildDirectory->Bind(wxEVT_UPDATE_UI, &CMakeProjectSettingsPanel::OnCheck, this);
-    m_dirSelectCtrlBuildDirectory->Bind(wxEVT_UPDATE_UI, &CMakeProjectSettingsPanel::OnCheck, this);
-    m_staticTextGenerator->Bind(wxEVT_UPDATE_UI, &CMakeProjectSettingsPanel::OnCheck, this);
-    m_choiceGenerator->Bind(wxEVT_UPDATE_UI, &CMakeProjectSettingsPanel::OnCheck, this);
-    m_staticTextBuildType->Bind(wxEVT_UPDATE_UI, &CMakeProjectSettingsPanel::OnCheck, this);
-    m_choiceBuildType->Bind(wxEVT_UPDATE_UI, &CMakeProjectSettingsPanel::OnCheck, this);
-    m_staticTextArguments->Bind(wxEVT_UPDATE_UI, &CMakeProjectSettingsPanel::OnCheck, this);
-    m_textCtrlArguments->Bind(wxEVT_UPDATE_UI, &CMakeProjectSettingsPanel::OnCheck, this);
+    m_comboBoxBuildType->Insert("", 0);
 
     // Set default setting
     ClearSettings();
@@ -138,14 +59,40 @@ CMakeProjectSettingsPanel::CMakeProjectSettingsPanel(wxWindow* parent,
 /* ************************************************************************ */
 
 void
+CMakeProjectSettingsPanel::SetSettings(CMakeProjectSettings* settings, const wxString& config)
+{
+    // Remove old projects
+    m_choiceParent->Clear();
+
+    // Get all available projects
+    wxArrayString projects;
+    m_plugin->GetManager()->GetWorkspace()->GetProjectList(projects);
+
+    // Foreach projects
+    for (wxArrayString::const_iterator it = projects.begin(),
+        ite = projects.end(); it != ite; ++it)
+    {
+        const CMakeSettingsManager* mgr = m_plugin->GetSettingsManager();
+        wxASSERT(mgr);
+        const CMakeProjectSettings* projectSettings = mgr->GetProjectSettings(*it, config);
+
+        // Add project if CMake is enabled for it
+        if (projectSettings && projectSettings->enabled && projectSettings != settings)
+            m_choiceParent->Append(*it);
+    }
+
+    m_settings = settings;
+    LoadSettings();
+}
+
+/* ************************************************************************ */
+
+void
 CMakeProjectSettingsPanel::LoadSettings()
 {
-    if (!m_settings)
-    {
+    if (!m_settings) {
         ClearSettings();
-    }
-    else
-    {
+    } else {
         SetCMakeEnabled(m_settings->enabled);
         SetSourceDirectory(m_settings->sourceDirectory);
         SetBuildDirectory(m_settings->buildDirectory);

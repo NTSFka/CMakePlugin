@@ -18,57 +18,107 @@
 /*                                                                          */
 /* ************************************************************************ */
 
+#ifndef CMAKE_SETTINGS_HPP_
+#define CMAKE_SETTINGS_HPP_
+
 /* ************************************************************************ */
 /* INCLUDES                                                                 */
 /* ************************************************************************ */
 
-// Declaration
-#include "CMakeSettingsDialog.h"
+// wxWidgets
+#include <wx/dialog.h>
+#include <wx/textctrl.h>
+#include <wx/stattext.h>
+#include <wx/button.h>
 
-// Codelite
-#include "windowattrmanager.h"
+// UI
+#include "CMakePluginUi.h"
 
-// CMakePlugin
-#include "CMake.hpp"
-#include "CMakeHelpDialog.h"
+/* ************************************************************************ */
+/* FORWARD DECLARATIONS                                                     */
+/* ************************************************************************ */
+
+class CMake;
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
 /* ************************************************************************ */
 
-CMakeSettingsDialog::CMakeSettingsDialog(wxWindow* parent, CMake* cmake)
-    : CMakeSettingsDialogBase(parent)
-    , m_cmake(cmake)
+/**
+ * @brief Dialog for global CMake settings.
+ */
+class CMakeSettingsDialog : public CMakeSettingsDialogBase
 {
-    // Load window layout
-    WindowAttrManager::Load(this, "CMakeSettingsDialog", NULL);
-}
 
-/* ************************************************************************ */
+// Public Ctors & Dtors
+public:
 
-CMakeSettingsDialog::~CMakeSettingsDialog()
-{
-    // Save window layout
-    WindowAttrManager::Save(this, "CMakeSettingsDialog", NULL);
-}
 
-/* ************************************************************************ */
+    /**
+     * @brief Create a CMake settings dialog
+     *
+     * @param parent Pointer to parent window.
+     * @param cmake  CMake pointer.
+     */
+    explicit CMakeSettingsDialog(wxWindow* parent, CMake* cmake);
 
-void
-CMakeSettingsDialog::OnShowHelp(wxCommandEvent& event)
-{
-    wxASSERT(m_cmake);
 
-    if (!m_cmake->IsOk())
+    /**
+     * @brief Destructor.
+     */
+    virtual ~CMakeSettingsDialog();
+
+
+// Public Accessors
+public:
+
+
+    /**
+     * @brief Returns path to cmake program.
+     *
+     * @return
+     */
+    wxString GetCMakePath() const
     {
-        wxMessageBox(_("CMake program not found!"), wxMessageBoxCaptionStr, wxOK | wxCENTER | wxICON_ERROR);
-        return;
+        return m_filePickerProgram->GetPath();
     }
 
-    if (m_cmake->IsDirty())
-        m_cmake->LoadData();
 
-    CMakeHelpDialog(NULL, m_cmake).ShowModal();
-}
+// Public Mutators
+public:
+
+
+    /**
+     * @brief Set path to CMake progam.
+     *
+     * @param path
+     */
+    void SetCMakePath(const wxString& path)
+    {
+        m_filePickerProgram->SetPath(path);
+    }
+
+
+// Public Events
+public:
+
+
+    /**
+     * @brief On showing CMake help.
+     *
+     * @param event
+     */
+    void OnShowHelp(wxCommandEvent& event);
+
+
+// Private Data Members
+private:
+
+    /// Pointer to CMake object.
+    CMake* const m_cmake;
+
+};
 
 /* ************************************************************************ */
+
+#endif // CMAKE_SETTINGS_HPP_

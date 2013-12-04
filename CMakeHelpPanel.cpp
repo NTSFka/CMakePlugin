@@ -23,52 +23,60 @@
 /* ************************************************************************ */
 
 // Declaration
-#include "CMakeSettingsDialog.h"
-
-// Codelite
-#include "windowattrmanager.h"
-
-// CMakePlugin
-#include "CMake.hpp"
-#include "CMakeHelpDialog.h"
+#include "CMakeHelpPanel.h"
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
 /* ************************************************************************ */
 
-CMakeSettingsDialog::CMakeSettingsDialog(wxWindow* parent, CMake* cmake)
-    : CMakeSettingsDialogBase(parent)
-    , m_cmake(cmake)
+CMakeHelpPanel::CMakeHelpPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style)
+    : CMakeHelpPanelBase(parent, id, pos, size, style)
 {
-    // Load window layout
-    WindowAttrManager::Load(this, "CMakeSettingsDialog", NULL);
+    // Nothing to do
 }
 
 /* ************************************************************************ */
 
-CMakeSettingsDialog::~CMakeSettingsDialog()
+CMakeHelpPanel::~CMakeHelpPanel()
 {
-    // Save window layout
-    WindowAttrManager::Save(this, "CMakeSettingsDialog", NULL);
+    // Nothing to do
 }
 
 /* ************************************************************************ */
 
 void
-CMakeSettingsDialog::OnShowHelp(wxCommandEvent& event)
+CMakeHelpPanel::SetData(const std::map<wxString, wxString>* data)
 {
-    wxASSERT(m_cmake);
+    m_data = data;
 
-    if (!m_cmake->IsOk())
-    {
-        wxMessageBox(_("CMake program not found!"), wxMessageBoxCaptionStr, wxOK | wxCENTER | wxICON_ERROR);
-        return;
+    // Remove old data
+    m_listBoxList->Clear();
+    m_textCtrlText->Clear();
+
+    // Foreach data and store names into list
+    for (std::map<wxString, wxString>::const_iterator it = data->begin(),
+        ite = data->end(); it != ite; ++it) {
+        m_listBoxList->Append(it->first);
     }
+}
 
-    if (m_cmake->IsDirty())
-        m_cmake->LoadData();
+/* ************************************************************************ */
 
-    CMakeHelpDialog(NULL, m_cmake).ShowModal();
+void
+CMakeHelpPanel::OnSelect(wxCommandEvent& event)
+{
+    wxASSERT(m_data);
+
+    // Get selected name
+    const wxString name = m_listBoxList->GetString(event.GetInt());
+
+    // Find name in the data
+    std::map<wxString, wxString>::const_iterator it = m_data->find(name);
+
+    // Data found
+    if (it != m_data->end()) {
+        m_textCtrlText->SetValue(it->second);
+    }
 }
 
 /* ************************************************************************ */

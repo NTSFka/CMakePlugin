@@ -18,57 +18,79 @@
 /*                                                                          */
 /* ************************************************************************ */
 
+#ifndef CMAKE_HELP_PANEL_H_
+#define CMAKE_HELP_PANEL_H_
+
 /* ************************************************************************ */
 /* INCLUDES                                                                 */
 /* ************************************************************************ */
 
-// Declaration
-#include "CMakeSettingsDialog.h"
+// C++
+#include <map>
 
-// Codelite
-#include "windowattrmanager.h"
-
-// CMakePlugin
-#include "CMake.hpp"
-#include "CMakeHelpDialog.h"
+// UI
+#include "CMakePluginUi.h"
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
 /* ************************************************************************ */
 
-CMakeSettingsDialog::CMakeSettingsDialog(wxWindow* parent, CMake* cmake)
-    : CMakeSettingsDialogBase(parent)
-    , m_cmake(cmake)
+/**
+ * @brief Panel for help dialog where on the left side is a list of values
+ * and on the right side is value description.
+ */
+class CMakeHelpPanel : public CMakeHelpPanelBase
 {
-    // Load window layout
-    WindowAttrManager::Load(this, "CMakeSettingsDialog", NULL);
-}
+
+// Public Ctors & Dtors
+public:
+
+
+    /**
+     * @brief Constructor.
+     */
+    CMakeHelpPanel(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(500,300), long style = wxTAB_TRAVERSAL);
+
+
+    /**
+     * @brief Destructor.
+     */
+    virtual ~CMakeHelpPanel();
+
+
+// Public Mutators
+public:
+
+
+    /**
+     * @brief Set panel data.
+     *
+     * @param data
+     */
+    void SetData(const std::map<wxString, wxString>* data);
+
+
+// Public Events
+public:
+
+
+    /**
+     * @brief On list item selection.
+     *
+     * @param event
+     */
+    void OnSelect(wxCommandEvent& event);
+
+
+// Private Data Members
+private:
+
+
+    /// Panel data.
+    const std::map<wxString, wxString>* m_data;
+
+};
 
 /* ************************************************************************ */
 
-CMakeSettingsDialog::~CMakeSettingsDialog()
-{
-    // Save window layout
-    WindowAttrManager::Save(this, "CMakeSettingsDialog", NULL);
-}
-
-/* ************************************************************************ */
-
-void
-CMakeSettingsDialog::OnShowHelp(wxCommandEvent& event)
-{
-    wxASSERT(m_cmake);
-
-    if (!m_cmake->IsOk())
-    {
-        wxMessageBox(_("CMake program not found!"), wxMessageBoxCaptionStr, wxOK | wxCENTER | wxICON_ERROR);
-        return;
-    }
-
-    if (m_cmake->IsDirty())
-        m_cmake->LoadData();
-
-    CMakeHelpDialog(NULL, m_cmake).ShowModal();
-}
-
-/* ************************************************************************ */
+#endif // CMAKE_HELP_PANEL_H_

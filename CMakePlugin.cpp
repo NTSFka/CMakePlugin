@@ -58,11 +58,11 @@
 #include "CMakeWorkspaceMenu.hpp"
 #include "CMakeProjectMenu.hpp"
 #include "CMakeBuilder.hpp"
-#include "CMakeHelpDialog.hpp"
-#include "CMakeSettingsDialog.hpp"
+#include "CMakeHelpDialog.h"
+#include "CMakeSettingsDialog.h"
 #include "CMakeSettingsManager.hpp"
 #include "CMakeProjectSettings.hpp"
-#include "CMakeProjectSettingsPanel.hpp"
+#include "CMakeProjectSettingsPanel.h"
 #include "CMakeOutput.hpp"
 #include "CMakeGenerator.hpp"
 
@@ -74,7 +74,7 @@ static CMakePlugin* g_plugin = NULL;
 
 /* ************************************************************************ */
 
-const wxString CMakePlugin::CMAKELISTS_FILE = wxT("CMakeLists.txt");
+const wxString CMakePlugin::CMAKELISTS_FILE = "CMakeLists.txt";
 
 /* ************************************************************************ */
 /* FUNCTIONS                                                                */
@@ -111,7 +111,7 @@ extern "C" EXPORT PluginInfo GetPluginInfo()
     info.SetAuthor(L"Jiří Fatka");
     info.SetName("CMakePlugin");
     info.SetDescription(_("CMake integration for CodeLite"));
-    info.SetVersion("0.1");
+    info.SetVersion("0.2");
 
     return info;
 }
@@ -308,12 +308,8 @@ CMakePlugin::HookProjectSettingsTab(wxBookCtrlBase* notebook,
         wxASSERT(m_mgr);
         wxASSERT(m_mgr->GetWorkspace());
 
-        wxString err;
-        ProjectPtr project = m_mgr->GetWorkspace()->FindProjectByName(projectName, err);
-        wxASSERT(project);
-
         // Create panel
-        m_panel = new CMakeProjectSettingsPanel(notebook, project, this);
+        m_panel = new CMakeProjectSettingsPanel(notebook, this);
 
         // Add panel to the notebook
         notebook->AddPage(m_panel, wxT("CMake"), true);
@@ -327,7 +323,10 @@ CMakePlugin::HookProjectSettingsTab(wxBookCtrlBase* notebook,
     m_settingsManager->LoadProject(projectName);
 
     // Find settings or create new one
-    m_panel->SetSettings(m_settingsManager->GetProjectSettings(projectName, configName, true));
+    m_panel->SetSettings(
+        m_settingsManager->GetProjectSettings(projectName, configName, true),
+        configName
+    );
 }
 
 /* ************************************************************************ */
