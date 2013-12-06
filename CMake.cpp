@@ -85,11 +85,52 @@ wxString ParseManText(wxArrayString::const_iterator& line)
 
     // Read until another section is found
     for (++line; !line->StartsWith(".SH"); ++line) {
+        // Ignore lines with macros
+
+        // From: http://www.fnal.gov/docs/products/ups/ReferenceManual/html/manpages.html
+        // .SH "<text>" : Section Heading; if no blanks in text, quotes are not needed.
+        // .SS "<text>" : Subsection Heading; if no blanks in text, quotes are not needed.
+        // .P           : Paragraph break
+        // .IP "<item>" : Starts an indented paragraph where "item" is put to the left of it; if no blanks in "item", quotes are not needed.
+        // .HP          : Starts a paragraph with a hanging indent; i.e. lines after the first are indented
+        // .RE          : Defines an indented region
+        // .B "<text>"  : Bold; if no blanks in text, quotes are not needed.
+        // .I "<text>"  : Italic; this shows up as underlined on most terminals. If no blanks in text, quotes are not needed.
+        // .TP <columns> : Term/paragraph format; columns specify how many columns to allocate to the term column. As an example, this input:
+        // .P           : New paragraph
+        // .br          : Break line
+        // .nf          : Nofill (used to suppress normal line filling; used for preformatted text)
+        // .fi          : Fill (used to resume normal line filling, usually after a .nf)
+        // ./"          : Comment line
+        if (line->StartsWith(".")) {
+            const bool isMacro =
+                line->StartsWith(".SS") ||
+                line->StartsWith(".P") ||
+                line->StartsWith(".IP") ||
+                line->StartsWith(".HP") ||
+                line->StartsWith(".RE") ||
+                line->StartsWith(".B") ||
+                line->StartsWith(".I") ||
+                line->StartsWith(".TP") ||
+                line->StartsWith(".br") ||
+                line->StartsWith(".nf") ||
+                line->StartsWith(".fi") ||
+                line->StartsWith("./\"")
+            ;
+
+            if (isMacro)
+                continue;
+        }
+
+        // Add text
         text.Append(*line);
     }
 
     // Previous line
     --line;
+
+    // Replace all dash escape sequences: \- => -
+    text.Replace("\\-", "-");
 
     return text;
 }
@@ -104,9 +145,8 @@ wxString ParseManText(wxArrayString::const_iterator& line)
  * @return A map of available data.
  */
 static
-wxStringMap_t ParseManDesc(wxArrayString::const_iterator& line)
+void ParseManDesc(wxArrayString::const_iterator& line, wxStringMap_t& data)
 {
-    wxStringMap_t data;
     wxString name;
     wxString newName;
     wxString desc;
@@ -121,6 +161,9 @@ wxStringMap_t ParseManDesc(wxArrayString::const_iterator& line)
             store = true;
 
             if (!desc.empty()) {
+                // Replace all dash escape sequences: \- => -
+                desc.Replace("\\-", "-");
+
                 // Store name and description
                 data.insert(std::make_pair(name, desc));
                 desc.clear();
@@ -129,6 +172,28 @@ wxStringMap_t ParseManDesc(wxArrayString::const_iterator& line)
             name = newName;
 
         } else if (store) {
+
+            // Skip MAN macros
+            if (line->StartsWith(".")) {
+                const bool isMacro =
+                    line->StartsWith(".SS") ||
+                    line->StartsWith(".P") ||
+                    line->StartsWith(".IP") ||
+                    line->StartsWith(".HP") ||
+                    line->StartsWith(".RE") ||
+                    line->StartsWith(".B") ||
+                    line->StartsWith(".I") ||
+                    line->StartsWith(".TP") ||
+                    line->StartsWith(".br") ||
+                    line->StartsWith(".nf") ||
+                    line->StartsWith(".fi") ||
+                    line->StartsWith("./\"")
+                ;
+
+                if (isMacro)
+                    continue;
+            }
+
             // Append line
             desc.Append(*line);
         }
@@ -136,8 +201,6 @@ wxStringMap_t ParseManDesc(wxArrayString::const_iterator& line)
 
     // Previous line
     --line;
-
-    return data;
 }
 
 /* ************************************************************************ */
@@ -261,13 +324,13 @@ CMake::ParseCMakeManPage()
         if (line->StartsWith(".SH GENERATORS")) {
             m_generators = ParseManGenerators(line);
         } else if (line->StartsWith(".SH COMMANDS")) {
-            m_commands = ParseManDesc(line);
+            ParseManDesc(line, m_commands);
         } else if (line->StartsWith(".SH PROPERTIES")) {
-            m_properties = ParseManDesc(line);
+            ParseManDesc(line, m_properties);
         } else if (line->StartsWith(".SH MODULES")) {
-            m_modules = ParseManDesc(line);
+            ParseManDesc(line, m_modules);
         } else if (line->StartsWith(".SH VARIABLES")) {
-            m_variables = ParseManDesc(line);
+            ParseManDesc(line, m_variables);
         } else if (line->StartsWith(".SH COPYRIGHT")) {
             m_copyright = ParseManText(line);
         }

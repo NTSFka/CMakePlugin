@@ -1,7 +1,7 @@
 {
 	"metadata":	{
 		"m_generatedFilesDir":	".",
-		"m_objCounter":	209,
+		"m_objCounter":	217,
 		"m_includeFiles":	[],
 		"m_bitmapFunction":	"wxCrafterR3nJ3cInitBitmapResources",
 		"m_bitmapsFile":	"CMakePlugin_cmakeplugin_bitmaps.cpp",
@@ -1377,7 +1377,7 @@
 													"border":	5,
 													"gbSpan":	"1,1",
 													"gbPosition":	"0,0",
-													"m_styles":	["wxTE_MULTILINE"],
+													"m_styles":	["wxTE_READONLY", "wxTE_MULTILINE"],
 													"m_sizerFlags":	["wxALL", "wxLEFT", "wxRIGHT", "wxTOP", "wxBOTTOM", "wxEXPAND"],
 													"m_properties":	[{
 															"type":	"winid",
@@ -2949,8 +2949,8 @@
 								}, {
 									"type":	"choice",
 									"m_label":	"Split Mode:",
-									"m_selection":	0,
-									"m_options":	["wxSPLIT_VERTICAL", "wxSPLIT_HORIZONTAL"]
+									"m_selection":	1,
+									"m_options":	["wxSPLIT_HORIZONTAL", "wxSPLIT_VERTICAL"]
 								}, {
 									"type":	"string",
 									"m_label":	"Sash Gravity:",
@@ -2962,7 +2962,7 @@
 								}, {
 									"type":	"string",
 									"m_label":	"Sash Position:",
-									"m_value":	"0"
+									"m_value":	"100"
 								}],
 							"m_events":	[],
 							"m_children":	[{

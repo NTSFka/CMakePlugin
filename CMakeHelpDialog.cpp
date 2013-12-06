@@ -40,10 +40,12 @@ CMakeHelpDialog::CMakeHelpDialog(wxWindow* parent, CMake* cmake)
     : CMakeHelpDialogBase(parent)
     , m_cmake(cmake)
 {
+    wxASSERT(cmake);
+
     // Set CMake version
     m_staticTextVersionValue->SetLabel(cmake->GetVersion());
 
-    // Set lists
+    // Set data
     m_panelModules->SetData(&cmake->GetModules());
     m_panelCommands->SetData(&cmake->GetCommands());
     m_panelProperties->SetData(&cmake->GetProperties());

@@ -48,8 +48,27 @@ public:
 
     /**
      * @brief Constructor.
+     *
+     * Full list of parameters are required because this class is
+     * constructed within wxCrafter's generated code and it calls
+     * constructor with full list of the wxPanel parameters (only
+     * the last parameter is missing).
+     *
+     * @param parent The parent window.
+     * @param id     An identifier for the panel. wxID_ANY is taken to mean
+     *               a default.
+     * @param pos    The panel position. The value wxDefaultPosition
+     *               indicates a default position, chosen by either the
+     *               windowing system or wxWidgets, depending on platform.
+     * @param size   The panel size. The value wxDefaultSize indicates
+     *               a default size, chosen by either the windowing system
+     *               or wxWidgets, depending on platform.
+     * @param style  The window style. See wxPanel.
      */
-    CMakeHelpPanel(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(500,300), long style = wxTAB_TRAVERSAL);
+    explicit CMakeHelpPanel(wxWindow* parent, wxWindowID id = wxID_ANY,
+                            const wxPoint& pos = wxDefaultPosition,
+                            const wxSize& size = wxSize(500, 300),
+                            long style = wxTAB_TRAVERSAL);
 
 
     /**
@@ -65,7 +84,11 @@ public:
     /**
      * @brief Set panel data.
      *
-     * @param data
+     * Data is displayed on the panel as: keys in the list box and
+     * value in the text control after an item in the list box is
+     * selected.
+     *
+     * @param data     A pointer to displayed data.
      */
     void SetData(const std::map<wxString, wxString>* data);
 

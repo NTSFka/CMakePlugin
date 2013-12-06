@@ -29,7 +29,9 @@
 /* CLASSES                                                                  */
 /* ************************************************************************ */
 
-CMakeHelpPanel::CMakeHelpPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style)
+CMakeHelpPanel::CMakeHelpPanel(wxWindow* parent, wxWindowID id,
+                               const wxPoint& pos, const wxSize& size,
+                               long style)
     : CMakeHelpPanelBase(parent, id, pos, size, style)
 {
     // Nothing to do
@@ -75,6 +77,7 @@ CMakeHelpPanel::OnSelect(wxCommandEvent& event)
 
     // Data found
     if (it != m_data->end()) {
+        // Show required data
         m_textCtrlText->SetValue(it->second);
     }
 }

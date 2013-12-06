@@ -125,7 +125,7 @@ CMakeHelpDialogBase::CMakeHelpDialogBase(wxWindow* parent, wxWindowID id, const 
     wxBoxSizer* boxSizerCopyright = new wxBoxSizer(wxVERTICAL);
     m_panelCopyright->SetSizer(boxSizerCopyright);
 
-    m_textCtrlCopyright = new wxTextCtrl(m_panelCopyright, wxID_ANY, wxT(""), wxDefaultPosition, wxSize(-1,-1), wxTE_MULTILINE);
+    m_textCtrlCopyright = new wxTextCtrl(m_panelCopyright, wxID_ANY, wxT(""), wxDefaultPosition, wxSize(-1,-1), wxTE_READONLY|wxTE_MULTILINE);
 
     boxSizerCopyright->Add(m_textCtrlCopyright, 1, wxALL|wxEXPAND, 5);
 
@@ -302,7 +302,7 @@ CMakeHelpPanelBase::CMakeHelpPanelBase(wxWindow* parent, wxWindowID id, const wx
     m_listBoxList->SetMinSize(wxSize(100,200));
 
     m_splitterPageText = new wxPanel(m_splitter, wxID_ANY, wxDefaultPosition, wxSize(-1,-1), wxTAB_TRAVERSAL);
-    m_splitter->SplitVertically(m_splitterPageList, m_splitterPageText, 0);
+    m_splitter->SplitVertically(m_splitterPageList, m_splitterPageText, 100);
 
     wxBoxSizer* boxSizerText = new wxBoxSizer(wxVERTICAL);
     m_splitterPageText->SetSizer(boxSizerText);
