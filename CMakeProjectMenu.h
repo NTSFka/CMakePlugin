@@ -18,8 +18,8 @@
 /*                                                                          */
 /* ************************************************************************ */
 
-#ifndef CMAKE_PROJECT_MENU_HPP_
-#define CMAKE_PROJECT_MENU_HPP_
+#ifndef CMAKE_PROJECT_MENU_H_
+#define CMAKE_PROJECT_MENU_H_
 
 /* ************************************************************************ */
 /* INCLUDES                                                                 */
@@ -27,7 +27,6 @@
 
 // wxWidgets
 #include <wx/menu.h>
-#include <wx/app.h>
 
 // CMakePlugin
 #include "CMakePlugin.h"
@@ -62,50 +61,13 @@ public:
      *
      * @param plugin A pointer to CMake Plugin.
      */
-    explicit CMakeProjectMenu(CMakePlugin* plugin)
-        : wxMenu()
-        , m_plugin(plugin)
-    {
-        // Open file
-        Append(new wxMenuItem(this, ID_OPEN_CMAKELISTS, _("Open CMakeLists.txt")));
-
-        AppendSeparator();
-
-        // Export
-        Append(new wxMenuItem(this, ID_EXPORT_CMAKELISTS, _("Export CMakeLists.txt")));
-
-        // Binding directly to the wxMenu doesn't work
-        wxTheApp->Bind(wxEVT_MENU, &CMakeProjectMenu::OnCMakeListsOpen, this, ID_OPEN_CMAKELISTS);
-
-        wxTheApp->Bind(wxEVT_UPDATE_UI, &CMakeProjectMenu::OnFileExists, this, ID_OPEN_CMAKELISTS);
-    }
+    explicit CMakeProjectMenu(CMakePlugin* plugin);
 
 
     /**
      * @brief Destructor.
      */
-    ~CMakeProjectMenu()
-    {
-        wxTheApp->Unbind(wxEVT_UPDATE_UI, &CMakeProjectMenu::OnFileExists, this, ID_OPEN_CMAKELISTS);
-
-        wxTheApp->Unbind(wxEVT_MENU, &CMakeProjectMenu::OnCMakeListsOpen, this, ID_OPEN_CMAKELISTS);
-
-    }
-
-
-// Public Accessors
-public:
-
-
-    /**
-     * @brief Returns currently selected project.
-     *
-     * @return A pointer to selected project.
-     */
-    ProjectPtr GetProject() const
-    {
-        return m_plugin->GetSelectedProject();
-    }
+    ~CMakeProjectMenu();
 
 
 // Public Events
@@ -117,15 +79,7 @@ public:
      *
      * @param event
      */
-    void OnCMakeListsOpen(wxCommandEvent& event)
-    {
-        wxUnusedVar(event);
-
-        ProjectPtr project = GetProject();
-
-        if (project)
-            m_plugin->OpenCMakeLists(m_plugin->GetProjectDirectory(project->GetName()));
-    }
+    void OnCMakeListsOpen(wxCommandEvent& event);
 
 
     /**
@@ -141,13 +95,7 @@ public:
      *
      * @param
      */
-    void OnFileExists(wxUpdateUIEvent& event)
-    {
-        ProjectPtr project = GetProject();
-
-        if (project)
-            event.Enable(m_plugin->ExistsCMakeLists(m_plugin->GetProjectDirectory(project->GetName())));
-    }
+    void OnFileExists(wxUpdateUIEvent& event);
 
 
 // Private Data Members
@@ -161,4 +109,4 @@ private:
 
 /* ************************************************************************ */
 
-#endif // CMAKE_PROJECT_MENU_HPP_
+#endif // CMAKE_PROJECT_MENU_H_

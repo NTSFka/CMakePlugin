@@ -49,8 +49,7 @@
 static bool CheckExists(const wxFileName& filename)
 {
     // Output file exists, overwrite?
-    if (filename.Exists())
-    {
+    if (filename.Exists()) {
         int res = wxMessageBox(CMakePlugin::CMAKELISTS_FILE + " exists. Overwrite?\n" +
             "(" + filename.GetFullPath() + ")",
             wxMessageBoxCaptionStr, wxYES | wxNO | wxCENTER | wxICON_QUESTION);
@@ -77,8 +76,7 @@ static void WriteContent(const wxFileName& filename, const wxString& content)
     // Write result CMakeLists.txt
     wxFFile output(filename.GetFullPath(), "w+b");
 
-    if (output.IsOpened())
-    {
+    if (output.IsOpened()) {
         output.Write(content);
         output.Close();
     }
@@ -113,14 +111,12 @@ CMakeGenerator::Generate(Workspace* workspace)
         wxString variables = workspace->GetEnvironmentVariabels(); // Nice typo
         variables.Trim().Trim(false);
 
-        if (!variables.IsEmpty())
-        {
+        if (!variables.IsEmpty()) {
             // Split into a list of pairs
             const wxArrayString list = wxStringTokenize(variables, "\n;");
 
             for (wxArrayString::const_iterator it = list.begin(),
-                ite = list.end(); it != ite; ++it)
-            {
+                ite = list.end(); it != ite; ++it) {
                 // Split into name, value pair
                 const wxArrayString pair = wxSplit(*it, '=');
 
@@ -142,8 +138,7 @@ CMakeGenerator::Generate(Workspace* workspace)
 
     // Foreach projects path
     for (wxArrayString::const_iterator it = projects.begin(),
-        ite = projects.end(); it != ite; ++it)
-    {
+        ite = projects.end(); it != ite; ++it) {
         wxFileName fullpath = *it;
         fullpath.MakeRelativeTo(workspaceDir.GetPath());
 
@@ -199,8 +194,7 @@ CMakeGenerator::Generate(ProjectPtr project, BuildConfigPtr configuration,
         // Add projects includes
         includes << ";" << wxJoin(project_includes, ';');
 
-        if (compiler)
-        {
+        if (compiler) {
             // Append global include paths
             includes << ";" << compiler->GetGlobalIncludePath();
         }
@@ -209,8 +203,7 @@ CMakeGenerator::Generate(ProjectPtr project, BuildConfigPtr configuration,
         includes.Trim().Trim(false);
 
         // Ignore empty include paths
-        if (!includes.IsEmpty())
-        {
+        if (!includes.IsEmpty()) {
             // Separators
             includes.Replace(";", "\n    ");
             // Replace Windows backslashes
@@ -240,8 +233,7 @@ CMakeGenerator::Generate(ProjectPtr project, BuildConfigPtr configuration,
         buildOpts.Trim().Trim(false);
         buildOpts.Replace(";", " ");
 
-        if (!buildOpts.IsEmpty())
-        {
+        if (!buildOpts.IsEmpty()) {
             content << "set(CMAKE_CXXFLAGS \"${CMAKE_CXXFLAGS} " << buildOpts << "\")\n\n";
         }
     }
@@ -253,8 +245,7 @@ CMakeGenerator::Generate(ProjectPtr project, BuildConfigPtr configuration,
         links.Trim().Trim(false);
         links.Replace(";", " ");
 
-        if (!links.IsEmpty())
-        {
+        if (!links.IsEmpty()) {
             content << "# Linker options\n";
             content << "set(CMAKE_LDFLAGS \"${CMAKE_LDFLAGS} " << links << "\")\n\n";
         }
@@ -266,8 +257,7 @@ CMakeGenerator::Generate(ProjectPtr project, BuildConfigPtr configuration,
         wxString lib_switch = "-L";
 
         // Get switch from compiler
-        if (compiler)
-        {
+        if (compiler) {
             lib_switch = compiler->GetSwitch("LibraryPath");
 
             // Append global library paths
@@ -281,8 +271,7 @@ CMakeGenerator::Generate(ProjectPtr project, BuildConfigPtr configuration,
         lib_paths.Clear();
 
         // Append modified values
-        for (size_t i = 0; i < lib_paths_list.GetCount(); ++i)
-        {
+        for (size_t i = 0; i < lib_paths_list.GetCount(); ++i) {
             lib_paths << lib_switch << "\\\"" << lib_paths_list.Item(i) << "\\\" ";
         }
 
@@ -298,8 +287,7 @@ CMakeGenerator::Generate(ProjectPtr project, BuildConfigPtr configuration,
         std::vector<wxFileName> files;
         project->GetFiles(files, true);
 
-        for (size_t i = 0; i < files.size(); i++)
-        {
+        for (size_t i = 0; i < files.size(); i++) {
             wxFileName src_filename = files.at(i);
             src_filename.MakeRelativeTo(project->GetFileName().GetPath());
 
@@ -316,16 +304,11 @@ CMakeGenerator::Generate(ProjectPtr project, BuildConfigPtr configuration,
 
         wxString type = settings->GetProjectType(configuration->GetName());
 
-        if (type == Project::EXECUTABLE)
-        {
+        if (type == Project::EXECUTABLE) {
             content << "add_executable(" << project->GetName() << " ${SRCS})\n\n";
-        }
-        else if (type == Project::DYNAMIC_LIBRARY)
-        {
+        } else if (type == Project::DYNAMIC_LIBRARY) {
             content << "add_library(" << project->GetName() << " SHARED ${SRCS})\n\n";
-        }
-        else
-        {
+        } else {
             content << "add_library(" << project->GetName() << " ${SRCS})\n\n";
         }
     }
@@ -336,8 +319,7 @@ CMakeGenerator::Generate(ProjectPtr project, BuildConfigPtr configuration,
 
         libs.Trim().Trim(false);
 
-        if (!libs.IsEmpty())
-        {
+        if (!libs.IsEmpty()) {
             libs.Replace(";", "\n    ");
             content << "target_link_libraries(" <<
                 project->GetName() << "\n    " <<

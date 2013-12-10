@@ -18,19 +18,15 @@
 /*                                                                          */
 /* ************************************************************************ */
 
-#ifndef CMAKE_PLUGIN_HPP_
-#define CMAKE_PLUGIN_HPP_
+#ifndef CMAKE_PLUGIN_H_
+#define CMAKE_PLUGIN_H_
 
 /* ************************************************************************ */
 /* INCLUDES                                                                 */
 /* ************************************************************************ */
 
-// C++
-#include <utility>
-
 // wxWidgets
 #include <wx/scopedptr.h>
-#include <wx/bookctrl.h>
 
 // CodeLite
 #include "plugin.h"
@@ -46,7 +42,6 @@
 /* ************************************************************************ */
 
 class CMake;
-class CMakeOutput;
 class CMakeBuilder;
 class CMakeSettingsManager;
 class CMakeProjectSettingsPanel;
@@ -99,8 +94,7 @@ public:
      *
      * @return
      */
-    IManager* GetManager() const
-    {
+    inline IManager* GetManager() const {
         return m_mgr;
     }
 
@@ -110,20 +104,8 @@ public:
      *
      * @return
      */
-    CMake* GetCMake() const
-    {
+    inline CMake* GetCMake() const {
         return m_cmake.get();
-    }
-
-
-    /**
-     * @brief Returns builder pointer.
-     *
-     * @return
-     */
-    CMakeBuilder* GetBuilder() const
-    {
-        return m_builder.get();
     }
 
 
@@ -132,8 +114,7 @@ public:
      *
      * @return
      */
-    CMakeSettingsManager* GetSettingsManager() const
-    {
+    inline CMakeSettingsManager* GetSettingsManager() const {
         return m_settingsManager.get();
     }
 
@@ -143,30 +124,17 @@ public:
      *
      * @return
      */
-    CMakeConfiguration* GetConfiguration() const
-    {
+    inline CMakeConfiguration* GetConfiguration() const {
         return m_configuration.get();
     }
 
 
     /**
-     * @brief Returns output window.
+     * @brief Returns CMakeLists.txt generator.
      *
-     * @return
+     * @return A pointer to CMakeLists.txt generator.
      */
-    CMakeOutput* GetOutput() const
-    {
-        return m_output;
-    }
-
-
-    /**
-     * @brief Returns generator.
-     *
-     * @return
-     */
-    CMakeGenerator* GetGenerator() const
-    {
+    inline CMakeGenerator* GetGenerator() const {
         return m_generator.get();
     }
 
@@ -194,8 +162,7 @@ public:
      *
      * @return Pointer to project.
      */
-    ProjectPtr GetSelectedProject() const
-    {
+    inline ProjectPtr GetSelectedProject() const {
         return m_mgr->GetSelectedProject();
     }
 
@@ -404,9 +371,6 @@ private:
     /// CMake application
     wxScopedPtr<CMake> m_cmake;
 
-    /// Builder
-    wxScopedPtr<CMakeBuilder> m_builder;
-
     /// Settings manager.
     wxScopedPtr<CMakeSettingsManager> m_settingsManager;
 
@@ -416,11 +380,8 @@ private:
     /// Only one is enough
     CMakeProjectSettingsPanel* m_panel;
 
-    /// CMake output window.
-    CMakeOutput* m_output;
-
 };
 
 /* ************************************************************************ */
 
-#endif // CMAKE_PLUGIN_HPP_
+#endif // CMAKE_PLUGIN_H_

@@ -25,9 +25,6 @@
 // Declaration
 #include "CMake.h"
 
-// C++
-#include <map>
-
 // wxWidgets
 #include <wx/regex.h>
 
@@ -141,8 +138,7 @@ wxString ParseManText(wxArrayString::const_iterator& line)
  * @brief Parses man page block with available data.
  *
  * @param line Current parsed line imutable iterator.
- *
- * @return A map of available data.
+ * @param data Output data container.
  */
 static
 void ParseManDesc(wxArrayString::const_iterator& line, wxStringMap_t& data)
@@ -269,6 +265,10 @@ CMake::IsOk() const
 void
 CMake::LoadData()
 {
+    // Loading data again is not required
+    if (!m_dirty)
+        return;
+
     // Clear old data
     m_version.clear();
     m_commands.clear();
@@ -319,7 +319,8 @@ CMake::ParseCMakeManPage()
     ProcUtils::SafeExecuteCommand(program + " --help-man", output);
 
     // Foreach lines
-    for (wxArrayString::const_iterator line = output.begin(); line != output.end(); ++line) {
+    for (wxArrayString::const_iterator line = output.begin();
+        line != output.end(); ++line) {
         // Generators
         if (line->StartsWith(".SH GENERATORS")) {
             m_generators = ParseManGenerators(line);

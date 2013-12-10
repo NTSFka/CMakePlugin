@@ -18,8 +18,8 @@
 /*                                                                          */
 /* ************************************************************************ */
 
-#ifndef CMAKE_SETTINGS_MANAGER_HPP_
-#define CMAKE_SETTINGS_MANAGER_HPP_
+#ifndef CMAKE_SETTINGS_MANAGER_H_
+#define CMAKE_SETTINGS_MANAGER_H_
 
 /* ************************************************************************ */
 /* INCLUDES                                                                 */
@@ -82,7 +82,8 @@ public:
      * @return A pointer to project settings for specific config or
      * nullptr if config doesn't exists.
      */
-    CMakeProjectSettingsMap* GetProjectSettings(const wxString& project, bool create = false);
+    CMakeProjectSettingsMap* GetProjectSettings(const wxString& project,
+                                                bool create = false);
 
 
     /**
@@ -107,7 +108,8 @@ public:
      * nullptr if config doesn't exists.
      */
     CMakeProjectSettings* GetProjectSettings(const wxString& project,
-        const wxString& config, bool create = false);
+                                             const wxString& config,
+                                             bool create = false);
 
 
     /**
@@ -119,7 +121,8 @@ public:
      * @return A pointer to project settings for specific config or
      * nullptr if config doesn't exists.
      */
-    const CMakeProjectSettings* GetProjectSettings(const wxString& project, const wxString& config) const;
+    const CMakeProjectSettings* GetProjectSettings(const wxString& project,
+                                                   const wxString& config) const;
 
 
     /**
@@ -140,8 +143,7 @@ public:
     /**
      * @brief Save all settings.
      */
-    void Save()
-    {
+    inline void Save() {
         SaveProjects();
     }
 
@@ -163,8 +165,7 @@ public:
     /**
      * @brief Load all settings.
      */
-    void Load()
-    {
+    inline void Load() {
         LoadProjects();
     }
 
@@ -190,11 +191,11 @@ private:
     /// CMake plugin pointer.
     CMakePlugin* const m_plugin;
 
-    /// Settings for all projects
+    /// Settings for all projects.
     std::map<wxString, CMakeProjectSettingsMap> m_projectSettings;
 
 };
 
 /* ************************************************************************ */
 
-#endif // CMAKE_SETTINGS_MANAGER_HPP_
+#endif // CMAKE_SETTINGS_MANAGER_H_

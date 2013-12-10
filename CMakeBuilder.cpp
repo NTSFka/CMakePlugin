@@ -25,28 +25,11 @@
 // Declaration
 #include "CMakeBuilder.h"
 
-// wxWidgets
-#include <wx/dir.h>
-
-// Codelite
-#include "dirsaver.h"
-
 // CMakePlugin
-#include "CMakePlugin.h"
-#include "CMakeOutput.h"
 #include "CMakeProjectSettings.h"
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
-/* ************************************************************************ */
-
-CMakeBuilder::CMakeBuilder(CMakePlugin* plugin)
-    : m_plugin(plugin)
-    , m_asyncCmd(NULL)
-{
-    wxASSERT(m_plugin);
-}
-
 /* ************************************************************************ */
 
 wxString
@@ -81,8 +64,7 @@ CMakeBuilder::CreateConfigureCmd(const wxString& cmake, const CMakeProjectSettin
 
     // Copy additional arguments
     for (wxArrayString::const_iterator it = settings.arguments.begin(),
-        ite = settings.arguments.end(); it != ite; ++it)
-    {
+        ite = settings.arguments.end(); it != ite; ++it) {
         args.Add(*it);
     }
 
@@ -111,87 +93,6 @@ CMakeBuilder::CreateBuildCmd(const wxString& make,
                              const wxString& target)
 {
     return CreateBuildCmd(make, settings.buildDirectory, target);
-}
-
-/* ************************************************************************ */
-
-void
-CMakeBuilder::Configure(const wxString& cmake,
-                        const wxString& sourceDir,
-                        const wxString& buildDir,
-                        const wxArrayString& args)
-{
-    // Create directory if missing
-    if (!wxDir::Exists(buildDir))
-        wxDir::Make(buildDir);
-
-    {
-        DirSaver dir;
-
-        wxSetWorkingDirectory(wxGetCwd() + "/" + buildDir);
-
-        // Run, Forrest, run!
-        Run(CreateConfigureCmd(cmake, sourceDir, buildDir, args));
-    }
-}
-
-/* ************************************************************************ */
-
-void
-CMakeBuilder::Build(const wxString& make, const wxString& buildDir,
-                    const wxString& target)
-{
-    // TODO detect if configuration wasn't performed
-
-    {
-        DirSaver dir;
-
-        wxSetWorkingDirectory(wxGetCwd() + "/" + buildDir);
-
-        // Build project
-        Run(CreateBuildCmd(make, buildDir, target));
-    }
-}
-
-/* ************************************************************************ */
-
-void
-CMakeBuilder::Run(const wxString& command)
-{
-    // Create on-demand
-    if (!m_asyncCmd)
-        m_asyncCmd.reset(new AsyncExeCmd(m_plugin->GetOutput()));
-
-    wxASSERT(m_asyncCmd);
-
-    // Command is busy.
-    if (m_asyncCmd->IsBusy())
-        return;
-
-    // Set command
-    // Execution returns -1 with info (in debug) that there are
-    // no child processes and only on my desktop PC with i7 (maybe
-    // is too fast) - it does the wxExecute function call.
-    m_asyncCmd->Execute(command, false, true);
-
-    if (m_asyncCmd->GetProcess()) {
-        m_asyncCmd->GetProcess()->Bind(wxEVT_END_PROCESS,
-                                       &CMakeBuilder::OnProcessEnd, this);
-    }
-}
-
-/* ************************************************************************ */
-
-void
-CMakeBuilder::OnProcessEnd(wxProcessEvent& event)
-{
-    m_asyncCmd->ProcessEnd(event);
-    m_asyncCmd->GetProcess()->Unbind(wxEVT_END_PROCESS, &CMakeBuilder::OnProcessEnd, this);
-
-#ifdef __WXMSW__
-    // On Windows, sometimes killing the DOS Windows, does not kill the children
-    m_asyncCmd->Terminate();
-#endif
 }
 
 /* ************************************************************************ */

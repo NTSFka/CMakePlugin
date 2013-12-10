@@ -31,12 +31,8 @@
 #include <wx/msgdlg.h>
 #include <wx/xrc/xmlres.h>
 #include <wx/mimetype.h>
-#include <wx/log.h>
 #include <wx/menu.h>
-#include <wx/combobox.h>
-#include <wx/checkbox.h>
 #include <wx/dir.h>
-#include <wx/regex.h>
 
 // CodeLite
 #include "environmentconfig.h"
@@ -63,7 +59,6 @@
 #include "CMakeSettingsManager.h"
 #include "CMakeProjectSettings.h"
 #include "CMakeProjectSettingsPanel.h"
-#include "CMakeOutput.h"
 #include "CMakeGenerator.h"
 
 /* ************************************************************************ */
@@ -135,11 +130,9 @@ CMakePlugin::CMakePlugin(IManager* manager)
     : IPlugin(manager)
     , m_configuration(NULL)
     , m_cmake(NULL)
-    , m_builder(new CMakeBuilder(this))
     , m_settingsManager(new CMakeSettingsManager(this))
     , m_generator(new CMakeGenerator())
     , m_panel(NULL)
-    , m_output(NULL)
 {
     m_longName = _("CMake integration with CodeLite");
     m_shortName = "CMakePlugin";
@@ -151,11 +144,6 @@ CMakePlugin::CMakePlugin(IManager* manager)
 
     // Create cmake application
     m_cmake.reset(new CMake(m_configuration->GetProgramPath()));
-
-    // Add custom tab
-    Notebook* notebook = m_mgr->GetOutputPaneNotebook();
-    m_output = new CMakeOutput(notebook, wxID_ANY, this);
-    notebook->AddPage(m_output, "CMake", false, LoadBitmapFile("cmake.png"));
 
     // Bind events
     EventNotifier::Get()->Bind(wxEVT_CMD_PROJ_SETTINGS_SAVED, wxCommandEventHandler(CMakePlugin::OnSaveConfig), this);
@@ -365,12 +353,6 @@ CMakePlugin::UnHookProjectSettingsTab(wxBookCtrlBase* notebook,
 void
 CMakePlugin::UnPlug()
 {
-    // Remove output tab
-    Notebook* notebook = m_mgr->GetOutputPaneNotebook();
-    int pos = notebook->FindPage(m_output);
-    if (pos != wxNOT_FOUND)
-        notebook->DeletePage(pos);
-
     // Unbind events
     wxTheApp->Unbind(wxEVT_COMMAND_MENU_SELECTED, &CMakePlugin::OnSettings, this, XRCID("cmake_settings"));
     wxTheApp->Unbind(wxEVT_COMMAND_MENU_SELECTED, &CMakePlugin::OnHelp, this, XRCID("cmake_help"));
@@ -562,8 +544,6 @@ CMakePlugin::OnExportMakefile(clBuildEvent& event)
         CMakeBuilder::CreateConfigureCmd(cmake, *settings),
         GetManager(), project, config
     );
-
-    wxASSERT(GetBuilder());
 
     // Create build directory if missing
     if (!wxDir::Exists(buildDir))

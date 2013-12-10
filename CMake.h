@@ -42,8 +42,6 @@
  *
  * Class can be used for extracting help data from current installed
  * version of CMake like supported commands, modules, etc.
- *
- * @todo Use Unix Man output from CMake to get help.
  */
 class CMake
 {

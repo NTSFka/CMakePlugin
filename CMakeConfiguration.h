@@ -18,8 +18,8 @@
 /*                                                                          */
 /* ************************************************************************ */
 
-#ifndef CMAKE_CONFIGURATION_HPP_
-#define CMAKE_CONFIGURATION_HPP_
+#ifndef CMAKE_CONFIGURATION_H_
+#define CMAKE_CONFIGURATION_H_
 
 /* ************************************************************************ */
 /* INCLUDES                                                                 */
@@ -57,8 +57,7 @@ public:
     /**
      * @brief Destructor.
      */
-    virtual ~CMakeConfiguration()
-    {
+    virtual ~CMakeConfiguration() {
         Flush();
     }
 
@@ -70,10 +69,9 @@ public:
     /**
      * @brief Returns CMake program path.
      *
-     * @return
+     * @return Path to CMake program.
      */
-    inline wxString GetProgramPath() const
-    {
+    inline wxString GetProgramPath() const {
         return Read("CMakePath", "cmake");
     }
 
@@ -83,12 +81,11 @@ public:
 
 
     /**
-     * @brief Sets program path.
+     * @brief Set and store program path.
      *
-     * @param path
+     * @param path CMake program path.
      */
-    inline void SetProgramPath(const wxString& path)
-    {
+    inline void SetProgramPath(const wxString& path) {
         Write("CMakePath", path);
     }
 
@@ -96,4 +93,4 @@ public:
 
 /* ************************************************************************ */
 
-#endif // CMAKE_CONFIGURATION_HPP_
+#endif // CMAKE_CONFIGURATION_H_

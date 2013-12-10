@@ -50,12 +50,9 @@ CMakeSettingsManager::CMakeSettingsManager(CMakePlugin* plugin)
 CMakeProjectSettingsMap*
 CMakeSettingsManager::GetProjectSettings(const wxString& project, bool create)
 {
-    if (create)
-    {
+    if (create) {
         return &(m_projectSettings[project]);
-    }
-    else
-    {
+    } else {
         std::map<wxString, CMakeProjectSettingsMap>::iterator it = m_projectSettings.find(project);
 
         if (it == m_projectSettings.end())
@@ -86,16 +83,13 @@ CMakeSettingsManager::GetProjectSettings(const wxString& project, const wxString
     // Get project settings
     CMakeProjectSettingsMap* settings = GetProjectSettings(project, create);
 
-    if (create)
-    {
+    if (create) {
         // GetProjectSettings should create the new one
         wxASSERT(settings);
 
         // Find or create configuration
         return &(*settings)[config];
-    }
-    else
-    {
+    } else {
         // Not found
         if (!settings)
             return NULL;
@@ -156,8 +150,7 @@ CMakeSettingsManager::SaveProjects()
     workspace->GetProjectList(projects);
 
     for (wxArrayString::const_iterator it = projects.begin(),
-        ite = projects.end(); it != ite; ++it)
-    {
+        ite = projects.end(); it != ite; ++it) {
         SaveProject(*it);
     }
 }
@@ -188,8 +181,7 @@ CMakeSettingsManager::SaveProject(const wxString& name)
 
     // Foreach settings
     for (std::map<wxString, CMakeProjectSettings>::const_iterator it = itSettings->second.begin(),
-        ite = itSettings->second.end(); it != ite; ++it)
-    {
+        ite = itSettings->second.end(); it != ite; ++it) {
         // Get settings
         const CMakeProjectSettings& settings = it->second;
 
@@ -231,8 +223,7 @@ CMakeSettingsManager::LoadProjects()
     workspace->GetProjectList(projects);
 
     for (wxArrayString::const_iterator it = projects.begin(),
-        ite = projects.end(); it != ite; ++it)
-    {
+        ite = projects.end(); it != ite; ++it) {
         LoadProject(*it);
     }
 }
@@ -275,8 +266,7 @@ CMakeSettingsManager::LoadProject(const wxString& name)
         return;
 
     // Foreach array
-    for (int i = 0; i < json.arraySize(); ++i)
-    {
+    for (int i = 0; i < json.arraySize(); ++i) {
         // Get item
         const JSONElement& item = json.arrayItem(i);
 

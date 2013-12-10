@@ -25,6 +25,9 @@
 // Declaration
 #include "CMakeSettingsDialog.h"
 
+// wxWidgets
+#include <wx/msgdlg.h>
+
 // Codelite
 #include "windowattrmanager.h"
 
@@ -59,8 +62,7 @@ CMakeSettingsDialog::OnShowHelp(wxCommandEvent& event)
 {
     wxASSERT(m_cmake);
 
-    if (!m_cmake->IsOk())
-    {
+    if (!m_cmake->IsOk()) {
         wxMessageBox(_("CMake program not found!"), wxMessageBoxCaptionStr, wxOK | wxCENTER | wxICON_ERROR);
         return;
     }

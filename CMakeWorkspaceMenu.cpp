@@ -25,11 +25,45 @@
 // Declaration
 #include "CMakeWorkspaceMenu.h"
 
+// wxWidgets
+#include <wx/app.h>
+
 // CMakePlugin
 #include "CMakeGenerator.h"
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
+/* ************************************************************************ */
+
+CMakeWorkspaceMenu::CMakeWorkspaceMenu(CMakePlugin* plugin)
+    : wxMenu()
+    , m_plugin(plugin)
+{
+    // Open file
+    Append(new wxMenuItem(this, ID_OPEN_CMAKELISTS, _("Open CMakeLists.txt")));
+
+    AppendSeparator();
+
+    // Export
+    Append(new wxMenuItem(this, ID_EXPORT_CMAKELISTS, _("Export CMakeLists.txt")));
+
+    // Bind events
+    wxTheApp->Bind(wxEVT_MENU, &CMakeWorkspaceMenu::OnCMakeListsOpen, this, ID_OPEN_CMAKELISTS);
+    wxTheApp->Bind(wxEVT_MENU, &CMakeWorkspaceMenu::OnExport, this, ID_EXPORT_CMAKELISTS);
+
+    wxTheApp->Bind(wxEVT_UPDATE_UI, &CMakeWorkspaceMenu::OnFileExists, this, ID_OPEN_CMAKELISTS);
+}
+
+/* ************************************************************************ */
+
+CMakeWorkspaceMenu::~CMakeWorkspaceMenu()
+{
+    wxTheApp->Bind(wxEVT_MENU, &CMakeWorkspaceMenu::OnCMakeListsOpen, this, ID_OPEN_CMAKELISTS);
+    wxTheApp->Bind(wxEVT_MENU, &CMakeWorkspaceMenu::OnExport, this, ID_EXPORT_CMAKELISTS);
+
+    wxTheApp->Unbind(wxEVT_UPDATE_UI, &CMakeWorkspaceMenu::OnFileExists, this, ID_OPEN_CMAKELISTS);
+}
+
 /* ************************************************************************ */
 
 void

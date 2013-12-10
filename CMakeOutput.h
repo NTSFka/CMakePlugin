@@ -43,6 +43,8 @@ class wxTextCtrl;
 
 /**
  * @brief Output tab for CMake.
+ *
+ * @deprecated
  */
 class CMakeOutput : public wxPanel
 {

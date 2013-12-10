@@ -119,8 +119,7 @@ CMakeProjectSettingsPanel::SetSettings(CMakeProjectSettings* settings, const wxS
 
     // Foreach projects
     for (wxArrayString::const_iterator it = projects.begin(),
-        ite = projects.end(); it != ite; ++it)
-    {
+        ite = projects.end(); it != ite; ++it) {
         // Translate project config
         const wxString projectConfig = matrix->GetProjectSelectedConf(workspaceConfig, *it);
 

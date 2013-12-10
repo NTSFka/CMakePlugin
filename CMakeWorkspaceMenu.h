@@ -18,8 +18,8 @@
 /*                                                                          */
 /* ************************************************************************ */
 
-#ifndef CMAKE_WORKSPACE_MENU_HPP_
-#define CMAKE_WORKSPACE_MENU_HPP_
+#ifndef CMAKE_WORKSPACE_MENU_H_
+#define CMAKE_WORKSPACE_MENU_H_
 
 /* ************************************************************************ */
 /* INCLUDES                                                                 */
@@ -27,7 +27,6 @@
 
 // wxWidgets
 #include <wx/menu.h>
-#include <wx/app.h>
 
 // CMakePlugin
 #include "CMakePlugin.h"
@@ -60,33 +59,13 @@ public:
      *
      * @param plugin A pointer to CMake Plugin
      */
-    explicit CMakeWorkspaceMenu(CMakePlugin* plugin)
-        : wxMenu()
-        , m_plugin(plugin)
-    {
-        // Open file
-        Append(new wxMenuItem(this, ID_OPEN_CMAKELISTS, _("Open CMakeLists.txt")));
-
-        AppendSeparator();
-
-        // Export
-        Append(new wxMenuItem(this, ID_EXPORT_CMAKELISTS, _("Export CMakeLists.txt")));
-
-        // Bind events
-        Bind(wxEVT_MENU, &CMakeWorkspaceMenu::OnCMakeListsOpen, this, ID_OPEN_CMAKELISTS);
-        Bind(wxEVT_MENU, &CMakeWorkspaceMenu::OnExport, this, ID_EXPORT_CMAKELISTS);
-
-        wxTheApp->Bind(wxEVT_UPDATE_UI, &CMakeWorkspaceMenu::OnFileExists, this, ID_OPEN_CMAKELISTS);
-    }
+    explicit CMakeWorkspaceMenu(CMakePlugin* plugin);
 
 
     /**
      * @brief Destructor.
      */
-    ~CMakeWorkspaceMenu()
-    {
-        wxTheApp->Unbind(wxEVT_UPDATE_UI, &CMakeWorkspaceMenu::OnFileExists, this, ID_OPEN_CMAKELISTS);
-    }
+    ~CMakeWorkspaceMenu();
 
 
 // Public Events
@@ -98,8 +77,7 @@ public:
      *
      * @param event
      */
-    void OnCMakeListsOpen(wxCommandEvent& event)
-    {
+    inline void OnCMakeListsOpen(wxCommandEvent& event) {
         wxUnusedVar(event);
         m_plugin->OpenCMakeLists(m_plugin->GetWorkspaceDirectory());
     }
@@ -110,8 +88,7 @@ public:
      *
      * @param
      */
-    void OnFileExists(wxUpdateUIEvent& event)
-    {
+    inline void OnFileExists(wxUpdateUIEvent& event) {
         event.Enable(m_plugin->ExistsCMakeLists(m_plugin->GetWorkspaceDirectory()));
     }
 
@@ -136,4 +113,4 @@ private:
 
 /* ************************************************************************ */
 
-#endif // CMAKE_WORKSPACE_MENU_HPP_
+#endif // CMAKE_WORKSPACE_MENU_H_

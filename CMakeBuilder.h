@@ -18,8 +18,8 @@
 /*                                                                          */
 /* ************************************************************************ */
 
-#ifndef CMAKE_BUILDER_HPP_
-#define CMAKE_BUILDER_HPP_
+#ifndef CMAKE_BUILDER_H_
+#define CMAKE_BUILDER_H_
 
 /* ************************************************************************ */
 /* INCLUDES                                                                 */
@@ -27,16 +27,12 @@
 
 // wxWidgets
 #include <wx/string.h>
-#include <wx/scopedptr.h>
-
-// Codelite
-#include "async_executable_cmd.h"
+#include <wx/arrstr.h>
 
 /* ************************************************************************ */
 /* FORWARD DECLARATIONS                                                     */
 /* ************************************************************************ */
 
-class CMakePlugin;
 class CMakeProjectSettings;
 
 /* ************************************************************************ */
@@ -47,24 +43,9 @@ class CMakeProjectSettings;
  * @brief CMake builder.
  *
  * It's an interface to everything about building workspace and project.
- *
- * @todo Get rid of AsyncExeCmd and use internal building system.
  */
 class CMakeBuilder
 {
-
-// Public Ctors
-public:
-
-
-    /**
-     * @brief Create CMake builder.
-     *
-     * @param plugin
-     */
-    explicit CMakeBuilder(CMakePlugin* plugin);
-
-
 
 // Public Operations
 public:
@@ -125,63 +106,8 @@ public:
                                    const CMakeProjectSettings& settings,
                                    const wxString& target = wxEmptyString);
 
-
-    /**
-     * @brief Configure project defined by CMakeLists.txt in projectDir into
-     * buildDir with configuration arguments args.
-     *
-     * @param cmake    CMake program.
-     * @param sourceDir Directory with sources and CMakeLists.txt
-     * @param buildDir  Output directory.
-     * @param args      Configure arguments.
-     */
-    void Configure(const wxString& cmake,
-                   const wxString& sourceDir,
-                   const wxString& buildDir,
-                   const wxArrayString& args);
-
-
-    /**
-     * @brief Build project defined in build directory.
-     *
-     * @param make      The Make program.
-     * @param buildDir  Output directory.
-     * @param target    Build target.
-     */
-    void Build(const wxString& make, const wxString& buildDir,
-               const wxString& target = wxEmptyString);
-
-
-    /**
-     * @brief Run given program asynchronously.
-     */
-    void Run(const wxString& command);
-
-
-// Public Events
-public:
-
-
-    /**
-     * @brief On async process end.
-     *
-     * @param event
-     */
-    void OnProcessEnd(wxProcessEvent& event);
-
-
-// Private Data Members
-private:
-
-
-    /// CMake plugin pointer.
-    CMakePlugin* const m_plugin;
-
-    /// CMake command.
-    wxScopedPtr<AsyncExeCmd> m_asyncCmd;
-
 };
 
 /* ************************************************************************ */
 
-#endif // CMAKE_BUILDER_HPP_
+#endif // CMAKE_BUILDER_H_

@@ -25,13 +25,58 @@
 // Declaration
 #include "CMakeProjectMenu.h"
 
+// wxWidgets
+#include <wx/app.h>
+
 // CMakePlugin
-#include "CMakeBuilder.h"
-#include "CMakeProjectSettings.h"
 #include "CMakeGenerator.h"
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
+/* ************************************************************************ */
+
+CMakeProjectMenu::CMakeProjectMenu(CMakePlugin* plugin)
+    : wxMenu()
+    , m_plugin(plugin)
+{
+    // Open file
+    Append(new wxMenuItem(this, ID_OPEN_CMAKELISTS, _("Open CMakeLists.txt")));
+
+    AppendSeparator();
+
+    // Export
+    Append(new wxMenuItem(this, ID_EXPORT_CMAKELISTS, _("Export CMakeLists.txt")));
+
+    // Binding directly to the wxMenu doesn't work
+    wxTheApp->Bind(wxEVT_MENU, &CMakeProjectMenu::OnCMakeListsOpen, this, ID_OPEN_CMAKELISTS);
+    wxTheApp->Bind(wxEVT_MENU, &CMakeProjectMenu::OnExport, this, ID_EXPORT_CMAKELISTS);
+
+    wxTheApp->Bind(wxEVT_UPDATE_UI, &CMakeProjectMenu::OnFileExists, this, ID_OPEN_CMAKELISTS);
+}
+
+/* ************************************************************************ */
+
+CMakeProjectMenu::~CMakeProjectMenu()
+{
+    wxTheApp->Unbind(wxEVT_UPDATE_UI, &CMakeProjectMenu::OnFileExists, this, ID_OPEN_CMAKELISTS);
+
+    wxTheApp->Unbind(wxEVT_MENU, &CMakeProjectMenu::OnExport, this, ID_EXPORT_CMAKELISTS);
+    wxTheApp->Unbind(wxEVT_MENU, &CMakeProjectMenu::OnCMakeListsOpen, this, ID_OPEN_CMAKELISTS);
+}
+
+/* ************************************************************************ */
+
+void
+CMakeProjectMenu::OnCMakeListsOpen(wxCommandEvent& event)
+{
+    wxUnusedVar(event);
+
+    ProjectPtr project = m_plugin->GetSelectedProject();
+
+    if (project)
+        m_plugin->OpenCMakeLists(m_plugin->GetProjectDirectory(project->GetName()));
+}
+
 /* ************************************************************************ */
 
 void
@@ -41,6 +86,17 @@ CMakeProjectMenu::OnExport(wxCommandEvent& event)
         m_plugin->GetSelectedProject(),
         m_plugin->GetSelectedBuildConfig()
     );
+}
+
+/* ************************************************************************ */
+
+void
+CMakeProjectMenu::OnFileExists(wxUpdateUIEvent& event)
+{
+    ProjectPtr project = m_plugin->GetSelectedProject();
+
+    if (project)
+        event.Enable(m_plugin->ExistsCMakeLists(m_plugin->GetProjectDirectory(project->GetName())));
 }
 
 /* ************************************************************************ */

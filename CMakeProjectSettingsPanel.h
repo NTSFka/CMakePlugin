@@ -29,7 +29,7 @@
 #include "project.h"
 
 // UI
-#include "CMakePluginUi.h"
+#include "CMakeProjectSettingsPanelBase.h"
 
 // CMakePlugin
 #include "CMakeProjectSettings.h"
@@ -72,7 +72,7 @@ public:
      *
      * @return
      */
-    inline bool IsCMakeEnabled() const {
+    bool IsCMakeEnabled() const {
         return m_checkBoxEnable->IsChecked();
     }
 
@@ -82,7 +82,7 @@ public:
      *
      * @return Parent project name or empty string.
      */
-    inline wxString GetParentProject() const {
+    wxString GetParentProject() const {
         return m_choiceParent->GetStringSelection();
     }
 
@@ -92,7 +92,7 @@ public:
      *
      * @return
      */
-    inline wxString GetSourceDirectory() const {
+    wxString GetSourceDirectory() const {
         return m_dirPickerSourceDir->GetPath();
     }
 
@@ -102,7 +102,7 @@ public:
      *
      * @return
      */
-    inline wxString GetBuildDirectory() const {
+    wxString GetBuildDirectory() const {
         return m_dirPickerBuildDir->GetPath();
     }
 
@@ -112,7 +112,7 @@ public:
      *
      * @return
      */
-    inline wxString GetGenerator() const {
+    wxString GetGenerator() const {
         return m_comboBoxGenerator->GetStringSelection();
     }
 
@@ -122,7 +122,7 @@ public:
      *
      * @return
      */
-    inline wxString GetBuildType() const {
+    wxString GetBuildType() const {
         return m_comboBoxBuildType->GetStringSelection();
     }
 
@@ -132,7 +132,7 @@ public:
      *
      * @return
      */
-    inline wxArrayString GetArguments() const {
+    wxArrayString GetArguments() const {
         return wxSplit(m_textCtrlArguments->GetValue(), '\n');
     }
 
@@ -142,7 +142,7 @@ public:
      *
      * @return
      */
-    inline CMakeProjectSettings* GetSettings() const {
+    CMakeProjectSettings* GetSettings() const {
         return m_settings;
     }
 
@@ -156,7 +156,7 @@ public:
      *
      * @param value
      */
-    inline void SetCMakeEnabled(bool value) const {
+    void SetCMakeEnabled(bool value) const {
         m_checkBoxEnable->SetValue(value);
     }
 
@@ -166,7 +166,7 @@ public:
      *
      * @param project
      */
-    inline void SetParentProject(const wxString& project) {
+    void SetParentProject(const wxString& project) {
         m_choiceParent->SetStringSelection(project);
     }
 
@@ -176,7 +176,7 @@ public:
      *
      * @param dir Directory.
      */
-    inline void SetSourceDirectory(const wxString& dir) {
+    void SetSourceDirectory(const wxString& dir) {
         m_dirPickerSourceDir->SetPath(dir);
     }
 
@@ -186,7 +186,7 @@ public:
      *
      * @param dir Directory.
      */
-    inline void SetBuildDirectory(const wxString& dir) {
+    void SetBuildDirectory(const wxString& dir) {
         m_dirPickerBuildDir->SetPath(dir);
     }
 
@@ -196,7 +196,7 @@ public:
      *
      * @param generator
      */
-    inline void SetGenerator(const wxString& generator) {
+    void SetGenerator(const wxString& generator) {
         m_comboBoxGenerator->SetStringSelection(generator);
     }
 
@@ -206,7 +206,7 @@ public:
      *
      * @param buildType
      */
-    inline void SetBuildType(const wxString& buildType) {
+    void SetBuildType(const wxString& buildType) {
         m_comboBoxBuildType->SetStringSelection(buildType);
     }
 
@@ -216,7 +216,7 @@ public:
      *
      * @param arguments
      */
-    inline void SetArguments(const wxArrayString& arguments) {
+    void SetArguments(const wxArrayString& arguments) {
         m_textCtrlArguments->SetValue(wxJoin(arguments, '\n'));
     }
 
@@ -229,7 +229,7 @@ public:
      * @param config
      */
     void SetSettings(CMakeProjectSettings* settings, const wxString& project,
-        const wxString& config);
+                     const wxString& config);
 
 
 // Public Events
@@ -241,7 +241,7 @@ public:
      *
      * @param event
      */
-    inline void OnCheck(wxUpdateUIEvent& event) {
+    void OnCheck(wxUpdateUIEvent& event) {
         event.Enable(m_checkBoxEnable->IsChecked());
     }
 
@@ -251,11 +251,9 @@ public:
      *
      * @param event
      */
-    inline void OnCheck2(wxUpdateUIEvent& event) {
-        event.Enable(
-            m_checkBoxEnable->IsChecked() &&
-            GetParentProject().empty()
-        );
+    void OnCheck2(wxUpdateUIEvent& event) {
+        event.Enable(m_checkBoxEnable->IsChecked() &&
+                     GetParentProject().empty());
     }
 
 

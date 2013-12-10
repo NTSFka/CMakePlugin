@@ -18,8 +18,8 @@
 /*                                                                          */
 /* ************************************************************************ */
 
-#ifndef CMAKE_GENERATOR_HPP_
-#define CMAKE_GENERATOR_HPP_
+#ifndef CMAKE_GENERATOR_H_
+#define CMAKE_GENERATOR_H_
 
 /* ************************************************************************ */
 /* INCLUDES                                                                 */
@@ -73,4 +73,4 @@ public:
 
 /* ************************************************************************ */
 
-#endif // CMAKE_GENERATOR_HPP_
+#endif // CMAKE_GENERATOR_H_
