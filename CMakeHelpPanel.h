@@ -29,7 +29,7 @@
 #include <map>
 
 // UI
-#include "CMakePluginUi.h"
+#include "CMakeHelpPanelBase.h"
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */

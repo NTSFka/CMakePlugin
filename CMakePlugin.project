@@ -48,6 +48,14 @@
     <File Name="CMakeWorkspaceMenu.h"/>
     <File Name="CMakeProjectMenu.h"/>
     <File Name="CMakeOutput.h"/>
+    <File Name="CMakeProjectSettingsPanelBase.cpp"/>
+    <File Name="CMakeProjectSettingsPanelBase.h"/>
+    <File Name="CMakeHelpPanelBase.cpp"/>
+    <File Name="CMakeHelpPanelBase.h"/>
+    <File Name="CMakeHelpDialogBase.cpp"/>
+    <File Name="CMakeHelpDialogBase.h"/>
+    <File Name="CMakeSettingsDialogBase.cpp"/>
+    <File Name="CMakeSettingsDialogBase.h"/>
   </VirtualDirectory>
   <Dependencies Name="DebugUnicode"/>
   <Dependencies Name="ReleaseUnicode"/>
@@ -227,5 +235,17 @@
     <File Name="CMakePlugin_cmakeplugin_bitmaps.cpp"/>
     <File Name="CMakePlugin_cmakeplugin_bitmaps.xrc"/>
     <File Name="CMakePlugin.wxcp"/>
+    <File Name="CMakeHelpDialog.wxcp"/>
+    <File Name="CMakeHelpPanel.wxcp"/>
+    <File Name="CMakeProjectSettingsPanel.wxcp"/>
+    <File Name="CMakeSettingsDialog.wxcp"/>
+    <File Name="CMakeHelpDialogBase_bitmaps.cpp"/>
+    <File Name="CMakeHelpDialogBase_bitmaps.xrc"/>
+    <File Name="CMakeHelpPanelBase_bitmaps.cpp"/>
+    <File Name="CMakeHelpPanelBase_bitmaps.xrc"/>
+    <File Name="CMakeProjectSettingsPanel_bitmaps.cpp"/>
+    <File Name="CMakeProjectSettingsPanel_bitmaps.xrc"/>
+    <File Name="CMakeSettingsDialogBase_bitmaps.cpp"/>
+    <File Name="CMakeSettingsDialogBase_bitmaps.xrc"/>
   </VirtualDirectory>
 </CodeLite_Project>

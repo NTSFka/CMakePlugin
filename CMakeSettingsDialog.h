@@ -18,21 +18,15 @@
 /*                                                                          */
 /* ************************************************************************ */
 
-#ifndef CMAKE_SETTINGS_HPP_
-#define CMAKE_SETTINGS_HPP_
+#ifndef CMAKE_SETTINGS_DIALOG_H_
+#define CMAKE_SETTINGS_DIALOG_H_
 
 /* ************************************************************************ */
 /* INCLUDES                                                                 */
 /* ************************************************************************ */
 
-// wxWidgets
-#include <wx/dialog.h>
-#include <wx/textctrl.h>
-#include <wx/stattext.h>
-#include <wx/button.h>
-
 // UI
-#include "CMakePluginUi.h"
+#include "CMakeSettingsDialogBase.h"
 
 /* ************************************************************************ */
 /* FORWARD DECLARATIONS                                                     */
@@ -78,8 +72,7 @@ public:
      *
      * @return
      */
-    wxString GetCMakePath() const
-    {
+    wxString GetCMakePath() const {
         return m_filePickerProgram->GetPath();
     }
 
@@ -93,8 +86,7 @@ public:
      *
      * @param path
      */
-    void SetCMakePath(const wxString& path)
-    {
+    void SetCMakePath(const wxString& path) {
         m_filePickerProgram->SetPath(path);
     }
 
@@ -121,4 +113,4 @@ private:
 
 /* ************************************************************************ */
 
-#endif // CMAKE_SETTINGS_HPP_
+#endif // CMAKE_SETTINGS_DIALOG_H_
