@@ -20,6 +20,7 @@
     <File Name="CMakeBuilder.cpp"/>
     <File Name="CMake.cpp"/>
     <File Name="CMakeSettingsManager.cpp"/>
+    <File Name="CMakeParser.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="include">
     <File Name="CMakePlugin.h"/>
@@ -29,6 +30,7 @@
     <File Name="CMakeSettingsManager.h"/>
     <File Name="CMakeConfiguration.h"/>
     <File Name="CMakeGenerator.h"/>
+    <File Name="CMakeParser.h"/>
   </VirtualDirectory>
   <Dependencies/>
   <VirtualDirectory Name="UI">
