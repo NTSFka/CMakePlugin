@@ -141,11 +141,11 @@ wxString ParseManText(wxArrayString::const_iterator& line)
  * @param data Output data container.
  */
 static
-void ParseManDesc(wxArrayString::const_iterator& line, wxStringMap_t& data)
+void ParseManDesc(wxArrayString::const_iterator& line, CMake::LinesMap& data)
 {
     wxString name;
     wxString newName;
-    wxString desc;
+    wxArrayString desc;
     bool store = false;
 
     // Read until another section is found
@@ -156,10 +156,7 @@ void ParseManDesc(wxArrayString::const_iterator& line, wxStringMap_t& data)
             newName.Trim();
             store = true;
 
-            if (!desc.empty()) {
-                // Replace all dash escape sequences: \- => -
-                desc.Replace("\\-", "-");
-
+            if (!desc.IsEmpty()) {
                 // Store name and description
                 data.insert(std::make_pair(name, desc));
                 desc.clear();
@@ -190,8 +187,12 @@ void ParseManDesc(wxArrayString::const_iterator& line, wxStringMap_t& data)
                     continue;
             }
 
+            wxString copy = *line;
+            // Replace all dash escape sequences: \- => -
+            copy.Replace("\\-", "-");
+
             // Append line
-            desc.Append(*line);
+            desc.push_back(copy);
         }
     }
 

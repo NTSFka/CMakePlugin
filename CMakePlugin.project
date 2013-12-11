@@ -40,8 +40,6 @@
     <File Name="CMakeHelpDialog.cpp"/>
     <File Name="CMakeProjectSettingsPanel.cpp"/>
     <File Name="CMakeOutput.cpp"/>
-    <File Name="CMakePluginUi.cpp"/>
-    <File Name="CMakePluginUi.h"/>
     <File Name="CMakeHelpPanel.h"/>
     <File Name="CMakeHelpPanel.cpp"/>
     <File Name="CMakeHelpDialog.h"/>

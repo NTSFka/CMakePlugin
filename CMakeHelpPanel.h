@@ -28,6 +28,10 @@
 // C++
 #include <map>
 
+// wxWidgets
+#include <wx/string.h>
+#include <wx/arrstr.h>
+
 // UI
 #include "CMakeHelpPanelBase.h"
 
@@ -90,7 +94,7 @@ public:
      *
      * @param data     A pointer to displayed data.
      */
-    void SetData(const std::map<wxString, wxString>* data);
+    void SetData(const std::map<wxString, wxArrayString>* data);
 
 
 // Public Events
@@ -110,7 +114,7 @@ private:
 
 
     /// Panel data.
-    const std::map<wxString, wxString>* m_data;
+    const std::map<wxString, wxArrayString>* m_data;
 
 };
 

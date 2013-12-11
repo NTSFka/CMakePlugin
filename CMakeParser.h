@@ -25,6 +25,9 @@
 /* INCLUDES                                                                 */
 /* ************************************************************************ */
 
+// C++
+#include <set>
+
 // wxWidgets
 #include <wx/string.h>
 #include <wx/vector.h>
@@ -55,7 +58,6 @@ public:
         /// Command call arguments.
         wxArrayString arguments;
     };
-
 
 
 // Public Ctors
@@ -92,6 +94,16 @@ public:
     }
 
 
+    /**
+     * @brief Returns defined variables.
+     *
+     * @return Variables.
+     */
+    const std::set<wxString>& GetVariables() const {
+        return m_variables;
+    }
+
+
 // Public Operations
 public:
 
@@ -122,10 +134,6 @@ public:
     bool ParseFile(const wxFileName& filename);
 
 
-// Private Operations
-private:
-
-
 // Private Data Members
 private:
 
@@ -135,6 +143,9 @@ private:
 
     /// Parsed commands.
     wxVector<Command> m_commands;
+
+    /// Defined variables.
+    std::set<wxString> m_variables;
 
 };
 

@@ -225,8 +225,8 @@ static bool GetToken(IteratorPair& context, Token& token)
         token.value += context.Get();
         context.Next();
 
-        if (context.Is('{'))
-        {
+        if (context.Is('{')) {
+
             token.type = Token::TypeVariable;
             token.value += context.Get();
             context.Next();
@@ -240,6 +240,22 @@ static bool GetToken(IteratorPair& context, Token& token)
             // TODO Check }
             token.value += context.Get();
             context.Next();
+
+        } else if (context.Is('(')) {
+
+            token.type = Token::TypeVariable;
+            token.value += context.Get();
+            context.Next();
+
+            // Rest of the identifier
+            while (!context.IsEof() && context.IsIdentifier()) {
+                token.value += context.Get();
+                context.Next();
+            }
+
+            // TODO Check )
+            token.value += context.Get();
+            context.Next();
         }
 
     } else {
@@ -250,6 +266,101 @@ static bool GetToken(IteratorPair& context, Token& token)
     }
 
     return !context.IsEof();
+}
+
+/* ************************************************************************ */
+
+/**
+ * @brief Parses command.
+ */
+static bool ParseCommand(IteratorPair& context, CMakeParser::Command& command)
+{
+    command.name.clear();
+    command.arguments.clear();
+
+    Token token;
+
+    // Skip spaces and find identifier (command name)
+    for (GetToken(context, token); !context.IsEof(); GetToken(context, token)) {
+        // Identifier found
+        if (token.type == Token::TypeIdentifier) {
+            break;
+        }
+    }
+
+    // Done
+    if (context.IsEof())
+        return false;
+
+    // Must be an identifier
+    if (token.type != Token::TypeIdentifier) {
+        // TODO error
+        std::cerr << "ERROR(ID): " << token.value.c_str() << std::endl;
+        return false;
+    }
+
+    // Store command name
+    command.name = token.value;
+
+    // Skip spaces and find open parenthessis
+    for (GetToken(context, token); !context.IsEof(); GetToken(context, token)) {
+        // Identifier found
+        if (token.type == Token::TypeLeftParen) {
+            break;
+        } else if (token.type == Token::TypeSpace) {
+            continue;
+        } else {
+            std::cerr << "ERROR(UE): " << token.value.c_str() << std::endl;
+            return false;
+        }
+    }
+
+    // Must be a '('
+    if (token.type != Token::TypeLeftParen) {
+        // TODO error
+        std::cerr << "ERROR(LP): " << token.value.c_str() << std::endl;
+        return false;
+    }
+
+    // Parse next token
+    if (!GetToken(context, token)) {
+        return false;
+    }
+
+    // Command have arguments
+    if (token.type != Token::TypeRightParen) {
+
+        wxString arg;
+
+        // Read tokens
+        for (; !context.IsEof(); GetToken(context, token)) {
+            // End of arguments
+            if (token.type == Token::TypeRightParen) {
+                break;
+            }
+
+            // Next argument
+            if (token.type == Token::TypeSpace) {
+
+                // Store argument
+                if (!arg.IsEmpty())
+                    command.arguments.push_back(arg);
+
+                arg.Clear();
+                continue;
+            }
+
+            // Add token value
+            arg += token.value;
+        }
+
+        // Store last argument
+        if (!arg.IsEmpty())
+            command.arguments.push_back(arg);
+
+    }
+
+    return true;
 }
 
 /* ************************************************************************ */
@@ -275,13 +386,26 @@ CMakeParser::Clear()
 bool
 CMakeParser::Parse(const wxString& content)
 {
-    Token token;
+    Command command;
     IteratorPair context = {content.begin(), content.end() };
 
     // Parse input into tokens
-    while (GetToken(context, token)) {
-        std::cout << token.type << ": " << token.value << std::endl;
+    while (ParseCommand(context, command)) {
+
+        // If command is 'set', store variable info
+        if (command.name == "set") {
+            if (!command.arguments.IsEmpty()) {
+                m_variables.insert(command.arguments[0]);
+            } else {
+                // TODO ERROR
+            }
+        }
+
+        // Add command
+        m_commands.push_back(command);
     }
+
+    return true;
 }
 
 /* ************************************************************************ */
@@ -323,14 +447,24 @@ int main(int argc, char** argv)
 
     CMakeParser parser;
     if (!parser.ParseFile(filename)) {
-        std::cerr << "Unable to open file" << std::endl;
+        std::cerr << "Unable to open file: " << filename.GetFullPath().c_str() << std::endl;
         return EXIT_FAILURE;
     }
+
+    std::cout << "\nCOMMANDS:\n";
 
     const wxVector<CMakeParser::Command>& cmds = parser.GetCommands();
 
     for (wxVector<CMakeParser::Command>::const_iterator it = cmds.begin(), ite = cmds.end(); it != ite; ++it) {
-        std::cout << it->name << "(" << ")" << std::endl;
+        std::cout << it->name << "(" << wxJoin(it->arguments, ' ') << ")" << std::endl;
+    }
+
+    std::cout << "\nVARIABLES:\n";
+
+    const std::set<wxString>& vars = parser.GetVariables();
+
+    for (std::set<wxString>::const_iterator it = vars.begin(), ite = vars.end(); it != ite; ++it) {
+        std::cout << *it << std::endl;
     }
 
     return EXIT_SUCCESS;

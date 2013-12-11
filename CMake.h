@@ -25,13 +25,14 @@
 /* INCLUDES                                                                 */
 /* ************************************************************************ */
 
+// C++
+#include <map>
+
 // wxWidgets
 #include <wx/string.h>
 #include <wx/filename.h>
 #include <wx/arrstr.h>
-
-// Codelite
-#include "macros.h" // for wxStringMap_t
+#include <wx/vector.h>
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
@@ -45,6 +46,14 @@
  */
 class CMake
 {
+
+// Public Types
+public:
+
+
+    /// Lines map.
+    typedef std::map<wxString, wxArrayString> LinesMap;
+
 
 // Public Ctors
 public:
@@ -117,7 +126,7 @@ public:
      *
      * @return
      */
-    inline const wxStringMap_t& GetCommands() const {
+    inline const LinesMap& GetCommands() const {
         return m_commands;
     }
 
@@ -127,7 +136,7 @@ public:
      *
      * @return
      */
-    inline const wxStringMap_t& GetModules() const {
+    inline const LinesMap& GetModules() const {
         return m_modules;
     }
 
@@ -137,7 +146,7 @@ public:
      *
      * @return
      */
-    inline const wxStringMap_t& GetProperties() const {
+    inline const LinesMap& GetProperties() const {
         return m_properties;
     }
 
@@ -147,7 +156,7 @@ public:
      *
      * @return
      */
-    inline const wxStringMap_t& GetVariables() const {
+    inline const LinesMap& GetVariables() const {
         return m_variables;
     }
 
@@ -222,16 +231,16 @@ private:
     wxString m_version;
 
     /// List of commands.
-    wxStringMap_t m_commands;
+    LinesMap m_commands;
 
     /// List of modules.
-    wxStringMap_t m_modules;
+    LinesMap m_modules;
 
     /// List of properties.
-    wxStringMap_t m_properties;
+    LinesMap m_properties;
 
     /// List of variables.
-    wxStringMap_t m_variables;
+    LinesMap m_variables;
 
     /// CMake copyright.
     wxString m_copyright;
