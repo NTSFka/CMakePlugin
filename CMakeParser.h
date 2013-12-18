@@ -43,6 +43,29 @@
 class CMakeParser
 {
 
+// Public Enums
+public:
+
+
+    /**
+     * @brief Error codes.
+     */
+    enum ErrorCode
+    {
+        /// Common error.
+        ErrorCommon = 0,
+
+        /// Unexpected token.
+        ErrorUnexpectedToken,
+
+        /// Missing argument for SET command.
+        ErrorSetMissingArguments,
+
+        /// Number of error codes.
+        ErrorCount
+    };
+
+
 // Public Structures
 public:
 
@@ -52,11 +75,27 @@ public:
      */
     struct Command
     {
+        /// Command start position.
+        wxString::size_type pos;
+
         /// Command name.
         wxString name;
 
         /// Command call arguments.
         wxArrayString arguments;
+    };
+
+
+    /**
+     * @brief Represents source error.
+     */
+    struct Error
+    {
+        /// Error position.
+        wxString::size_type pos;
+
+        /// Error code.
+        ErrorCode code;
     };
 
 
@@ -134,6 +173,16 @@ public:
     bool ParseFile(const wxFileName& filename);
 
 
+    /**
+     * @brief Translate error code into human readable string.
+     *
+     * @param code Error code.
+     *
+     * @return Error string.
+     */
+    static wxString GetError(ErrorCode code);
+
+
 // Private Data Members
 private:
 
@@ -146,6 +195,9 @@ private:
 
     /// Defined variables.
     std::set<wxString> m_variables;
+
+    /// Errors found in the last parsed source.
+    wxVector<Error> m_errors;
 
 };
 

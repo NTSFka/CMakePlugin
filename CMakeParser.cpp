@@ -27,14 +27,11 @@
 
 // C++
 #include <cctype>
+#include <cassert>
+#include <iterator>
 
 // wxWidgets
 #include <wx/ffile.h>
-
-// TODO REMOVE
-#include <cstdlib>
-#include <iostream>
-
 
 /* ************************************************************************ */
 /* STRUCTURES                                                               */
@@ -46,10 +43,10 @@
 struct Token
 {
     /// Token start position.
-    std::size_t start;
+    wxString::size_type start;
 
     /// Token length.
-    std::size_t length;
+    wxString::size_type length;
 
     /// Token type.
     enum {
@@ -74,11 +71,48 @@ struct Token
  */
 struct IteratorPair
 {
+
+// Public Data Members
+public:
+
+    /// Start position.
+    wxString::const_iterator start;
+
     /// Current position.
     wxString::const_iterator current;
 
     /// Input end position.
     wxString::const_iterator end;
+
+
+// Public Ctors
+public:
+
+
+    /**
+     * @brief Creates an iterator pair.
+     *
+     * @param beg Source begin.
+     * @param end Source end.
+     */
+    IteratorPair(wxString::const_iterator beg, wxString::const_iterator end)
+        : start(beg), current(beg), end(end)
+    {}
+
+
+// Public Accessors
+public:
+
+
+    /**
+     * @brief Returns position of the current character from the start
+     * of the source.
+     *
+     * @return Offset
+     */
+    wxString::size_type GetOffset() const {
+        return std::distance(start, current);
+    }
 
 
     /**
@@ -137,19 +171,35 @@ struct IteratorPair
     }
 
 
+    /**
+     * @brief Checks if current character is alpha (a-z).
+     *
+     * @return
+     */
     bool IsAlpha() const {
         return IsRange('a', 'z') || IsRange('A', 'Z');
     }
 
 
+    /**
+     * @brief Checks if current character is alphanumeric (a-z|0-9).
+     *
+     * @return
+     */
     bool IsAlphaNumberic() const {
         return IsAlpha() || IsRange('0', '9');
     }
 
 
+    /**
+     * @brief Checks if current character identifier (a-z|0-9|_).
+     *
+     * @return
+     */
     bool IsIdentifier() const {
         return IsAlphaNumberic() || Is('_');
     }
+
 };
 
 /* ************************************************************************ */
@@ -161,17 +211,16 @@ struct IteratorPair
  *
  * @param context Parsing context.
  * @param token   Output token.
- *
- * @return If some token was parsed.
  */
-static bool GetToken(IteratorPair& context, Token& token)
+static void GetToken(IteratorPair& context, Token& token)
 {
     // EOS
     if (context.IsEof())
-        return false;
+        return;
 
     token.type = Token::TypeUnknown;
     token.value.clear();
+    token.start = context.GetOffset();
 
     if (context.Is('#')) {
 
@@ -265,16 +314,23 @@ static bool GetToken(IteratorPair& context, Token& token)
 
     }
 
-    return !context.IsEof();
+    // Calculate token size
+    token.length = context.GetOffset() - token.start;
 }
 
 /* ************************************************************************ */
 
 /**
  * @brief Parses command.
+ *
+ * @param context Parse context.
+ * @param command Output variable.
+ * @param errors  Container for errors.
  */
-static bool ParseCommand(IteratorPair& context, CMakeParser::Command& command)
+static bool ParseCommand(IteratorPair& context, CMakeParser::Command& command,
+                         wxVector<CMakeParser::Error>& errors)
 {
+    command.pos = 0;
     command.name.clear();
     command.arguments.clear();
 
@@ -293,14 +349,11 @@ static bool ParseCommand(IteratorPair& context, CMakeParser::Command& command)
         return false;
 
     // Must be an identifier
-    if (token.type != Token::TypeIdentifier) {
-        // TODO error
-        std::cerr << "ERROR(ID): " << token.value.c_str() << std::endl;
-        return false;
-    }
+    assert(token.type == Token::TypeIdentifier);
 
     // Store command name
     command.name = token.value;
+    command.pos = token.start;
 
     // Skip spaces and find open parenthessis
     for (GetToken(context, token); !context.IsEof(); GetToken(context, token)) {
@@ -310,22 +363,24 @@ static bool ParseCommand(IteratorPair& context, CMakeParser::Command& command)
         } else if (token.type == Token::TypeSpace) {
             continue;
         } else {
-            std::cerr << "ERROR(UE): " << token.value.c_str() << std::endl;
-            return false;
+            // Expected open parenthesis
+            CMakeParser::Error error = {token.start, CMakeParser::ErrorUnexpectedToken};
+            errors.push_back(error);
+
+            // Don't stop parsing, just find the parenthesis
         }
     }
 
-    // Must be a '('
-    if (token.type != Token::TypeLeftParen) {
-        // TODO error
-        std::cerr << "ERROR(LP): " << token.value.c_str() << std::endl;
+    // Unexpected EOF.
+    if (context.IsEof())
+        // TODO add error?
         return false;
-    }
+
+    // Must be a '('
+    assert(token.type == Token::TypeLeftParen);
 
     // Parse next token
-    if (!GetToken(context, token)) {
-        return false;
-    }
+    GetToken(context, token);
 
     // Command have arguments
     if (token.type != Token::TypeRightParen) {
@@ -360,7 +415,8 @@ static bool ParseCommand(IteratorPair& context, CMakeParser::Command& command)
 
     }
 
-    return true;
+    // Command must ends with close paren
+    return (token.type == Token::TypeRightParen);
 }
 
 /* ************************************************************************ */
@@ -379,6 +435,7 @@ CMakeParser::Clear()
 {
     m_filename.Clear();
     m_commands.clear();
+    m_errors.clear();
 }
 
 /* ************************************************************************ */
@@ -386,18 +443,22 @@ CMakeParser::Clear()
 bool
 CMakeParser::Parse(const wxString& content)
 {
+    // Clear everything
+    Clear();
+
     Command command;
-    IteratorPair context = {content.begin(), content.end() };
+    IteratorPair context(content.begin(), content.end());
 
     // Parse input into tokens
-    while (ParseCommand(context, command)) {
+    while (ParseCommand(context, command, m_errors)) {
 
         // If command is 'set', store variable info
         if (command.name == "set") {
             if (!command.arguments.IsEmpty()) {
                 m_variables.insert(command.arguments[0]);
             } else {
-                // TODO ERROR
+                Error error = {command.pos, ErrorSetMissingArguments};
+                m_errors.push_back(error);
             }
         }
 
@@ -413,9 +474,6 @@ CMakeParser::Parse(const wxString& content)
 bool
 CMakeParser::ParseFile(const wxFileName& filename)
 {
-    // Clear everything
-    Clear();
-
     m_filename = filename;
 
     // Open file
@@ -434,42 +492,17 @@ CMakeParser::ParseFile(const wxFileName& filename)
 
 /* ************************************************************************ */
 
-#ifdef MAIN
-
-int main(int argc, char** argv)
+wxString
+CMakeParser::GetError(ErrorCode code)
 {
-    if (argc < 2) {
-        std::cerr << "Missing parameter" << std::endl;
-        return EXIT_FAILURE;
-    }
+    // Error codes are linear and we can use an array.
+    static wxString s_strings[ErrorCount] = {
+        "Common error",
+        "Unexpected token",
+        "Missing arguments for SET command"
+    };
 
-    const wxFileName filename(argv[1]);
-
-    CMakeParser parser;
-    if (!parser.ParseFile(filename)) {
-        std::cerr << "Unable to open file: " << filename.GetFullPath().c_str() << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    std::cout << "\nCOMMANDS:\n";
-
-    const wxVector<CMakeParser::Command>& cmds = parser.GetCommands();
-
-    for (wxVector<CMakeParser::Command>::const_iterator it = cmds.begin(), ite = cmds.end(); it != ite; ++it) {
-        std::cout << it->name << "(" << wxJoin(it->arguments, ' ') << ")" << std::endl;
-    }
-
-    std::cout << "\nVARIABLES:\n";
-
-    const std::set<wxString>& vars = parser.GetVariables();
-
-    for (std::set<wxString>::const_iterator it = vars.begin(), ite = vars.end(); it != ite; ++it) {
-        std::cout << *it << std::endl;
-    }
-
-    return EXIT_SUCCESS;
+    return s_strings[code];
 }
-
-#endif
 
 /* ************************************************************************ */
