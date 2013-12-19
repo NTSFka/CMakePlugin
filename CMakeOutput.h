@@ -18,24 +18,21 @@
 /*                                                                          */
 /* ************************************************************************ */
 
-#ifndef CMAKE_OUTPUT_HPP_
-#define CMAKE_OUTPUT_HPP_
+#ifndef CMAKE_OUTPUT_H_
+#define CMAKE_OUTPUT_H_
 
 /* ************************************************************************ */
 /* INCLUDES                                                                 */
 /* ************************************************************************ */
 
-// wxWidgets
-#include <wx/string.h>
-#include <wx/panel.h>
+// UI
+#include "CMakeOutputBase.h"
 
 /* ************************************************************************ */
 /* FORWARD DECLARATIONS                                                     */
 /* ************************************************************************ */
 
 class CMakePlugin;
-class AsyncExeCmd;
-class wxTextCtrl;
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
@@ -46,7 +43,7 @@ class wxTextCtrl;
  *
  * @deprecated
  */
-class CMakeOutput : public wxPanel
+class CMakeOutput : public CMakeOutputBase
 {
 
 // Public Ctors & Dtors
@@ -60,7 +57,7 @@ public:
      * @param id
      * @param plugin
      */
-    CMakeOutput(wxWindow* parent, wxWindowID id, CMakePlugin* plugin);
+    CMakeOutput(wxWindow* parent, CMakePlugin* plugin);
 
 
 // Public Operations
@@ -68,11 +65,19 @@ public:
 
 
     /**
-     * @brief Appends text to output text widget.
+     * @brief Set output text.
      *
-     * @param text
+     * @param output Lines.
      */
-    void AppendText(const wxString& text);
+    void SetOutput(const wxArrayString& output);
+
+
+    /**
+     * @brief Set errors text.
+     *
+     * @param errors Lines.
+     */
+    void SetErrors(const wxArrayString& errors);
 
 
     /**
@@ -83,38 +88,6 @@ public:
 
 // Public Events
 public:
-
-
-    /**
-     * @brief On process started.
-     *
-     * @param event
-     */
-    void OnProcStarted(wxCommandEvent& event);
-
-
-    /**
-     * @brief On process output.
-     *
-     * @param event
-     */
-    void OnProcOutput(wxCommandEvent& event);
-
-
-    /**
-     * @brief On process output error.
-     *
-     * @param event
-     */
-    void OnProcError(wxCommandEvent& event);
-
-
-    /**
-     * @brief On process ended.
-     *
-     * @param event
-     */
-    void OnProcEnded(wxCommandEvent& event);
 
 
     /**
@@ -129,12 +102,6 @@ public:
 private:
 
 
-    /// Output text widget.
-    wxTextCtrl* m_output;
-
-    /// Current command
-    AsyncExeCmd* m_command;
-
     /// CMake plugin.
     CMakePlugin* m_plugin;
 
@@ -142,4 +109,4 @@ private:
 
 /* ************************************************************************ */
 
-#endif // CMAKE_OUTPUT_HPP_
+#endif // CMAKE_OUTPUT_H_

@@ -33,6 +33,7 @@
 #include <wx/mimetype.h>
 #include <wx/menu.h>
 #include <wx/dir.h>
+#include <wx/event.h>
 
 // CodeLite
 #include "environmentconfig.h"
@@ -47,6 +48,7 @@
 #include "build_system.h"
 #include "file_logger.h"
 #include "macromanager.h"
+#include "async_executable_cmd.h"
 
 // CMakePlugin
 #include "CMake.h"
@@ -60,6 +62,7 @@
 #include "CMakeProjectSettings.h"
 #include "CMakeProjectSettingsPanel.h"
 #include "CMakeGenerator.h"
+#include "CMakeOutput.h"
 
 /* ************************************************************************ */
 /* VARIABLES                                                                */
@@ -144,6 +147,11 @@ CMakePlugin::CMakePlugin(IManager* manager)
 
     // Create cmake application
     m_cmake.reset(new CMake(m_configuration->GetProgramPath()));
+
+    // Add output window tab
+    Notebook* notebook = m_mgr->GetOutputPaneNotebook();
+    m_output = new CMakeOutput(notebook, this);
+    notebook->AddPage(m_output, "CMake", false, LoadBitmapFile("cmake.png"));
 
     // Bind events
     EventNotifier::Get()->Bind(wxEVT_CMD_PROJ_SETTINGS_SAVED, wxCommandEventHandler(CMakePlugin::OnSaveConfig), this);
@@ -353,6 +361,12 @@ CMakePlugin::UnHookProjectSettingsTab(wxBookCtrlBase* notebook,
 void
 CMakePlugin::UnPlug()
 {
+    // Remove output tab
+    Notebook* notebook = m_mgr->GetOutputPaneNotebook();
+    int pos = notebook->FindPage(m_output);
+    if (pos != wxNOT_FOUND)
+        notebook->DeletePage(pos);
+
     // Unbind events
     wxTheApp->Unbind(wxEVT_COMMAND_MENU_SELECTED, &CMakePlugin::OnSettings, this, XRCID("cmake_settings"));
     wxTheApp->Unbind(wxEVT_COMMAND_MENU_SELECTED, &CMakePlugin::OnHelp, this, XRCID("cmake_help"));
@@ -556,10 +570,18 @@ CMakePlugin::OnExportMakefile(clBuildEvent& event)
         wxSetWorkingDirectory(wxGetCwd() + "/" + buildDir);
 
         // Configure
-        // FIXME where goes the output?
-        // TODO how we get information about configuration failure?
+
+        // We need to run configuration process synchronious because
+        // build can be perform only after successful configuration.
+        // Sadly there is no posibility to stop building from this
+        // so the build is performed anyway even if configuration fails.
+
         wxArrayString output;
-        ProcUtils::SafeExecuteCommand(cmd, output);
+        wxArrayString errors;
+        wxExecute(cmd, output, errors);
+
+        GetOutput()->SetOutput(output);
+        GetOutput()->SetErrors(errors);
     }
 }
 

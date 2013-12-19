@@ -47,6 +47,7 @@ class CMakeSettingsManager;
 class CMakeProjectSettingsPanel;
 class CMakeProjectSettings;
 class CMakeGenerator;
+class CMakeOutput;
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
@@ -136,6 +137,16 @@ public:
      */
     inline CMakeGenerator* GetGenerator() const {
         return m_generator.get();
+    }
+
+
+    /**
+     * @brief Returns output window.
+     *
+     * @return A pointer to output window.
+     */
+    CMakeOutput* GetOutput() const {
+        return m_output;
     }
 
 
@@ -376,6 +387,9 @@ private:
 
     /// CMakeLists.txt generator
     wxScopedPtr<CMakeGenerator> m_generator;
+
+    /// Configuration output window.
+    CMakeOutput* m_output;
 
     /// Only one is enough
     CMakeProjectSettingsPanel* m_panel;

@@ -56,6 +56,8 @@
     <File Name="CMakeHelpDialogBase.h"/>
     <File Name="CMakeSettingsDialogBase.cpp"/>
     <File Name="CMakeSettingsDialogBase.h"/>
+    <File Name="CMakeOutputBase.cpp"/>
+    <File Name="CMakeOutputBase.h"/>
   </VirtualDirectory>
   <Dependencies Name="DebugUnicode"/>
   <Dependencies Name="ReleaseUnicode"/>
@@ -231,21 +233,25 @@
       </Completion>
     </Configuration>
   </Settings>
-  <VirtualDirectory Name="wxCrafter">
-    <File Name="CMakePlugin_cmakeplugin_bitmaps.cpp"/>
-    <File Name="CMakePlugin_cmakeplugin_bitmaps.xrc"/>
-    <File Name="CMakePlugin.wxcp"/>
+  <VirtualDirectory Name="wxcrafter">
+    <VirtualDirectory Name="resources">
+      <File Name="CMakeHelpDialogBase_bitmaps.cpp"/>
+      <File Name="CMakeHelpPanelBase_bitmaps.cpp"/>
+      <File Name="CMakeOutputBase_bitmaps.cpp"/>
+      <File Name="CMakeProjectSettingsPanel_bitmaps.cpp"/>
+      <File Name="CMakeSettingsDialogBase_bitmaps.cpp"/>
+      <File Name="CMakeHelpDialogBase_bitmaps.xrc"/>
+      <File Name="CMakeHelpPanelBase_bitmaps.xrc"/>
+      <File Name="CMakeOutputBase_bitmaps.xrc"/>
+      <File Name="CMakeProjectSettingsPanel_bitmaps.xrc"/>
+      <File Name="CMakeSettingsDialogBase_bitmaps.xrc"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="base"/>
     <File Name="CMakeHelpDialog.wxcp"/>
     <File Name="CMakeHelpPanel.wxcp"/>
+    <File Name="CMakeOutput.wxcp"/>
+    <File Name="CMakePlugin.wxcp"/>
     <File Name="CMakeProjectSettingsPanel.wxcp"/>
     <File Name="CMakeSettingsDialog.wxcp"/>
-    <File Name="CMakeHelpDialogBase_bitmaps.cpp"/>
-    <File Name="CMakeHelpDialogBase_bitmaps.xrc"/>
-    <File Name="CMakeHelpPanelBase_bitmaps.cpp"/>
-    <File Name="CMakeHelpPanelBase_bitmaps.xrc"/>
-    <File Name="CMakeProjectSettingsPanel_bitmaps.cpp"/>
-    <File Name="CMakeProjectSettingsPanel_bitmaps.xrc"/>
-    <File Name="CMakeSettingsDialogBase_bitmaps.cpp"/>
-    <File Name="CMakeSettingsDialogBase_bitmaps.xrc"/>
   </VirtualDirectory>
 </CodeLite_Project>
