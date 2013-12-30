@@ -42,12 +42,10 @@
 /* ************************************************************************ */
 
 class CMake;
-class CMakeBuilder;
 class CMakeSettingsManager;
 class CMakeProjectSettingsPanel;
 class CMakeProjectSettings;
 class CMakeGenerator;
-class CMakeOutput;
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
@@ -95,7 +93,7 @@ public:
      *
      * @return
      */
-    inline IManager* GetManager() const {
+    IManager* GetManager() const {
         return m_mgr;
     }
 
@@ -105,7 +103,7 @@ public:
      *
      * @return
      */
-    inline CMake* GetCMake() const {
+    CMake* GetCMake() const {
         return m_cmake.get();
     }
 
@@ -115,7 +113,7 @@ public:
      *
      * @return
      */
-    inline CMakeSettingsManager* GetSettingsManager() const {
+    CMakeSettingsManager* GetSettingsManager() const {
         return m_settingsManager.get();
     }
 
@@ -125,28 +123,8 @@ public:
      *
      * @return
      */
-    inline CMakeConfiguration* GetConfiguration() const {
+    CMakeConfiguration* GetConfiguration() const {
         return m_configuration.get();
-    }
-
-
-    /**
-     * @brief Returns CMakeLists.txt generator.
-     *
-     * @return A pointer to CMakeLists.txt generator.
-     */
-    inline CMakeGenerator* GetGenerator() const {
-        return m_generator.get();
-    }
-
-
-    /**
-     * @brief Returns output window.
-     *
-     * @return A pointer to output window.
-     */
-    CMakeOutput* GetOutput() const {
-        return m_output;
     }
 
 
@@ -173,7 +151,7 @@ public:
      *
      * @return Pointer to project.
      */
-    inline ProjectPtr GetSelectedProject() const {
+    ProjectPtr GetSelectedProject() const {
         return m_mgr->GetSelectedProject();
     }
 
@@ -314,14 +292,6 @@ public:
 
 
     /**
-     * @brief On building.
-     *
-     * @param event
-     */
-    void OnBuildStarting(clBuildEvent& event);
-
-
-    /**
      * @brief Returns clean command.
      *
      * @param event
@@ -384,12 +354,6 @@ private:
 
     /// Settings manager.
     wxScopedPtr<CMakeSettingsManager> m_settingsManager;
-
-    /// CMakeLists.txt generator
-    wxScopedPtr<CMakeGenerator> m_generator;
-
-    /// Configuration output window.
-    CMakeOutput* m_output;
 
     /// Only one is enough
     CMakeProjectSettingsPanel* m_panel;

@@ -69,9 +69,7 @@ CMakeWorkspaceMenu::~CMakeWorkspaceMenu()
 void
 CMakeWorkspaceMenu::OnExport(wxCommandEvent& event)
 {
-    m_plugin->GetGenerator()->Generate(
-        m_plugin->GetManager()->GetWorkspace()
-    );
+    CMakeGenerator::Generate(m_plugin->GetManager()->GetWorkspace());
 }
 
 /* ************************************************************************ */

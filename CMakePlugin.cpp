@@ -55,14 +55,12 @@
 #include "CMakeGenerator.h"
 #include "CMakeWorkspaceMenu.h"
 #include "CMakeProjectMenu.h"
-#include "CMakeBuilder.h"
 #include "CMakeHelpDialog.h"
 #include "CMakeSettingsDialog.h"
 #include "CMakeSettingsManager.h"
 #include "CMakeProjectSettings.h"
 #include "CMakeProjectSettingsPanel.h"
 #include "CMakeGenerator.h"
-#include "CMakeOutput.h"
 
 /* ************************************************************************ */
 /* VARIABLES                                                                */
@@ -126,6 +124,38 @@ extern "C" EXPORT int GetPluginInterfaceVersion()
 }
 
 /* ************************************************************************ */
+
+/**
+ * @brief Join arguments for project settings.
+ *
+ * @param settings Project settings.
+ *
+ * @return Command line arguments.
+ */
+static wxString CreateArguments(const CMakeProjectSettings& settings)
+{
+    const wxString& sourceDir = settings.sourceDirectory;
+    const wxString& buildDir = settings.buildDirectory;
+    wxArrayString args;
+
+    // Generator
+    if (!settings.generator.IsEmpty())
+        args.Add("-G \"" + settings.generator + "\"");
+
+    // Build Type
+    if (!settings.buildType.IsEmpty())
+        args.Add("-DCMAKE_BUILD_TYPE=" + settings.buildType);
+
+    // Copy additional arguments
+    for (wxArrayString::const_iterator it = settings.arguments.begin(),
+        ite = settings.arguments.end(); it != ite; ++it) {
+        args.Add(*it);
+    }
+
+    return wxJoin(args, ' ', '\0');
+}
+
+/* ************************************************************************ */
 /* CLASSES                                                                  */
 /* ************************************************************************ */
 
@@ -134,7 +164,6 @@ CMakePlugin::CMakePlugin(IManager* manager)
     , m_configuration(NULL)
     , m_cmake(NULL)
     , m_settingsManager(new CMakeSettingsManager(this))
-    , m_generator(new CMakeGenerator())
     , m_panel(NULL)
 {
     m_longName = _("CMake integration with CodeLite");
@@ -148,14 +177,8 @@ CMakePlugin::CMakePlugin(IManager* manager)
     // Create cmake application
     m_cmake.reset(new CMake(m_configuration->GetProgramPath()));
 
-    // Add output window tab
-    Notebook* notebook = m_mgr->GetOutputPaneNotebook();
-    m_output = new CMakeOutput(notebook, this);
-    notebook->AddPage(m_output, "CMake", false, LoadBitmapFile("cmake.png"));
-
     // Bind events
     EventNotifier::Get()->Bind(wxEVT_CMD_PROJ_SETTINGS_SAVED, wxCommandEventHandler(CMakePlugin::OnSaveConfig), this);
-    EventNotifier::Get()->Bind(wxEVT_BUILD_STARTING, clBuildEventHandler(CMakePlugin::OnBuildStarting), this);
     EventNotifier::Get()->Bind(wxEVT_GET_PROJECT_BUILD_CMD, clBuildEventHandler(CMakePlugin::OnGetBuildCommand), this);
     EventNotifier::Get()->Bind(wxEVT_GET_PROJECT_CLEAN_CMD, clBuildEventHandler(CMakePlugin::OnGetCleanCommand), this);
     EventNotifier::Get()->Bind(wxEVT_GET_IS_PLUGIN_MAKEFILE, clBuildEventHandler(CMakePlugin::OnGetIsPluginMakefile), this);
@@ -361,18 +384,11 @@ CMakePlugin::UnHookProjectSettingsTab(wxBookCtrlBase* notebook,
 void
 CMakePlugin::UnPlug()
 {
-    // Remove output tab
-    Notebook* notebook = m_mgr->GetOutputPaneNotebook();
-    int pos = notebook->FindPage(m_output);
-    if (pos != wxNOT_FOUND)
-        notebook->DeletePage(pos);
-
     // Unbind events
     wxTheApp->Unbind(wxEVT_COMMAND_MENU_SELECTED, &CMakePlugin::OnSettings, this, XRCID("cmake_settings"));
     wxTheApp->Unbind(wxEVT_COMMAND_MENU_SELECTED, &CMakePlugin::OnHelp, this, XRCID("cmake_help"));
 
     EventNotifier::Get()->Unbind(wxEVT_CMD_PROJ_SETTINGS_SAVED, wxCommandEventHandler(CMakePlugin::OnSaveConfig), this);
-    EventNotifier::Get()->Unbind(wxEVT_BUILD_STARTING, clBuildEventHandler(CMakePlugin::OnBuildStarting), this);
     EventNotifier::Get()->Unbind(wxEVT_GET_PROJECT_BUILD_CMD, clBuildEventHandler(CMakePlugin::OnGetBuildCommand), this);
     EventNotifier::Get()->Unbind(wxEVT_GET_PROJECT_CLEAN_CMD, clBuildEventHandler(CMakePlugin::OnGetCleanCommand), this);
     EventNotifier::Get()->Unbind(wxEVT_GET_IS_PLUGIN_MAKEFILE, clBuildEventHandler(CMakePlugin::OnGetIsPluginMakefile), this);
@@ -462,27 +478,6 @@ CMakePlugin::OnSaveConfig(wxCommandEvent& event)
 /* ************************************************************************ */
 
 void
-CMakePlugin::OnBuildStarting(clBuildEvent& event)
-{
-    // call Skip() to allow the standard compilation to take place
-    event.Skip();
-
-    wxString project = event.GetProjectName();
-    const wxString config  = event.GetConfigurationName();
-
-    // Get settings
-    const CMakeProjectSettings* settings = GetSettingsManager()->GetProjectSettings(project, config);
-
-    // Doesn't exists or not enabled
-    if (!settings || !settings->enabled)
-        return;
-
-    // Perform configuration
-}
-
-/* ************************************************************************ */
-
-void
 CMakePlugin::OnGetCleanCommand(clBuildEvent& event)
 {
     ProcessBuildEvent(event, "clean");
@@ -522,7 +517,7 @@ CMakePlugin::OnGetIsPluginMakefile(clBuildEvent& event)
 void
 CMakePlugin::OnExportMakefile(clBuildEvent& event)
 {
-    wxString project = event.GetProjectName();
+    const wxString project = event.GetProjectName();
     const wxString config  = event.GetConfigurationName();
 
     // Get settings
@@ -535,11 +530,22 @@ CMakePlugin::OnExportMakefile(clBuildEvent& event)
         return;
     }
 
+    // Project that will be used
+    wxString finalProject = project;
+
     // Parent project is set
     if (!settings->parentProject.IsEmpty()) {
         // Configure parent project instead
-        project = settings->parentProject;
-        settings = GetSettingsManager()->GetProjectSettings(project, config);
+        finalProject = settings->parentProject;
+        settings = GetSettingsManager()->GetProjectSettings(finalProject, config);
+
+        // Parent project not found
+        if (!settings || !settings->enabled) {
+            CL_ERROR("Unable to find or not enabled parent project "
+                "'" + finalProject + "' for project '" + project + "'");
+            event.Skip();
+            return;
+        }
     }
 
     // Macro expander
@@ -547,41 +553,52 @@ CMakePlugin::OnExportMakefile(clBuildEvent& event)
     MacroManager* macro = MacroManager::Instance();
     wxASSERT(macro);
 
-    // Get CMAKE
+    // Get variables
+    // Expand variables for final project
     const wxString cmake = GetConfiguration()->GetProgramPath();
-    const wxString sourceDir = settings->sourceDirectory;
-    const wxString buildDir = settings->buildDirectory;
-    wxArrayString args;
+    const wxString sourceDir = macro->Expand(settings->sourceDirectory, GetManager(), finalProject, config);
+    const wxString buildDir = macro->Expand(settings->buildDirectory, GetManager(), finalProject, config);
 
-    // Create command and Expand macros
-    const wxString cmd = macro->Expand(
-        CMakeBuilder::CreateConfigureCmd(cmake, *settings),
-        GetManager(), project, config
-    );
+    // Generated makefile
+    const wxString content = wxString() <<
+        "# Generated by CMakePlugin\n"
+        ".PHONY: all clean\n"
+        "\n"
+        "CMAKE=" << cmake << "\n"
+        "BUILD_DIR=" << buildDir << "\n"
+        "SOURCE_DIR=" << sourceDir << "\n"
+        "CMAKE_ARGS=" << CreateArguments(*settings) << "\n"
+        "\n"
+        "all: $(BUILD_DIR) $(BUILD_DIR)/Makefile\n"
+        "\t@$(MAKE) -C $(BUILD_DIR)\n"
+        "\n"
+        "clean: $(BUILD_DIR) $(BUILD_DIR)/Makefile\n"
+        "\t@$(MAKE) -C $(BUILD_DIR) clean\n"
+        "\n"
+        "$(BUILD_DIR):\n"
+        "\t$(CMAKE) -E make_directory $(BUILD_DIR)\n"
+        "\n"
+        "$(BUILD_DIR)/Makefile:\n"
+        "\t@cd $(BUILD_DIR)\n"
+        "\t$(CMAKE) $(CMAKE_ARGS) $(SOURCE_DIR)\n"
+        "\n"
+    ;
 
-    // Create build directory if missing
-    if (!wxDir::Exists(buildDir))
-        wxDir::Make(buildDir);
+    // Path to makefile - called project directory required
+    const wxFileName makefile(GetProjectDirectory(project), project, "mk");
 
-    {
-        DirSaver dir;
+    // Read old content from disk
+    wxString oldContent;
+    ReadFileWithConversion(makefile.GetFullPath(), oldContent);
 
-        // TODO use wxFileName
-        wxSetWorkingDirectory(wxGetCwd() + "/" + buildDir);
+    // Write only if there are some changes
+    if (content != oldContent) {
+        // Write make file content
+        wxFile file(makefile.GetFullPath(), wxFile::write);
 
-        // Configure
-
-        // We need to run configuration process synchronious because
-        // build can be perform only after successful configuration.
-        // Sadly there is no posibility to stop building from this
-        // so the build is performed anyway even if configuration fails.
-
-        wxArrayString output;
-        wxArrayString errors;
-        wxExecute(cmd, output, errors);
-
-        GetOutput()->SetOutput(output);
-        GetOutput()->SetErrors(errors);
+        if (!file.Write(content)) {
+            CL_ERROR("Unable to write custom makefile (CMakePlugin): " + makefile.GetFullPath());
+        }
     }
 }
 
@@ -615,35 +632,8 @@ CMakePlugin::ProcessBuildEvent(clBuildEvent& event, const wxString& param)
         return;
     }
 
-    // Parent project is set
-    if (!settings->parentProject.IsEmpty()) {
-        if (!event.IsProjectOnly()) {
-            // Empty command
-            event.SetCommand("@echo \"Handled by parent project: " + settings->parentProject + "\"");
-            return;
-        }
-
-        settings = GetSettingsManager()->GetProjectSettings(settings->parentProject, config);
-    }
-
-    wxString target = param;
-
-    // Build only project
-    if (event.IsProjectOnly())
-        target += " " + project;
-
-    // Macro expander
-    MacroManager* macro = MacroManager::Instance();
-    wxASSERT(macro);
-
-    // Create build command
-    const wxString cmd = macro->Expand(
-        CMakeBuilder::CreateBuildCmd("$(MAKE)", settings->buildDirectory, target),
-        GetManager(), project, config
-    );
-
-    // Clean project command
-    event.SetCommand(cmd);
+    // The build command is simple make call with different makefile
+    event.SetCommand("$(MAKE) -f \"" + project + ".mk\" " + param);
 }
 
 /* ************************************************************************ */
