@@ -350,7 +350,7 @@ private:
      * @param event
      * @param param
      */
-    void ProcessBuildEvent(clBuildEvent& event, const wxString& param = "");
+    void ProcessBuildEvent(clBuildEvent& event, wxString param = "");
 
 
 // Private Data Members

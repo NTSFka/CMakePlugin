@@ -639,7 +639,7 @@ CMakePlugin::OnWorkspaceLoaded(wxCommandEvent& event)
 /* ************************************************************************ */
 
 void
-CMakePlugin::ProcessBuildEvent(clBuildEvent& event, const wxString& param)
+CMakePlugin::ProcessBuildEvent(clBuildEvent& event, wxString param)
 {
     wxString project = event.GetProjectName();
     const wxString config  = event.GetConfigurationName();
@@ -656,10 +656,16 @@ CMakePlugin::ProcessBuildEvent(clBuildEvent& event, const wxString& param)
 
     // Project has parent project
     if (!settings->parentProject.IsEmpty()) {
+        /*
         if (!event.IsProjectOnly()) {
             event.SetCommand("@echo Builded with parent project: " + settings->parentProject);
             return;
         }
+        */
+        // Add project name as target
+        param = project + " " + param;
+        // Build parent project
+        project = settings->parentProject;
     }
 
     // The build command is simple make call with different makefile
