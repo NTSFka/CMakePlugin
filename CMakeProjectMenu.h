@@ -48,7 +48,8 @@ public:
     enum
     {
         ID_OPEN_CMAKELISTS = 2556,
-        ID_EXPORT_CMAKELISTS
+        ID_EXPORT_CMAKELISTS,
+        ID_MAKE_DIRTY
     };
 
 
@@ -91,11 +92,28 @@ public:
 
 
     /**
+     * @brief On request to make current CMake output files dirty that
+     * forces cmake call.
+     *
+     * @param event
+     */
+    void OnMakeDirty(wxCommandEvent& event);
+
+
+    /**
      * @brief Enable open CMakeLists.txt only if exists
      *
      * @param
      */
     void OnFileExists(wxUpdateUIEvent& event);
+
+
+    /**
+     * @brief Enable make dirty when CMake is enabled for project.
+     *
+     * @param
+     */
+    void OnCMakeEnabled(wxUpdateUIEvent& event);
 
 
 // Private Data Members
