@@ -202,7 +202,7 @@ CMakePlugin::GetWorkspaceDirectory() const
     const Workspace* workspace = m_mgr->GetWorkspace();
     wxASSERT(workspace);
 
-    return wxFileName(workspace->GetWorkspaceFileName().GetPath(wxPATH_GET_SEPARATOR | wxPATH_GET_VOLUME));
+    return wxFileName::DirName(workspace->GetWorkspaceFileName().GetPath(wxPATH_GET_SEPARATOR | wxPATH_GET_VOLUME));
 }
 
 /* ************************************************************************ */
@@ -217,7 +217,7 @@ CMakePlugin::GetProjectDirectory(const wxString& projectName) const
     const ProjectPtr proj = workspace->FindProjectByName(projectName, errMsg);
     wxASSERT(proj);
 
-    return wxFileName(proj->GetFileName().GetPath(wxPATH_GET_SEPARATOR | wxPATH_GET_VOLUME));
+    return wxFileName::DirName(proj->GetFileName().GetPath(wxPATH_GET_SEPARATOR | wxPATH_GET_VOLUME));
 }
 
 /* ************************************************************************ */
@@ -538,6 +538,9 @@ CMakePlugin::OnExportMakefile(clBuildEvent& event)
         return;
     }
 
+    // Get project directory - this is directory where the makefile is stored
+    const wxFileName projectDir = GetProjectDirectory(project);
+
     // Targets forward inspired by
     // https://gist.github.com/doitian/4978329
 
@@ -561,10 +564,17 @@ CMakePlugin::OnExportMakefile(clBuildEvent& event)
             return;
         }
 
+        // Get parent project directory
+        wxFileName parentProjectDir = GetProjectDirectory(parentProject);
+        parentProjectDir.MakeRelativeTo(projectDir.GetFullPath());
+
+        // Path is relative so UNIX path system can be used
+        const wxString parentProjectDirEsc = parentProjectDir.GetPath(wxPATH_NO_SEPARATOR, wxPATH_UNIX);
+
         // Redirect make to the parent project
         content <<
             "# Parent project\n"
-            "PARENT          := \"" << GetProjectDirectory(parentProject).GetFullPath(wxPATH_UNIX) << "\"\n"
+            "PARENT          := \"" << parentProjectDirEsc << "\"\n"
             "PARENT_MAKEFILE := \"" << parentProject << ".mk\"\n"
             "\n"
             "all:\n"
@@ -576,6 +586,7 @@ CMakePlugin::OnExportMakefile(clBuildEvent& event)
         ;
 
     } else {
+
         // Macro expander
         // FIXME use IMacroManager (unable to find it yet)
         MacroManager* macro = MacroManager::Instance();
@@ -584,14 +595,22 @@ CMakePlugin::OnExportMakefile(clBuildEvent& event)
         // Get variables
         // Expand variables for final project
         const wxString cmake = GetConfiguration()->GetProgramPath();
-        const wxFileName sourceDir(macro->Expand(settings->sourceDirectory, GetManager(), project, config));
-        const wxFileName buildDir(macro->Expand(settings->buildDirectory, GetManager(), project, config));
+        wxFileName sourceDir = wxFileName::DirName(macro->Expand(settings->sourceDirectory, GetManager(), project, config));
+        wxFileName buildDir = wxFileName::DirName(macro->Expand(settings->buildDirectory, GetManager(), project, config));
+
+        // Path cannot be absolute on Windows, because the volume separator does something horrible
+        sourceDir.MakeRelativeTo(projectDir.GetFullPath());
+        buildDir.MakeRelativeTo(projectDir.GetFullPath());
+
+        // Relative paths
+        const wxString sourceDirEsc = sourceDir.GetPath(wxPATH_NO_SEPARATOR, wxPATH_UNIX);
+        const wxString buildDirEsc = buildDir.GetPath(wxPATH_NO_SEPARATOR, wxPATH_UNIX);
 
         // Generated makefile
         content <<
             "CMAKE      := " << cmake << "\n"
-            "BUILD_DIR  := \"" << buildDir.GetFullPath(wxPATH_UNIX) << "\"\n"
-            "SOURCE_DIR := \"" << sourceDir.GetFullPath(wxPATH_UNIX) << "\"\n"
+            "BUILD_DIR  := \"" << buildDirEsc << "\"\n"
+            "SOURCE_DIR := \"" << sourceDirEsc << "\"\n"
             "CMAKE_ARGS := " << CreateArguments(*settings) << "\n"
             "\n"
             "# Building project(s)\n"
@@ -615,7 +634,7 @@ CMakePlugin::OnExportMakefile(clBuildEvent& event)
     }
 
     // Path to makefile - called project directory required
-    wxFileName makefile = GetProjectDirectory(project);
+    wxFileName makefile = projectDir;
     makefile.SetName(project);
     makefile.SetExt("mk");
 
@@ -672,8 +691,17 @@ CMakePlugin::ProcessBuildEvent(clBuildEvent& event, wxString param)
         project = settings->parentProject;
     }
 
+    // Workspace directory
+    const wxFileName workspaceDir = GetWorkspaceDirectory();
+
+    // Use relative path
+    wxFileName projectDir = GetProjectDirectory(project);
+    projectDir.MakeRelativeTo(workspaceDir.GetFullPath());
+
+    const wxString projectDirEsc = projectDir.GetPath(wxPATH_NO_SEPARATOR, wxPATH_UNIX);
+
     // The build command is simple make call with different makefile
-    event.SetCommand("$(MAKE) -C \"" + GetProjectDirectory(project).GetFullPath(wxPATH_UNIX) + "\" -f \"" + project + ".mk\" " + param);
+    event.SetCommand("$(MAKE) -C \"" + projectDirEsc + "\" -f \"" + project + ".mk\" " + param);
 }
 
 /* ************************************************************************ */
