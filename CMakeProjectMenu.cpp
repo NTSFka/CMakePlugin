@@ -121,20 +121,12 @@ CMakeProjectMenu::OnMakeDirty(wxCommandEvent& event)
         projectName = settings->parentProject;
     }
 
-    DirSaver ds;
-
     // Move to project directory
-    wxSetWorkingDirectory(m_plugin->GetProjectDirectory(projectName));
+    wxFileName dirtyFile = m_plugin->GetProjectDirectory(projectName);
+    dirtyFile.SetFullName(".cmake_dirty");
 
-    // There is no touch command in Windows
-#ifdef __WXMSW__
-    // @see http://stackoverflow.com/questions/51435/windows-version-of-the-unix-touch-command
-    wxArrayString output;
-    wxExecute("type nul >> .cmake_dirty & copy .cmake_dirty +,,", output);
-#else
-    wxArrayString output;
-    wxExecute("touch .cmake_dirty", output);
-#endif
+    // Update file time
+    dirtyFile.Touch();
 }
 
 /* ************************************************************************ */

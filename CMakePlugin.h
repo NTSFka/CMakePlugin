@@ -142,9 +142,9 @@ public:
     /**
      * @brief Returns directory where is workspace project stored.
      *
-     * @return
+     * @return Path to workspace
      */
-    wxString GetWorkspaceDirectory() const;
+    wxFileName GetWorkspaceDirectory() const;
 
 
     /**
@@ -152,9 +152,9 @@ public:
      *
      * @param projectName
      *
-     * @return
+     * @return Project directory.
      */
-    wxString GetProjectDirectory(const wxString& projectName) const;
+    wxFileName GetProjectDirectory(const wxString& projectName) const;
 
 
     /**
@@ -261,17 +261,19 @@ public:
     /**
      * @brief Check if CMakeLists.txt exists in given directory.
      *
-     * @param directory
+     * @param directory Directory where CMakeLists.txt should be located.
+     *
+     * @return If CMakeLists.txt exists in directory.
      */
-    bool ExistsCMakeLists(const wxString& directory) const;
+    bool ExistsCMakeLists(wxFileName directory) const;
 
 
     /**
      * @brief Open CMakeLists.txt in given directory.
      *
-     * @param directory
+     * @param directory Directory where CMakeLists.txt should be located.
      */
-    void OpenCMakeLists(const wxString& directory) const;
+    void OpenCMakeLists(wxFileName directory) const;
 
 
 // Public Events

@@ -196,18 +196,18 @@ CMakePlugin::~CMakePlugin()
 
 /* ************************************************************************ */
 
-wxString
+wxFileName
 CMakePlugin::GetWorkspaceDirectory() const
 {
     const Workspace* workspace = m_mgr->GetWorkspace();
     wxASSERT(workspace);
 
-    return workspace->GetWorkspaceFileName().GetPath(wxPATH_GET_SEPARATOR | wxPATH_GET_VOLUME);
+    return wxFileName(workspace->GetWorkspaceFileName().GetPath(wxPATH_GET_SEPARATOR | wxPATH_GET_VOLUME));
 }
 
 /* ************************************************************************ */
 
-wxString
+wxFileName
 CMakePlugin::GetProjectDirectory(const wxString& projectName) const
 {
     const Workspace* workspace = m_mgr->GetWorkspace();
@@ -217,7 +217,7 @@ CMakePlugin::GetProjectDirectory(const wxString& projectName) const
     const ProjectPtr proj = workspace->FindProjectByName(projectName, errMsg);
     wxASSERT(proj);
 
-    return proj->GetFileName().GetPath(wxPATH_GET_SEPARATOR | wxPATH_GET_VOLUME);
+    return wxFileName(proj->GetFileName().GetPath(wxPATH_GET_SEPARATOR | wxPATH_GET_VOLUME));
 }
 
 /* ************************************************************************ */
@@ -400,18 +400,23 @@ CMakePlugin::UnPlug()
 /* ************************************************************************ */
 
 bool
-CMakePlugin::ExistsCMakeLists(const wxString& directory) const
+CMakePlugin::ExistsCMakeLists(wxFileName directory) const
 {
-    return wxFileExists(wxFileName(directory, CMAKELISTS_FILE).GetFullPath());
+    // Add CMakeLists.txt
+    directory.SetFullName(CMAKELISTS_FILE);
+
+    return directory.Exists();
 }
 
 /* ************************************************************************ */
 
 void
-CMakePlugin::OpenCMakeLists(const wxString& directory) const
+CMakePlugin::OpenCMakeLists(wxFileName filename) const
 {
-    if (!m_mgr->OpenFile(wxFileName(directory, CMAKELISTS_FILE).GetFullPath()))
-        wxMessageBox("Unable to open " + CMAKELISTS_FILE, wxMessageBoxCaptionStr, wxOK | wxCENTER | wxICON_ERROR);
+    filename.SetFullName(CMAKELISTS_FILE);
+
+    if (!m_mgr->OpenFile(filename.GetFullPath()))
+        wxMessageBox("Unable to open \"" + filename.GetFullPath() + "\"", wxMessageBoxCaptionStr, wxOK | wxCENTER | wxICON_ERROR);
 }
 
 /* ************************************************************************ */
@@ -559,8 +564,8 @@ CMakePlugin::OnExportMakefile(clBuildEvent& event)
         // Redirect make to the parent project
         content <<
             "# Parent project\n"
-            "PARENT          := " << GetProjectDirectory(parentProject) << "\n"
-            "PARENT_MAKEFILE := " << parentProject << ".mk\n"
+            "PARENT          := \"" << GetProjectDirectory(parentProject).GetFullPath(wxPATH_UNIX) << "\"\n"
+            "PARENT_MAKEFILE := \"" << parentProject << ".mk\"\n"
             "\n"
             "all:\n"
             "\t$(MAKE) -C $(PARENT) -f $(PARENT_MAKEFILE) " << project << "\n"
@@ -585,8 +590,8 @@ CMakePlugin::OnExportMakefile(clBuildEvent& event)
         // Generated makefile
         content <<
             "CMAKE      := " << cmake << "\n"
-            "BUILD_DIR  := " << buildDir.GetFullPath() << "\n"
-            "SOURCE_DIR := " << sourceDir.GetFullPath() << "\n"
+            "BUILD_DIR  := \"" << buildDir.GetFullPath(wxPATH_UNIX) << "\"\n"
+            "SOURCE_DIR := \"" << sourceDir.GetFullPath(wxPATH_UNIX) << "\"\n"
             "CMAKE_ARGS := " << CreateArguments(*settings) << "\n"
             "\n"
             "# Building project(s)\n"
@@ -610,7 +615,9 @@ CMakePlugin::OnExportMakefile(clBuildEvent& event)
     }
 
     // Path to makefile - called project directory required
-    const wxFileName makefile(GetProjectDirectory(project), project, "mk");
+    wxFileName makefile = GetProjectDirectory(project);
+    makefile.SetName(project);
+    makefile.SetExt("mk");
 
     // Read old content from disk
     wxString oldContent;
@@ -659,12 +666,6 @@ CMakePlugin::ProcessBuildEvent(clBuildEvent& event, wxString param)
 
     // Project has parent project
     if (!settings->parentProject.IsEmpty()) {
-        /*
-        if (!event.IsProjectOnly()) {
-            event.SetCommand("@echo Builded with parent project: " + settings->parentProject);
-            return;
-        }
-        */
         // Add project name as target
         param = project + " " + param;
         // Build parent project
@@ -672,7 +673,7 @@ CMakePlugin::ProcessBuildEvent(clBuildEvent& event, wxString param)
     }
 
     // The build command is simple make call with different makefile
-    event.SetCommand("$(MAKE) -C \"" + GetProjectDirectory(project) + "\" -f \"" + project + ".mk\" " + param);
+    event.SetCommand("$(MAKE) -C \"" + GetProjectDirectory(project).GetFullPath(wxPATH_UNIX) + "\" -f \"" + project + ".mk\" " + param);
 }
 
 /* ************************************************************************ */
