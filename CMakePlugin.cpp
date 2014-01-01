@@ -34,6 +34,7 @@
 #include <wx/menu.h>
 #include <wx/dir.h>
 #include <wx/event.h>
+#include <wx/busyinfo.h>
 
 // CodeLite
 #include "environmentconfig.h"
@@ -442,8 +443,10 @@ CMakePlugin::OnHelp(wxCommandEvent& event)
         return;
     }
 
-    if (m_cmake->IsDirty())
+    if (m_cmake->IsDirty()) {
+        wxBusyInfo wait("Please wait, loading CMake data...");
         m_cmake->LoadData();
+    }
 
     CMakeHelpDialog(NULL, m_cmake.get()).ShowModal();
 }

@@ -35,6 +35,12 @@
 #include <wx/vector.h>
 
 /* ************************************************************************ */
+/* FORWARD DECLARATIONS                                                     */
+/* ************************************************************************ */
+
+class wxSQLite3Database;
+
+/* ************************************************************************ */
 /* CLASSES                                                                  */
 /* ************************************************************************ */
 
@@ -88,7 +94,7 @@ public:
      *
      * @return
      */
-    inline const wxFileName& GetPath() const {
+    const wxFileName& GetPath() const {
         return m_path;
     }
 
@@ -106,7 +112,7 @@ public:
      *
      * @return
      */
-    inline bool IsDirty() const {
+    bool IsDirty() const {
         return m_dirty;
     }
 
@@ -116,7 +122,7 @@ public:
      *
      * @return
      */
-    inline const wxString& GetVersion() const {
+    const wxString& GetVersion() const {
         return m_version;
     }
 
@@ -126,7 +132,7 @@ public:
      *
      * @return
      */
-    inline const LinesMap& GetCommands() const {
+    const LinesMap& GetCommands() const {
         return m_commands;
     }
 
@@ -136,7 +142,7 @@ public:
      *
      * @return
      */
-    inline const LinesMap& GetModules() const {
+    const LinesMap& GetModules() const {
         return m_modules;
     }
 
@@ -146,7 +152,7 @@ public:
      *
      * @return
      */
-    inline const LinesMap& GetProperties() const {
+    const LinesMap& GetProperties() const {
         return m_properties;
     }
 
@@ -156,7 +162,7 @@ public:
      *
      * @return
      */
-    inline const LinesMap& GetVariables() const {
+    const LinesMap& GetVariables() const {
         return m_variables;
     }
 
@@ -166,7 +172,7 @@ public:
      *
      * @return
      */
-    inline const wxString& GetCopyright() const {
+    const wxString& GetCopyright() const {
         return m_copyright;
     }
 
@@ -176,7 +182,7 @@ public:
      *
      * @return
      */
-    inline const wxArrayString& GetGenerators() const {
+    const wxArrayString& GetGenerators() const {
         return m_generators;
     }
 
@@ -202,8 +208,11 @@ public:
 
     /**
      * @brief Loads data from CMake application.
+     *
+     * @param force If data should be loaded from cmake instead of
+     *              SQLite database.
      */
-    void LoadData();
+    void LoadData(bool force = false);
 
 
 // Private Operations
@@ -215,6 +224,26 @@ private:
      * with available data.
      */
     void ParseCMakeManPage();
+
+
+    /**
+     * @brief Loads data from SQLite3 database.
+     *
+     * @param db Database.
+     *
+     * @return If data is loaded.
+     */
+    bool LoadFromDatabase(wxSQLite3Database& db);
+
+
+    /**
+     * @brief Stores data into SQLite3 database.
+     *
+     * @param db Database.
+     *
+     * @return If data is stored.
+     */
+    bool StoreIntoDatabase(wxSQLite3Database& db) const;
 
 
 // Private Data Members

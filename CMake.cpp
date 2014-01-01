@@ -27,9 +27,11 @@
 
 // wxWidgets
 #include <wx/regex.h>
+#include <wx/wxsqlite3.h>
 
 // Codelite
 #include "procutils.h"
+#include "workspace.h"
 
 /* ************************************************************************ */
 /* FUNCTIONS                                                                */
@@ -201,6 +203,51 @@ void ParseManDesc(wxArrayString::const_iterator& line, CMake::LinesMap& data)
 }
 
 /* ************************************************************************ */
+
+/**
+ * @brief Prepare database for CMake.
+ *
+ * @param db       Database
+ * @param filename Path where the database is stored.
+ *
+ * @return If database can be usable
+ */
+static bool PrepareDatabase(wxSQLite3Database& db, const wxFileName& filename)
+{
+    try {
+        // Try to open database
+        db.Open(filename.GetFullPath());
+
+        // Not opened
+        if (!db.IsOpen())
+            return false;
+
+        // Create tables
+        db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS generators (name TEXT)");
+        db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS commands (name TEXT, desc TEXT)");
+        db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS modules (name TEXT, desc TEXT)");
+        db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS properties (name TEXT, desc TEXT)");
+        db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS variables (name TEXT, desc TEXT)");
+        db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS strings (name TEXT, desc TEXT)");
+
+        // Create indices
+        db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS generators_idx ON generators(name)");
+        db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS commands_idx ON commands(name)");
+        db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS modules_idx ON modules(name)");
+        db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS properties_idx ON properties(name)");
+        db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS variables_idx ON variables(name)");
+        db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS strings_idx ON strings(name)");
+
+        // Everything is OK
+        return true;
+
+    } catch (const wxSQLite3Exception& e) {
+        // Unable to use SQLite database
+        return false;
+    }
+}
+
+/* ************************************************************************ */
 /* CLASSES                                                                  */
 /* ************************************************************************ */
 
@@ -264,19 +311,30 @@ CMake::IsOk() const
 /* ************************************************************************ */
 
 void
-CMake::LoadData()
+CMake::LoadData(bool force)
 {
     // Loading data again is not required
-    if (!m_dirty)
+    if (!m_dirty && !force)
         return;
 
     // Clear old data
     m_version.clear();
+    m_generators.clear();
     m_commands.clear();
     m_modules.clear();
     m_properties.clear();
     m_variables.clear();
     m_copyright.clear();
+
+    // Create SQLite database
+    wxSQLite3Database db;
+
+    // Open it
+    bool dbOk = PrepareDatabase(db, wxFileName(wxStandardPaths::Get().GetUserDataDir(), "cmake.db"));
+
+    // Load data from database
+    if (!force && dbOk && LoadFromDatabase(db))
+        return;
 
     // Unable to use CMake
     if (!IsOk())
@@ -303,6 +361,10 @@ CMake::LoadData()
 
     // Parse data from CMake manual page
     ParseCMakeManPage();
+
+    // Database is open so we can store result into database
+    if (dbOk)
+        StoreIntoDatabase(db);
 
     m_dirty = false;
 }
@@ -337,6 +399,157 @@ CMake::ParseCMakeManPage()
             m_copyright = ParseManText(line);
         }
     }
+}
+
+/* ************************************************************************ */
+
+bool
+CMake::LoadFromDatabase(wxSQLite3Database& db)
+{
+    // Database is closed
+    if (!db.IsOpen())
+        return false;
+
+    // Strings - Version
+    {
+        wxSQLite3ResultSet res = db.ExecuteQuery("SELECT desc FROM strings WHERE name = 'version'");
+        if (res.NextRow()) {
+            m_version = res.GetAsString(0);
+        }
+    }
+
+    // No data stored
+    if (m_version.IsEmpty())
+        return false;
+
+    // Strings - Copyright
+    {
+        wxSQLite3ResultSet res = db.ExecuteQuery("SELECT desc FROM strings WHERE name = 'copyright'");
+        if (res.NextRow()) {
+            m_copyright = res.GetAsString(0);
+        }
+    }
+
+    // Generators
+    {
+        wxSQLite3ResultSet res = db.ExecuteQuery("SELECT name FROM generators");
+        while (res.NextRow()) {
+            m_generators.Add(res.GetAsString(0));
+        }
+    }
+
+    // Commands
+    {
+        wxSQLite3ResultSet res = db.ExecuteQuery("SELECT name, desc FROM commands");
+        while (res.NextRow()) {
+            m_commands[res.GetAsString(0)] = wxSplit(res.GetAsString(1), '\n');
+        }
+    }
+
+    // Modules
+    {
+        wxSQLite3ResultSet res = db.ExecuteQuery("SELECT name, desc FROM modules");
+        while (res.NextRow()) {
+            m_modules[res.GetAsString(0)] = wxSplit(res.GetAsString(1), '\n');
+        }
+    }
+
+    // Properties
+    {
+        wxSQLite3ResultSet res = db.ExecuteQuery("SELECT name, desc FROM properties");
+        while (res.NextRow()) {
+            m_properties[res.GetAsString(0)] = wxSplit(res.GetAsString(1), '\n');
+        }
+    }
+
+    // Variables
+    {
+        wxSQLite3ResultSet res = db.ExecuteQuery("SELECT name, desc FROM variables");
+        while (res.NextRow()) {
+            m_variables[res.GetAsString(0)] = wxSplit(res.GetAsString(1), '\n');
+        }
+    }
+
+    // Data is OK
+    m_dirty = false;
+
+    // Everything is loaded
+    return true;
+}
+
+/* ************************************************************************ */
+
+bool
+CMake::StoreIntoDatabase(wxSQLite3Database& db) const
+{
+    // Database is closed
+    if (!db.IsOpen())
+        return false;
+
+    // Generators
+    {
+        wxSQLite3Statement stmt = db.PrepareStatement("REPLACE INTO generators (name) VALUES(?)");
+        for (wxArrayString::const_iterator it = m_generators.begin(), ite = m_generators.end(); it != ite; ++it) {
+            stmt.Bind(1, *it);
+            stmt.ExecuteUpdate();
+        }
+    }
+
+    // Commands
+    {
+        wxSQLite3Statement stmt = db.PrepareStatement("REPLACE INTO commands (name, desc) VALUES(?, ?)");
+        for (LinesMap::const_iterator it = m_commands.begin(), ite = m_commands.end(); it != ite; ++it) {
+            stmt.Bind(1, it->first);
+            stmt.Bind(2, wxJoin(it->second, '\n'));
+            stmt.ExecuteUpdate();
+        }
+    }
+
+    // Modules
+    {
+        wxSQLite3Statement stmt = db.PrepareStatement("REPLACE INTO modules (name, desc) VALUES(?, ?)");
+        for (LinesMap::const_iterator it = m_modules.begin(), ite = m_modules.end(); it != ite; ++it) {
+            stmt.Bind(1, it->first);
+            stmt.Bind(2, wxJoin(it->second, '\n'));
+            stmt.ExecuteUpdate();
+        }
+    }
+
+    // Properties
+    {
+        wxSQLite3Statement stmt = db.PrepareStatement("REPLACE INTO properties (name, desc) VALUES(?, ?)");
+        for (LinesMap::const_iterator it = m_properties.begin(), ite = m_properties.end(); it != ite; ++it) {
+            stmt.Bind(1, it->first);
+            stmt.Bind(2, wxJoin(it->second, '\n'));
+            stmt.ExecuteUpdate();
+        }
+    }
+
+    // Variables
+    {
+        wxSQLite3Statement stmt = db.PrepareStatement("REPLACE INTO variables (name, desc) VALUES(?, ?)");
+        for (LinesMap::const_iterator it = m_variables.begin(), ite = m_variables.end(); it != ite; ++it) {
+            stmt.Bind(1, it->first);
+            stmt.Bind(2, wxJoin(it->second, '\n'));
+            stmt.ExecuteUpdate();
+        }
+    }
+
+    // Strings - Copyright
+    {
+        wxSQLite3Statement stmt = db.PrepareStatement("REPLACE INTO strings (name, desc) VALUES('copyright', ?)");
+        stmt.Bind(1, m_copyright);
+        stmt.ExecuteUpdate();
+    }
+
+    // Strings - Version
+    {
+        wxSQLite3Statement stmt = db.PrepareStatement("REPLACE INTO strings (name, desc) VALUES('version', ?)");
+        stmt.Bind(1, m_version);
+        stmt.ExecuteUpdate();
+    }
+
+    return true;
 }
 
 /* ************************************************************************ */

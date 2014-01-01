@@ -25,6 +25,9 @@
 // Declaration
 #include "CMakeProjectSettingsPanel.h"
 
+// wxWidgets
+#include <wx/busyinfo.h>
+
 // Codelite
 #include "workspace.h"
 #include "imanager.h"
@@ -82,8 +85,10 @@ CMakeProjectSettingsPanel::CMakeProjectSettingsPanel(wxWindow* parent,
     : CMakeProjectSettingsPanelBase(parent, wxID_ANY)
     , m_plugin(plugin)
 {
-    if (m_plugin->GetCMake()->IsDirty())
+    if (m_plugin->GetCMake()->IsDirty()) {
+        wxBusyInfo wait("Please wait, loading CMake data...");
         m_plugin->GetCMake()->LoadData();
+    }
 
     // Set available generators
     m_comboBoxGenerator->Insert("", 0);
