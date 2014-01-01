@@ -78,7 +78,11 @@ CMakeHelpPanel::OnSelect(wxCommandEvent& event)
     // Data found
     if (it != m_data->end()) {
         // Show required data
+#ifdef __WXMSW__
+        m_textCtrlText->SetValue(wxJoin(it->second, '\n', 0));
+#else
         m_textCtrlText->SetValue(wxJoin(it->second, ' ', 0));
+#endif
     }
 }
 
