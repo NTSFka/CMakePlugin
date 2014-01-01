@@ -17,7 +17,6 @@
   <VirtualDirectory Name="src">
     <File Name="CMakePlugin.cpp"/>
     <File Name="CMakeGenerator.cpp"/>
-    <File Name="CMakeBuilder.cpp"/>
     <File Name="CMake.cpp"/>
     <File Name="CMakeSettingsManager.cpp"/>
     <File Name="CMakeParser.cpp"/>
@@ -25,7 +24,6 @@
   <VirtualDirectory Name="include">
     <File Name="CMakePlugin.h"/>
     <File Name="CMake.h"/>
-    <File Name="CMakeBuilder.h"/>
     <File Name="CMakeProjectSettings.h"/>
     <File Name="CMakeSettingsManager.h"/>
     <File Name="CMakeConfiguration.h"/>
@@ -39,7 +37,6 @@
     <File Name="CMakeProjectMenu.cpp"/>
     <File Name="CMakeHelpDialog.cpp"/>
     <File Name="CMakeProjectSettingsPanel.cpp"/>
-    <File Name="CMakeOutput.cpp"/>
     <File Name="CMakeHelpPanel.h"/>
     <File Name="CMakeHelpPanel.cpp"/>
     <File Name="CMakeHelpDialog.h"/>
@@ -47,7 +44,6 @@
     <File Name="CMakeProjectSettingsPanel.h"/>
     <File Name="CMakeWorkspaceMenu.h"/>
     <File Name="CMakeProjectMenu.h"/>
-    <File Name="CMakeOutput.h"/>
     <File Name="CMakeProjectSettingsPanelBase.cpp"/>
     <File Name="CMakeProjectSettingsPanelBase.h"/>
     <File Name="CMakeHelpPanelBase.cpp"/>
@@ -56,16 +52,12 @@
     <File Name="CMakeHelpDialogBase.h"/>
     <File Name="CMakeSettingsDialogBase.cpp"/>
     <File Name="CMakeSettingsDialogBase.h"/>
-    <File Name="CMakeOutputBase.cpp"/>
-    <File Name="CMakeOutputBase.h"/>
   </VirtualDirectory>
   <Dependencies Name="DebugUnicode"/>
   <Dependencies Name="ReleaseUnicode"/>
   <Dependencies Name="WinDebug_29"/>
   <Dependencies Name="WinRelease_29"/>
   <Dependencies Name="Win_wxWidgets_29"/>
-  <Dependencies Name="WinReleaseUnicode"/>
-  <Dependencies Name="WinDebugUnicode"/>
   <Settings Type="Dynamic Library">
     <GlobalSettings>
       <Compiler Options="" C_Options="" Assembler="">
@@ -237,21 +229,20 @@
     <VirtualDirectory Name="resources">
       <File Name="CMakeHelpDialogBase_bitmaps.cpp"/>
       <File Name="CMakeHelpPanelBase_bitmaps.cpp"/>
-      <File Name="CMakeOutputBase_bitmaps.cpp"/>
       <File Name="CMakeProjectSettingsPanel_bitmaps.cpp"/>
       <File Name="CMakeSettingsDialogBase_bitmaps.cpp"/>
       <File Name="CMakeHelpDialogBase_bitmaps.xrc"/>
       <File Name="CMakeHelpPanelBase_bitmaps.xrc"/>
-      <File Name="CMakeOutputBase_bitmaps.xrc"/>
       <File Name="CMakeProjectSettingsPanel_bitmaps.xrc"/>
       <File Name="CMakeSettingsDialogBase_bitmaps.xrc"/>
     </VirtualDirectory>
     <VirtualDirectory Name="base"/>
     <File Name="CMakeHelpDialog.wxcp"/>
     <File Name="CMakeHelpPanel.wxcp"/>
-    <File Name="CMakeOutput.wxcp"/>
     <File Name="CMakePlugin.wxcp"/>
     <File Name="CMakeProjectSettingsPanel.wxcp"/>
     <File Name="CMakeSettingsDialog.wxcp"/>
   </VirtualDirectory>
+  <Dependencies Name="WinDebugUnicode"/>
+  <Dependencies Name="WinReleaseUnicode"/>
 </CodeLite_Project>

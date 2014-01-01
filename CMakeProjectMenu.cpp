@@ -130,10 +130,10 @@ CMakeProjectMenu::OnMakeDirty(wxCommandEvent& event)
 #ifdef __WXMSW__
     // @see http://stackoverflow.com/questions/51435/windows-version-of-the-unix-touch-command
     wxArrayString output;
-    wxShell("type nul >> .cmake_dirty & copy .cmake_dirty +,,", output);
+    wxExecute("type nul >> .cmake_dirty & copy .cmake_dirty +,,", output);
 #else
     wxArrayString output;
-    wxShell("touch .cmake_dirty", output);
+    wxExecute("touch .cmake_dirty", output);
 #endif
 }
 
