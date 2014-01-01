@@ -33,7 +33,7 @@ protected:
     virtual void OnShowHelp(wxCommandEvent& event) { event.Skip(); }
 
 public:
-    CMakeSettingsDialogBase(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("CMakePlugin Settings"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(400,120), long style = wxDEFAULT_DIALOG_STYLE);
+    CMakeSettingsDialogBase(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("CMakePlugin Settings"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(400,120), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER);
     virtual ~CMakeSettingsDialogBase();
 };
 

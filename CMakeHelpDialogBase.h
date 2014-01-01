@@ -39,7 +39,7 @@ protected:
 protected:
 
 public:
-    CMakeHelpDialogBase(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("CMakePlugin Help"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(500,400), long style = wxDEFAULT_DIALOG_STYLE);
+    CMakeHelpDialogBase(wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("CMakePlugin Help"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(500,400), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER);
     virtual ~CMakeHelpDialogBase();
 };
 
