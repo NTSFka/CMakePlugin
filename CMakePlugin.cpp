@@ -627,8 +627,9 @@ CMakePlugin::OnExportMakefile(clBuildEvent& event)
         wxFileName sourceDir = wxFileName::DirName(macro->Expand(settings->sourceDirectory, GetManager(), project, config));
         wxFileName buildDir = wxFileName::DirName(macro->Expand(settings->buildDirectory, GetManager(), project, config));
 
-        // Path cannot be absolute on Windows, because the volume separator does something horrible
-        sourceDir.MakeRelativeTo(projectDir.GetFullPath());
+        // Source dir must be relative to build directory (here is cmake called)
+        sourceDir.MakeRelativeTo(buildDir.GetFullPath());
+        // Build dir must be relative to project directory
         buildDir.MakeRelativeTo(projectDir.GetFullPath());
 
         // Relative paths
@@ -729,8 +730,21 @@ CMakePlugin::ProcessBuildEvent(clBuildEvent& event, wxString param)
 
     const wxString projectDirEsc = projectDir.GetPath(wxPATH_NO_SEPARATOR, wxPATH_UNIX);
 
+    // Build command
+    wxString cmd = "$(MAKE)";
+
+    if (!projectDirEsc.IsEmpty())
+        cmd += " -C \"" + projectDirEsc + "\"";
+
+    // Add makefile
+    cmd += " -f \"" + project + ".mk\"";
+
+    // Add optional parameters
+    if (!param.IsEmpty())
+        cmd += " " + param;
+
     // The build command is simple make call with different makefile
-    event.SetCommand("$(MAKE) -C \"" + projectDirEsc + "\" -f \"" + project + ".mk\" " + param);
+    event.SetCommand(cmd);
 }
 
 /* ************************************************************************ */
