@@ -13,6 +13,7 @@
 #include <wx/artprov.h>
 #include <wx/sizer.h>
 #include <wx/splitter.h>
+#include <wx/srchctrl.h>
 #include <wx/listbox.h>
 #include <wx/html/htmlwin.h>
 
@@ -21,11 +22,14 @@ class CMakeHelpPanelBase : public wxPanel
 protected:
     wxSplitterWindow* m_splitter;
     wxPanel* m_splitterPageList;
+    wxSearchCtrl* m_searchCtrlFilter;
     wxListBox* m_listBoxList;
     wxPanel* m_splitterPageText;
     wxHtmlWindow* m_htmlWinText;
 
 protected:
+    virtual void OnSearch(wxCommandEvent& event) { event.Skip(); }
+    virtual void OnSearchCancel(wxCommandEvent& event) { event.Skip(); }
     virtual void OnSelect(wxCommandEvent& event) { event.Skip(); }
 
 public:

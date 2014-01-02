@@ -51,15 +51,8 @@ CMakeHelpPanel::SetData(const std::map<wxString, wxString>* data)
 {
     m_data = data;
 
-    // Remove old data
-    m_listBoxList->Clear();
-    m_htmlWinText->SetPage("");
-
-    // Foreach data and store names into list
-    for (std::map<wxString, wxString>::const_iterator it = data->begin(),
-        ite = data->end(); it != ite; ++it) {
-        m_listBoxList->Append(it->first);
-    }
+    // List all items
+    ListAll();
 }
 
 /* ************************************************************************ */
@@ -79,6 +72,62 @@ CMakeHelpPanel::OnSelect(wxCommandEvent& event)
     if (it != m_data->end()) {
         // Show required data
         m_htmlWinText->SetPage(it->second);
+    }
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpPanel::OnSearch(wxCommandEvent& event)
+{
+    // List subset
+    ListFiltered(event.GetString());
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpPanel::OnSearchCancel(wxCommandEvent& event)
+{
+    wxUnusedVar(event);
+
+    // List all items
+    ListAll();
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpPanel::ListAll()
+{
+    // Remove old data
+    m_listBoxList->Clear();
+    m_htmlWinText->SetPage("");
+
+    // Foreach data and store names into list
+    for (std::map<wxString, wxString>::const_iterator it = m_data->begin(),
+         ite = m_data->end(); it != ite; ++it) {
+        m_listBoxList->Append(it->first);
+    }
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpPanel::ListFiltered(const wxString& search)
+{
+    const wxString searchMatches = "*" + search + "*";
+
+    // Remove old data
+    m_listBoxList->Clear();
+    m_htmlWinText->SetPage("");
+
+    // Foreach data and store names into list
+    for (std::map<wxString, wxString>::const_iterator it = m_data->begin(),
+         ite = m_data->end(); it != ite; ++it) {
+        // Store only that starts with given string
+        if (it->first.Matches(searchMatches))
+            m_listBoxList->Append(it->first);
     }
 }
 

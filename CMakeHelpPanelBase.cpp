@@ -36,6 +36,14 @@ CMakeHelpPanelBase::CMakeHelpPanelBase(wxWindow* parent, wxWindowID id, const wx
     wxBoxSizer* boxSizerList = new wxBoxSizer(wxVERTICAL);
     m_splitterPageList->SetSizer(boxSizerList);
     
+    m_searchCtrlFilter = new wxSearchCtrl(m_splitterPageList, wxID_ANY, wxT(""), wxDefaultPosition, wxSize(-1,-1), wxTE_PROCESS_ENTER);
+    m_searchCtrlFilter->SetFocus();
+    m_searchCtrlFilter->ShowSearchButton(true);
+    m_searchCtrlFilter->ShowCancelButton(false);
+    
+    boxSizerList->Add(m_searchCtrlFilter, 0, wxBOTTOM|wxEXPAND, 5);
+    m_searchCtrlFilter->SetMinSize(wxSize(-1,22));
+    
     wxArrayString m_listBoxListArr;
     m_listBoxList = new wxListBox(m_splitterPageList, wxID_ANY, wxDefaultPosition, wxSize(-1,-1), m_listBoxListArr, wxLB_SINGLE);
     
@@ -59,12 +67,18 @@ CMakeHelpPanelBase::CMakeHelpPanelBase(wxWindow* parent, wxWindowID id, const wx
     }
     Centre(wxBOTH);
     // Connect events
+    m_searchCtrlFilter->Connect(wxEVT_COMMAND_SEARCHCTRL_SEARCH_BTN, wxCommandEventHandler(CMakeHelpPanelBase::OnSearch), NULL, this);
+    m_searchCtrlFilter->Connect(wxEVT_COMMAND_SEARCHCTRL_CANCEL_BTN, wxCommandEventHandler(CMakeHelpPanelBase::OnSearchCancel), NULL, this);
+    m_searchCtrlFilter->Connect(wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler(CMakeHelpPanelBase::OnSearch), NULL, this);
     m_listBoxList->Connect(wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler(CMakeHelpPanelBase::OnSelect), NULL, this);
     
 }
 
 CMakeHelpPanelBase::~CMakeHelpPanelBase()
 {
+    m_searchCtrlFilter->Disconnect(wxEVT_COMMAND_SEARCHCTRL_SEARCH_BTN, wxCommandEventHandler(CMakeHelpPanelBase::OnSearch), NULL, this);
+    m_searchCtrlFilter->Disconnect(wxEVT_COMMAND_SEARCHCTRL_CANCEL_BTN, wxCommandEventHandler(CMakeHelpPanelBase::OnSearchCancel), NULL, this);
+    m_searchCtrlFilter->Disconnect(wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler(CMakeHelpPanelBase::OnSearch), NULL, this);
     m_listBoxList->Disconnect(wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler(CMakeHelpPanelBase::OnSelect), NULL, this);
     
 }

@@ -106,7 +106,41 @@ public:
      *
      * @param event
      */
-    void OnSelect(wxCommandEvent& event);
+    virtual void OnSelect(wxCommandEvent& event);
+
+
+    /**
+     * @brief On search item.
+     *
+     * @param event
+     */
+    virtual void OnSearch(wxCommandEvent& event);
+
+
+    /**
+     * @brief On search cancel - it list all items.
+     *
+     * @param event.
+     */
+    virtual void OnSearchCancel(wxCommandEvent& event);
+
+
+// Private Operations
+private:
+
+
+    /**
+     * @brief List all items.
+     */
+    void ListAll();
+
+
+    /**
+     * @brief List only items that match search string.
+     *
+     * @param search
+     */
+    void ListFiltered(const wxString& search);
 
 
 // Private Data Members
