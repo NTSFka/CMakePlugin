@@ -32,174 +32,50 @@
 // Codelite
 #include "procutils.h"
 #include "workspace.h"
+#include "globals.h"
 
 /* ************************************************************************ */
 /* FUNCTIONS                                                                */
 /* ************************************************************************ */
 
 /**
- * @brief Parses man page block with available generators.
+ * @brief Loads help of type from command into list.
  *
- * @param line Current parsed line imutable iterator.
- *
- * @return A list of available generators.
+ * @param command CMake command.
+ * @param type    Help type.
+ * @param list    Output variable.
  */
-static
-wxArrayString ParseManGenerators(wxArrayString::const_iterator& line)
+void LoadList(const wxString& command, const wxString& type, CMake::HelpMap& list)
 {
-    wxArrayString generators;
+    // Get list
+    wxArrayString names;
+    long res = wxExecute(command + " --help-" + type + "-list", names);
 
-    // Read until another section is found
-    for (++line; !line->StartsWith(".SH"); ++line) {
-        wxString name;
-
-        // .B marks generator name
-        if (line->StartsWith(".B ", &name)) {
-            // Remove trailing newline
-            name.Trim();
-            // Store generator name
-            generators.push_back(name);
-        }
+    // Unable to load
+    if (res != 0) {
+        return;
     }
 
-    // Previous line
-    --line;
+    // Remove version
+    names.RemoveAt(0);
 
-    return generators;
-}
+    // Create temp file name
+    // This is required because cmake is able export to HTML only into file
+    wxString tmpFileName = wxFileName::CreateTempFileName("cmake_") + ".html";
+    wxString html;
 
-/* ************************************************************************ */
+    // Foreach names
+    for (wxArrayString::const_iterator it = names.begin(), ite = names.end(); it != ite; ++it) {
+        // Export help
+        wxExecute(command + " --help-" + type + " " + *it + " " + tmpFileName, wxEXEC_SYNC);
 
-/**
- * @brief Parses man page block with text.
- *
- * @param line Current parsed line imutable iterator.
- *
- * @return Text.
- */
-static
-wxString ParseManText(wxArrayString::const_iterator& line)
-{
-    wxString text;
+        // Read help
+        if (!ReadFileWithConversion(tmpFileName, html))
+            continue;
 
-    // Read until another section is found
-    for (++line; !line->StartsWith(".SH"); ++line) {
-        // Ignore lines with macros
-
-        // From: http://www.fnal.gov/docs/products/ups/ReferenceManual/html/manpages.html
-        // .SH "<text>" : Section Heading; if no blanks in text, quotes are not needed.
-        // .SS "<text>" : Subsection Heading; if no blanks in text, quotes are not needed.
-        // .P           : Paragraph break
-        // .IP "<item>" : Starts an indented paragraph where "item" is put to the left of it; if no blanks in "item", quotes are not needed.
-        // .HP          : Starts a paragraph with a hanging indent; i.e. lines after the first are indented
-        // .RE          : Defines an indented region
-        // .B "<text>"  : Bold; if no blanks in text, quotes are not needed.
-        // .I "<text>"  : Italic; this shows up as underlined on most terminals. If no blanks in text, quotes are not needed.
-        // .TP <columns> : Term/paragraph format; columns specify how many columns to allocate to the term column. As an example, this input:
-        // .P           : New paragraph
-        // .br          : Break line
-        // .nf          : Nofill (used to suppress normal line filling; used for preformatted text)
-        // .fi          : Fill (used to resume normal line filling, usually after a .nf)
-        // ./"          : Comment line
-        if (line->StartsWith(".")) {
-            const bool isMacro =
-                line->StartsWith(".SS") ||
-                line->StartsWith(".P") ||
-                line->StartsWith(".IP") ||
-                line->StartsWith(".HP") ||
-                line->StartsWith(".RE") ||
-                line->StartsWith(".B") ||
-                line->StartsWith(".I") ||
-                line->StartsWith(".TP") ||
-                line->StartsWith(".br") ||
-                line->StartsWith(".nf") ||
-                line->StartsWith(".fi") ||
-                line->StartsWith("./\"")
-            ;
-
-            if (isMacro)
-                continue;
-        }
-
-        // Add text
-        text.Append(*line);
+        // Store HTML page
+        list[*it] = html;
     }
-
-    // Previous line
-    --line;
-
-    // Replace all dash escape sequences: \- => -
-    text.Replace("\\-", "-");
-
-    return text;
-}
-
-/* ************************************************************************ */
-
-/**
- * @brief Parses man page block with available data.
- *
- * @param line Current parsed line imutable iterator.
- * @param data Output data container.
- */
-static
-void ParseManDesc(wxArrayString::const_iterator& line, CMake::LinesMap& data)
-{
-    wxString name;
-    wxString newName;
-    wxArrayString desc;
-    bool store = false;
-
-    // Read until another section is found
-    for (++line; !line->StartsWith(".SH"); ++line) {
-        // .B marks name
-        if (line->StartsWith(".B ", &newName)) {
-            // Remove trailing newline
-            newName.Trim();
-            store = true;
-
-            if (!desc.IsEmpty()) {
-                // Store name and description
-                data.insert(std::make_pair(name, desc));
-                desc.clear();
-            }
-
-            name = newName;
-
-        } else if (store) {
-
-            // Skip MAN macros
-            if (line->StartsWith(".")) {
-                const bool isMacro =
-                    line->StartsWith(".SS") ||
-                    line->StartsWith(".P") ||
-                    line->StartsWith(".IP") ||
-                    line->StartsWith(".HP") ||
-                    line->StartsWith(".RE") ||
-                    line->StartsWith(".B") ||
-                    line->StartsWith(".I") ||
-                    line->StartsWith(".TP") ||
-                    line->StartsWith(".br") ||
-                    line->StartsWith(".nf") ||
-                    line->StartsWith(".fi") ||
-                    line->StartsWith("./\"")
-                ;
-
-                if (isMacro)
-                    continue;
-            }
-
-            wxString copy = *line;
-            // Replace all dash escape sequences: \- => -
-            copy.Replace("\\-", "-");
-
-            // Append line
-            desc.push_back(copy);
-        }
-    }
-
-    // Previous line
-    --line;
 }
 
 /* ************************************************************************ */
@@ -223,7 +99,6 @@ static bool PrepareDatabase(wxSQLite3Database& db, const wxFileName& filename)
             return false;
 
         // Create tables
-        db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS generators (name TEXT)");
         db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS commands (name TEXT, desc TEXT)");
         db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS modules (name TEXT, desc TEXT)");
         db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS properties (name TEXT, desc TEXT)");
@@ -231,7 +106,6 @@ static bool PrepareDatabase(wxSQLite3Database& db, const wxFileName& filename)
         db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS strings (name TEXT, desc TEXT)");
 
         // Create indices
-        db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS generators_idx ON generators(name)");
         db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS commands_idx ON commands(name)");
         db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS modules_idx ON modules(name)");
         db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS properties_idx ON properties(name)");
@@ -319,12 +193,10 @@ CMake::LoadData(bool force)
 
     // Clear old data
     m_version.clear();
-    m_generators.clear();
     m_commands.clear();
     m_modules.clear();
     m_properties.clear();
     m_variables.clear();
-    m_copyright.clear();
 
     // Create SQLite database
     wxSQLite3Database db;
@@ -359,8 +231,8 @@ CMake::LoadData(bool force)
         }
     }
 
-    // Parse data from CMake manual page
-    ParseCMakeManPage();
+    // Load data
+    LoadFromCMake();
 
     // Database is open so we can store result into database
     if (dbOk)
@@ -372,33 +244,15 @@ CMake::LoadData(bool force)
 /* ************************************************************************ */
 
 void
-CMake::ParseCMakeManPage()
+CMake::LoadFromCMake()
 {
     // Get cmake program path
     const wxString program = GetPath().GetFullPath();
 
-    // Get CMake man page
-    wxArrayString output;
-    ProcUtils::SafeExecuteCommand(program + " --help-man", output);
-
-    // Foreach lines
-    for (wxArrayString::const_iterator line = output.begin();
-        line != output.end(); ++line) {
-        // Generators
-        if (line->StartsWith(".SH GENERATORS")) {
-            m_generators = ParseManGenerators(line);
-        } else if (line->StartsWith(".SH COMMANDS")) {
-            ParseManDesc(line, m_commands);
-        } else if (line->StartsWith(".SH PROPERTIES")) {
-            ParseManDesc(line, m_properties);
-        } else if (line->StartsWith(".SH MODULES")) {
-            ParseManDesc(line, m_modules);
-        } else if (line->StartsWith(".SH VARIABLES")) {
-            ParseManDesc(line, m_variables);
-        } else if (line->StartsWith(".SH COPYRIGHT")) {
-            m_copyright = ParseManText(line);
-        }
-    }
+    LoadList(program, "command", m_commands);
+    LoadList(program, "module", m_modules);
+    LoadList(program, "property", m_properties);
+    LoadList(program, "variable", m_variables);
 }
 
 /* ************************************************************************ */
@@ -422,27 +276,11 @@ CMake::LoadFromDatabase(wxSQLite3Database& db)
     if (m_version.IsEmpty())
         return false;
 
-    // Strings - Copyright
-    {
-        wxSQLite3ResultSet res = db.ExecuteQuery("SELECT desc FROM strings WHERE name = 'copyright'");
-        if (res.NextRow()) {
-            m_copyright = res.GetAsString(0);
-        }
-    }
-
-    // Generators
-    {
-        wxSQLite3ResultSet res = db.ExecuteQuery("SELECT name FROM generators");
-        while (res.NextRow()) {
-            m_generators.Add(res.GetAsString(0));
-        }
-    }
-
     // Commands
     {
         wxSQLite3ResultSet res = db.ExecuteQuery("SELECT name, desc FROM commands");
         while (res.NextRow()) {
-            m_commands[res.GetAsString(0)] = wxSplit(res.GetAsString(1), '\n');
+            m_commands[res.GetAsString(0)] = res.GetAsString(1);
         }
     }
 
@@ -450,7 +288,7 @@ CMake::LoadFromDatabase(wxSQLite3Database& db)
     {
         wxSQLite3ResultSet res = db.ExecuteQuery("SELECT name, desc FROM modules");
         while (res.NextRow()) {
-            m_modules[res.GetAsString(0)] = wxSplit(res.GetAsString(1), '\n');
+            m_modules[res.GetAsString(0)] = res.GetAsString(1);
         }
     }
 
@@ -458,7 +296,7 @@ CMake::LoadFromDatabase(wxSQLite3Database& db)
     {
         wxSQLite3ResultSet res = db.ExecuteQuery("SELECT name, desc FROM properties");
         while (res.NextRow()) {
-            m_properties[res.GetAsString(0)] = wxSplit(res.GetAsString(1), '\n');
+            m_properties[res.GetAsString(0)] = res.GetAsString(1);
         }
     }
 
@@ -466,7 +304,7 @@ CMake::LoadFromDatabase(wxSQLite3Database& db)
     {
         wxSQLite3ResultSet res = db.ExecuteQuery("SELECT name, desc FROM variables");
         while (res.NextRow()) {
-            m_variables[res.GetAsString(0)] = wxSplit(res.GetAsString(1), '\n');
+            m_variables[res.GetAsString(0)] = res.GetAsString(1);
         }
     }
 
@@ -486,21 +324,12 @@ CMake::StoreIntoDatabase(wxSQLite3Database& db) const
     if (!db.IsOpen())
         return false;
 
-    // Generators
-    {
-        wxSQLite3Statement stmt = db.PrepareStatement("REPLACE INTO generators (name) VALUES(?)");
-        for (wxArrayString::const_iterator it = m_generators.begin(), ite = m_generators.end(); it != ite; ++it) {
-            stmt.Bind(1, *it);
-            stmt.ExecuteUpdate();
-        }
-    }
-
     // Commands
     {
         wxSQLite3Statement stmt = db.PrepareStatement("REPLACE INTO commands (name, desc) VALUES(?, ?)");
-        for (LinesMap::const_iterator it = m_commands.begin(), ite = m_commands.end(); it != ite; ++it) {
+        for (HelpMap::const_iterator it = m_commands.begin(), ite = m_commands.end(); it != ite; ++it) {
             stmt.Bind(1, it->first);
-            stmt.Bind(2, wxJoin(it->second, '\n'));
+            stmt.Bind(2, it->second);
             stmt.ExecuteUpdate();
         }
     }
@@ -508,9 +337,9 @@ CMake::StoreIntoDatabase(wxSQLite3Database& db) const
     // Modules
     {
         wxSQLite3Statement stmt = db.PrepareStatement("REPLACE INTO modules (name, desc) VALUES(?, ?)");
-        for (LinesMap::const_iterator it = m_modules.begin(), ite = m_modules.end(); it != ite; ++it) {
+        for (HelpMap::const_iterator it = m_modules.begin(), ite = m_modules.end(); it != ite; ++it) {
             stmt.Bind(1, it->first);
-            stmt.Bind(2, wxJoin(it->second, '\n'));
+            stmt.Bind(2, it->second);
             stmt.ExecuteUpdate();
         }
     }
@@ -518,9 +347,9 @@ CMake::StoreIntoDatabase(wxSQLite3Database& db) const
     // Properties
     {
         wxSQLite3Statement stmt = db.PrepareStatement("REPLACE INTO properties (name, desc) VALUES(?, ?)");
-        for (LinesMap::const_iterator it = m_properties.begin(), ite = m_properties.end(); it != ite; ++it) {
+        for (HelpMap::const_iterator it = m_properties.begin(), ite = m_properties.end(); it != ite; ++it) {
             stmt.Bind(1, it->first);
-            stmt.Bind(2, wxJoin(it->second, '\n'));
+            stmt.Bind(2, it->second);
             stmt.ExecuteUpdate();
         }
     }
@@ -528,18 +357,11 @@ CMake::StoreIntoDatabase(wxSQLite3Database& db) const
     // Variables
     {
         wxSQLite3Statement stmt = db.PrepareStatement("REPLACE INTO variables (name, desc) VALUES(?, ?)");
-        for (LinesMap::const_iterator it = m_variables.begin(), ite = m_variables.end(); it != ite; ++it) {
+        for (HelpMap::const_iterator it = m_variables.begin(), ite = m_variables.end(); it != ite; ++it) {
             stmt.Bind(1, it->first);
-            stmt.Bind(2, wxJoin(it->second, '\n'));
+            stmt.Bind(2, it->second);
             stmt.ExecuteUpdate();
         }
-    }
-
-    // Strings - Copyright
-    {
-        wxSQLite3Statement stmt = db.PrepareStatement("REPLACE INTO strings (name, desc) VALUES('copyright', ?)");
-        stmt.Bind(1, m_copyright);
-        stmt.ExecuteUpdate();
     }
 
     // Strings - Version

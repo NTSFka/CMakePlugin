@@ -58,7 +58,7 @@ public:
 
 
     /// Lines map.
-    typedef std::map<wxString, wxArrayString> LinesMap;
+    typedef std::map<wxString, wxString> HelpMap;
 
 
 // Public Ctors
@@ -132,7 +132,7 @@ public:
      *
      * @return
      */
-    const LinesMap& GetCommands() const {
+    const HelpMap& GetCommands() const {
         return m_commands;
     }
 
@@ -142,7 +142,7 @@ public:
      *
      * @return
      */
-    const LinesMap& GetModules() const {
+    const HelpMap& GetModules() const {
         return m_modules;
     }
 
@@ -152,7 +152,7 @@ public:
      *
      * @return
      */
-    const LinesMap& GetProperties() const {
+    const HelpMap& GetProperties() const {
         return m_properties;
     }
 
@@ -162,28 +162,8 @@ public:
      *
      * @return
      */
-    const LinesMap& GetVariables() const {
+    const HelpMap& GetVariables() const {
         return m_variables;
-    }
-
-
-    /**
-     * @brief Returns CMake copyright.
-     *
-     * @return
-     */
-    const wxString& GetCopyright() const {
-        return m_copyright;
-    }
-
-
-    /**
-     * @brief Returns CMake generators.
-     *
-     * @return
-     */
-    const wxArrayString& GetGenerators() const {
-        return m_generators;
     }
 
 
@@ -220,10 +200,9 @@ private:
 
 
     /**
-     * @brief Parses CMake man page and fill internal structures
-     * with available data.
+     * @brief Reads everything from CMake.
      */
-    void ParseCMakeManPage();
+    void LoadFromCMake();
 
 
     /**
@@ -260,22 +239,16 @@ private:
     wxString m_version;
 
     /// List of commands.
-    LinesMap m_commands;
+    HelpMap m_commands;
 
     /// List of modules.
-    LinesMap m_modules;
+    HelpMap m_modules;
 
     /// List of properties.
-    LinesMap m_properties;
+    HelpMap m_properties;
 
     /// List of variables.
-    LinesMap m_variables;
-
-    /// CMake copyright.
-    wxString m_copyright;
-
-    /// List of generators.
-    wxArrayString m_generators;
+    HelpMap m_variables;
 
 };
 

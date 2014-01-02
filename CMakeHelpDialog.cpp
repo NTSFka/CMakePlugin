@@ -51,9 +51,6 @@ CMakeHelpDialog::CMakeHelpDialog(wxWindow* parent, CMake* cmake)
     m_panelProperties->SetData(&cmake->GetProperties());
     m_panelVariables->SetData(&cmake->GetVariables());
 
-    // Set CMake Copyright
-    m_textCtrlCopyright->SetValue(cmake->GetCopyright());
-
     // Load window layout
     WindowAttrManager::Load(this, "CMakeHelpDialog", NULL);
 }

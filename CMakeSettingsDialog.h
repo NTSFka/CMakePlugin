@@ -32,7 +32,7 @@
 /* FORWARD DECLARATIONS                                                     */
 /* ************************************************************************ */
 
-class CMake;
+class CMakePlugin;
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
@@ -52,9 +52,9 @@ public:
      * @brief Create a CMake settings dialog
      *
      * @param parent Pointer to parent window.
-     * @param cmake  CMake pointer.
+     * @param plugin CMakePlugin pointer.
      */
-    explicit CMakeSettingsDialog(wxWindow* parent, CMake* cmake);
+    explicit CMakeSettingsDialog(wxWindow* parent, CMakePlugin* plugin);
 
 
     /**
@@ -77,6 +77,16 @@ public:
     }
 
 
+    /**
+     * @brief Returns selected default generator.
+     *
+     * @return
+     */
+    wxString GetDefaultGenerator() const {
+        return m_choiceDefaultGenerator->GetStringSelection();
+    }
+
+
 // Public Mutators
 public:
 
@@ -91,23 +101,21 @@ public:
     }
 
 
-// Public Events
-public:
-
-
     /**
-     * @brief On showing CMake help.
+     * @brief Change default generator.
      *
-     * @param event
+     * @param generator New default generator.
      */
-    void OnShowHelp(wxCommandEvent& event);
+    void SetDefaultGenerator(const wxString& generator) {
+        m_choiceDefaultGenerator->SetStringSelection(generator);
+    }
 
 
 // Private Data Members
 private:
 
-    /// Pointer to CMake object.
-    CMake* const m_cmake;
+    /// Pointer to CMakePlugin.
+    CMakePlugin* const m_plugin;
 
 };
 

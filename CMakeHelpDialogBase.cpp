@@ -53,16 +53,6 @@ CMakeHelpDialogBase::CMakeHelpDialogBase(wxWindow* parent, wxWindowID id, const 
     m_panelVariables = new CMakeHelpPanel(m_notebook, wxID_ANY, wxDefaultPosition, wxSize(-1,-1), wxTAB_TRAVERSAL);
     m_notebook->AddPage(m_panelVariables, _("Variables"), false);
     
-    m_panelCopyright = new wxPanel(m_notebook, wxID_ANY, wxDefaultPosition, wxSize(-1,-1), wxTAB_TRAVERSAL);
-    m_notebook->AddPage(m_panelCopyright, _("Copyright"), false);
-    
-    wxBoxSizer* boxSizerCopyright = new wxBoxSizer(wxVERTICAL);
-    m_panelCopyright->SetSizer(boxSizerCopyright);
-    
-    m_textCtrlCopyright = new wxTextCtrl(m_panelCopyright, wxID_ANY, wxT(""), wxDefaultPosition, wxSize(-1,-1), wxTE_READONLY|wxTE_MULTILINE);
-    
-    boxSizerCopyright->Add(m_textCtrlCopyright, 1, wxALL|wxEXPAND, 5);
-    
     m_stdBtnSizer = new wxStdDialogButtonSizer();
     
     boxSizer->Add(m_stdBtnSizer, 0, wxALL|wxEXPAND, 5);

@@ -14,7 +14,7 @@
 #include <wx/sizer.h>
 #include <wx/splitter.h>
 #include <wx/listbox.h>
-#include <wx/textctrl.h>
+#include <wx/html/htmlwin.h>
 
 class CMakeHelpPanelBase : public wxPanel
 {
@@ -23,7 +23,7 @@ protected:
     wxPanel* m_splitterPageList;
     wxListBox* m_listBoxList;
     wxPanel* m_splitterPageText;
-    wxTextCtrl* m_textCtrlText;
+    wxHtmlWindow* m_htmlWinText;
 
 protected:
     virtual void OnSelect(wxCommandEvent& event) { event.Skip(); }

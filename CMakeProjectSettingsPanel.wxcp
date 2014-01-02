@@ -1,7 +1,7 @@
 {
 	"metadata":	{
 		"m_generatedFilesDir":	".",
-		"m_objCounter":	217,
+		"m_objCounter":	219,
 		"m_includeFiles":	[],
 		"m_bitmapFunction":	"wxCrafterg7ypzmInitBitmapResources",
 		"m_bitmapsFile":	"CMakeProjectSettingsPanel_bitmaps.cpp",
@@ -806,7 +806,7 @@
 										}],
 									"m_children":	[]
 								}, {
-									"m_type":	4410,
+									"m_type":	4411,
 									"proportion":	0,
 									"border":	0,
 									"gbSpan":	"1,1",
@@ -828,7 +828,7 @@
 										}, {
 											"type":	"string",
 											"m_label":	"Name:",
-											"m_value":	"m_comboBoxGenerator"
+											"m_value":	"m_choiceGenerator"
 										}, {
 											"type":	"multi-string",
 											"m_label":	"Tooltip:",
@@ -871,24 +871,14 @@
 											"m_value":	""
 										}, {
 											"type":	"multi-string",
-											"m_label":	"ComboBox Choices:",
+											"m_label":	"Choices:",
 											"m_value":	""
 										}, {
 											"type":	"string",
 											"m_label":	"Selection:",
-											"m_value":	"-1"
-										}, {
-											"type":	"string",
-											"m_label":	"Value:",
 											"m_value":	""
 										}],
-									"m_events":	[{
-											"m_eventName":	"wxEVT_UPDATE_UI",
-											"m_eventClass":	"wxUpdateUIEvent",
-											"m_eventHandler":	"wxUpdateUIEventHandler",
-											"m_functionNameAndSignature":	"OnCheck2(wxUpdateUIEvent& event)",
-											"m_description":	"Process a wxEVT_UPDATE_UI event"
-										}],
+									"m_events":	[],
 									"m_children":	[]
 								}, {
 									"m_type":	4405,

@@ -71,8 +71,22 @@ public:
      *
      * @return Path to CMake program.
      */
-    inline wxString GetProgramPath() const {
+    wxString GetProgramPath() const {
         return Read("CMakePath", "cmake");
+    }
+
+
+    /**
+     * @brief Returns default generator.
+     *
+     * @return Default generator.
+     */
+    wxString GetDefaultGenerator() const {
+#ifdef __WXMSW__
+        return Read("Generator", "MinGW Makefiles");
+#else
+        return Read("Generator", "Unix Makefiles");
+#endif
     }
 
 
@@ -85,8 +99,18 @@ public:
      *
      * @param path CMake program path.
      */
-    inline void SetProgramPath(const wxString& path) {
+    void SetProgramPath(const wxString& path) {
         Write("CMakePath", path);
+    }
+
+
+    /**
+     * @brief Change default generator.
+     *
+     * @param generator New default generator.
+     */
+    void SetDefaultGenerator(const wxString& generator) {
+        Write("Generator", generator);
     }
 
 };

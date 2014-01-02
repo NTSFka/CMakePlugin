@@ -94,7 +94,7 @@ public:
      *
      * @param data     A pointer to displayed data.
      */
-    void SetData(const std::map<wxString, wxArrayString>* data);
+    void SetData(const std::map<wxString, wxString>* data);
 
 
 // Public Events
@@ -114,7 +114,7 @@ private:
 
 
     /// Panel data.
-    const std::map<wxString, wxArrayString>* m_data;
+    const std::map<wxString, wxString>* m_data;
 
 };
 

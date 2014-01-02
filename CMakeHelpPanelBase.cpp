@@ -48,9 +48,10 @@ CMakeHelpPanelBase::CMakeHelpPanelBase(wxWindow* parent, wxWindowID id, const wx
     wxBoxSizer* boxSizerText = new wxBoxSizer(wxVERTICAL);
     m_splitterPageText->SetSizer(boxSizerText);
     
-    m_textCtrlText = new wxTextCtrl(m_splitterPageText, wxID_ANY, wxT(""), wxDefaultPosition, wxSize(-1,-1), wxTE_READONLY|wxTE_MULTILINE);
+    m_htmlWinText = new wxHtmlWindow(m_splitterPageText, wxID_ANY, wxDefaultPosition, wxSize(-1,-1), wxHW_SCROLLBAR_AUTO|wxBORDER_THEME);
+    m_htmlWinText->SetPage(wxT(""));
     
-    boxSizerText->Add(m_textCtrlText, 1, wxALL|wxEXPAND, 0);
+    boxSizerText->Add(m_htmlWinText, 1, wxALL|wxEXPAND, 0);
     
     SetSizeHints(500,300);
     if ( GetSizer() ) {

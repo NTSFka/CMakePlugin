@@ -85,15 +85,11 @@ CMakeProjectSettingsPanel::CMakeProjectSettingsPanel(wxWindow* parent,
     : CMakeProjectSettingsPanelBase(parent, wxID_ANY)
     , m_plugin(plugin)
 {
-    if (m_plugin->GetCMake()->IsDirty()) {
-        wxBusyInfo wait("Please wait, loading CMake data...");
-        m_plugin->GetCMake()->LoadData();
-    }
-
     // Set available generators
-    m_comboBoxGenerator->Insert("", 0);
-    m_comboBoxGenerator->Append(m_plugin->GetCMake()->GetGenerators());
+    m_choiceGenerator->Insert("", 0);
+    m_choiceGenerator->Append(m_plugin->GetSupportedGenerators());
 
+    // wxCrafter removes empty value
     m_comboBoxBuildType->Insert("", 0);
 
     // Set default setting

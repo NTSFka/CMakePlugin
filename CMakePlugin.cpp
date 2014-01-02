@@ -129,11 +129,13 @@ extern "C" EXPORT int GetPluginInterfaceVersion()
 /**
  * @brief Join arguments for project settings.
  *
- * @param settings Project settings.
+ * @param settings      Project settings.
+ * @param configuration CMakePlugin global configuration.
  *
  * @return Command line arguments.
  */
-static wxString CreateArguments(const CMakeProjectSettings& settings)
+static wxString CreateArguments(const CMakeProjectSettings& settings,
+                                const CMakeConfiguration& configuration)
 {
     const wxString& sourceDir = settings.sourceDirectory;
     const wxString& buildDir = settings.buildDirectory;
@@ -144,8 +146,14 @@ static wxString CreateArguments(const CMakeProjectSettings& settings)
         args.Add("-G \"" + settings.generator + "\"");
 
     // Build Type
-    if (!settings.buildType.IsEmpty())
-        args.Add("-DCMAKE_BUILD_TYPE=" + settings.buildType);
+    wxString buildType = settings.buildType;
+
+    // Use global value
+    if (buildType.IsEmpty())
+        buildType = configuration.GetDefaultGenerator();
+
+    if (!buildType.IsEmpty())
+        args.Add("-DCMAKE_BUILD_TYPE=" + buildType);
 
     // Copy additional arguments
     for (wxArrayString::const_iterator it = settings.arguments.begin(),
@@ -270,6 +278,25 @@ CMakePlugin::IsSeletedProjectEnabled() const
     const CMakeProjectSettings* settings = GetSelectedProjectSettings();
 
     return settings && settings->enabled;
+}
+
+/* ************************************************************************ */
+
+wxArrayString
+CMakePlugin::GetSupportedGenerators() const
+{
+    wxArrayString generators;
+
+#ifdef __WXMSW__
+    // Windows supported generators
+    generators.Add("MinGW Makefiles");
+#else
+    // Linux / Mac supported generators
+    generators.Add("Unix Makefiles");
+    //generators.Add("Ninja");
+#endif
+
+    return generators;
 }
 
 /* ************************************************************************ */
@@ -424,14 +451,16 @@ CMakePlugin::OpenCMakeLists(wxFileName filename) const
 void
 CMakePlugin::OnSettings(wxCommandEvent& event)
 {
-    CMakeSettingsDialog dlg(NULL, GetCMake());
+    CMakeSettingsDialog dlg(NULL, this);
 
     // Set original value
     dlg.SetCMakePath(m_configuration->GetProgramPath());
+    dlg.SetDefaultGenerator(m_configuration->GetDefaultGenerator());
 
     // Store change
     if (dlg.ShowModal() == wxID_OK) {
         m_configuration->SetProgramPath(dlg.GetCMakePath());
+        m_configuration->SetDefaultGenerator(dlg.GetDefaultGenerator());
     }
 }
 
@@ -574,14 +603,14 @@ CMakePlugin::OnExportMakefile(clBuildEvent& event)
         // Redirect make to the parent project
         content <<
             "# Parent project\n"
-            "PARENT          := \"" << parentProjectDirEsc << "\"\n"
-            "PARENT_MAKEFILE := \"" << parentProject << ".mk\"\n"
+            "PARENT          := " << parentProjectDirEsc << "\n"
+            "PARENT_MAKEFILE := " << parentProject << ".mk\n"
             "\n"
             "all:\n"
-            "\t$(MAKE) -C $(PARENT) -f $(PARENT_MAKEFILE) " << project << "\n"
+            "\t$(MAKE) -C \"$(PARENT)\" -f \"$(PARENT_MAKEFILE)\" " << project << "\n"
             "\n"
             "clean:\n"
-            "\t$(MAKE) -C $(PARENT) -f $(PARENT_MAKEFILE) " << project << " clean\n"
+            "\t$(MAKE) -C \"$(PARENT)\" -f \"$(PARENT_MAKEFILE)\" " << project << " clean\n"
             "\n"
         ;
 
@@ -609,21 +638,21 @@ CMakePlugin::OnExportMakefile(clBuildEvent& event)
         // Generated makefile
         content <<
             "CMAKE      := " << cmake << "\n"
-            "BUILD_DIR  := \"" << buildDirEsc << "\"\n"
-            "SOURCE_DIR := \"" << sourceDirEsc << "\"\n"
-            "CMAKE_ARGS := " << CreateArguments(*settings) << "\n"
+            "BUILD_DIR  := " << buildDirEsc << "\n"
+            "SOURCE_DIR := " << sourceDirEsc << "\n"
+            "CMAKE_ARGS := " << CreateArguments(*settings, *m_configuration.get()) << "\n"
             "\n"
             "# Building project(s)\n"
             "$(or $(lastword $(MAKECMDGOALS)), all): $(BUILD_DIR) $(BUILD_DIR)/Makefile\n"
-            "\t$(MAKE) -C $(BUILD_DIR) $(MAKECMDGOALS)\n"
+            "\t$(MAKE) -C \"$(BUILD_DIR)\" $(MAKECMDGOALS)\n"
             "\n"
             "# Building directory\n"
             "$(BUILD_DIR):\n"
-            "\t$(CMAKE) -E make_directory $(BUILD_DIR)\n"
+            "\t$(CMAKE) -E make_directory \"$(BUILD_DIR)\"\n"
             "\n"
             "# Rule that detects if cmake is called\n"
             "$(BUILD_DIR)/Makefile: .cmake_dirty\n"
-            "\tcd $(BUILD_DIR) && $(CMAKE) $(CMAKE_ARGS) $(SOURCE_DIR)\n"
+            "\tcd $(BUILD_DIR) && $(CMAKE) $(CMAKE_ARGS) \"$(SOURCE_DIR)\"\n"
             "\n"
             "# This rule / file allows force cmake run\n"
             ".cmake_dirty:\n"

@@ -47,16 +47,16 @@ CMakeHelpPanel::~CMakeHelpPanel()
 /* ************************************************************************ */
 
 void
-CMakeHelpPanel::SetData(const std::map<wxString, wxArrayString>* data)
+CMakeHelpPanel::SetData(const std::map<wxString, wxString>* data)
 {
     m_data = data;
 
     // Remove old data
     m_listBoxList->Clear();
-    m_textCtrlText->Clear();
+    m_htmlWinText->SetPage("");
 
     // Foreach data and store names into list
-    for (std::map<wxString, wxArrayString>::const_iterator it = data->begin(),
+    for (std::map<wxString, wxString>::const_iterator it = data->begin(),
         ite = data->end(); it != ite; ++it) {
         m_listBoxList->Append(it->first);
     }
@@ -73,16 +73,12 @@ CMakeHelpPanel::OnSelect(wxCommandEvent& event)
     const wxString name = m_listBoxList->GetString(event.GetInt());
 
     // Find name in the data
-    std::map<wxString, wxArrayString>::const_iterator it = m_data->find(name);
+    std::map<wxString, wxString>::const_iterator it = m_data->find(name);
 
     // Data found
     if (it != m_data->end()) {
         // Show required data
-#ifdef __WXMSW__
-        m_textCtrlText->SetValue(wxJoin(it->second, '\n', 0));
-#else
-        m_textCtrlText->SetValue(wxJoin(it->second, ' ', 0));
-#endif
+        m_htmlWinText->SetPage(it->second);
     }
 }
 

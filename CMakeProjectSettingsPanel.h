@@ -113,7 +113,7 @@ public:
      * @return
      */
     wxString GetGenerator() const {
-        return m_comboBoxGenerator->GetStringSelection();
+        return m_choiceGenerator->GetStringSelection();
     }
 
 
@@ -197,7 +197,7 @@ public:
      * @param generator
      */
     void SetGenerator(const wxString& generator) {
-        m_comboBoxGenerator->SetStringSelection(generator);
+        m_choiceGenerator->SetStringSelection(generator);
     }
 
 

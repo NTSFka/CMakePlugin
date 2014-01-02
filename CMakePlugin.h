@@ -199,6 +199,17 @@ public:
     bool IsSeletedProjectEnabled() const;
 
 
+    /**
+     * @brief Returns a list of supported generators.
+     *
+     * Plugin supports only generators that generate directly buildable
+     * output like Unix Makefile or MinGW Makefile.
+     *
+     * @return List.
+     */
+    wxArrayString GetSupportedGenerators() const;
+
+
 // Public Operations
 public:
 

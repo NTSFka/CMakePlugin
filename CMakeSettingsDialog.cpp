@@ -25,24 +25,24 @@
 // Declaration
 #include "CMakeSettingsDialog.h"
 
-// wxWidgets
-#include <wx/msgdlg.h>
-
 // Codelite
 #include "windowattrmanager.h"
 
 // CMakePlugin
-#include "CMake.h"
-#include "CMakeHelpDialog.h"
+#include "CMakePlugin.h"
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
 /* ************************************************************************ */
 
-CMakeSettingsDialog::CMakeSettingsDialog(wxWindow* parent, CMake* cmake)
+CMakeSettingsDialog::CMakeSettingsDialog(wxWindow* parent, CMakePlugin* plugin)
     : CMakeSettingsDialogBase(parent)
-    , m_cmake(cmake)
+    , m_plugin(plugin)
 {
+    // Add items
+    m_choiceDefaultGenerator->Append("");
+    m_choiceDefaultGenerator->Append(m_plugin->GetSupportedGenerators());
+
     // Load window layout
     WindowAttrManager::Load(this, "CMakeSettingsDialog", NULL);
 }
@@ -53,24 +53,6 @@ CMakeSettingsDialog::~CMakeSettingsDialog()
 {
     // Save window layout
     WindowAttrManager::Save(this, "CMakeSettingsDialog", NULL);
-}
-
-/* ************************************************************************ */
-
-void
-CMakeSettingsDialog::OnShowHelp(wxCommandEvent& event)
-{
-    wxASSERT(m_cmake);
-
-    if (!m_cmake->IsOk()) {
-        wxMessageBox(_("CMake program not found!"), wxMessageBoxCaptionStr, wxOK | wxCENTER | wxICON_ERROR);
-        return;
-    }
-
-    if (m_cmake->IsDirty())
-        m_cmake->LoadData();
-
-    CMakeHelpDialog(NULL, m_cmake).ShowModal();
 }
 
 /* ************************************************************************ */

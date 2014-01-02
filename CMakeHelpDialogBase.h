@@ -18,7 +18,6 @@
 #include <wx/panel.h>
 #include <wx/imaglist.h>
 #include "CMakeHelpPanel.h"
-#include <wx/textctrl.h>
 #include <wx/button.h>
 
 class CMakeHelpDialogBase : public wxDialog
@@ -31,8 +30,6 @@ protected:
     CMakeHelpPanel* m_panelCommands;
     CMakeHelpPanel* m_panelProperties;
     CMakeHelpPanel* m_panelVariables;
-    wxPanel* m_panelCopyright;
-    wxTextCtrl* m_textCtrlCopyright;
     wxStdDialogButtonSizer* m_stdBtnSizer;
     wxButton* m_buttonOk;
 

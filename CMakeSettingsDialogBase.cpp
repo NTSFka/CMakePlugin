@@ -25,21 +25,30 @@ CMakeSettingsDialogBase::CMakeSettingsDialogBase(wxWindow* parent, wxWindowID id
     wxBoxSizer* boxSizerMain = new wxBoxSizer(wxVERTICAL);
     this->SetSizer(boxSizerMain);
     
-    wxFlexGridSizer* flexGridSizer = new wxFlexGridSizer(  0, 2, 5, 0);
+    wxFlexGridSizer* flexGridSizer = new wxFlexGridSizer(  0, 2, 5, 5);
     flexGridSizer->SetFlexibleDirection( wxBOTH );
     flexGridSizer->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
     flexGridSizer->AddGrowableCol(1);
     
-    boxSizerMain->Add(flexGridSizer, 1, wxALL|wxEXPAND, 0);
+    boxSizerMain->Add(flexGridSizer, 1, wxALL|wxEXPAND, 5);
     
     m_staticTextProgram = new wxStaticText(this, wxID_ANY, _("CMake program:"), wxDefaultPosition, wxSize(-1,-1), 0);
     
-    flexGridSizer->Add(m_staticTextProgram, 0, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
+    flexGridSizer->Add(m_staticTextProgram, 0, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 0);
     
     m_filePickerProgram = new wxFilePickerCtrl(this, wxID_ANY, wxEmptyString, wxT("Select a file"), wxT("*"), wxDefaultPosition, wxSize(-1,-1), wxFLP_DEFAULT_STYLE|wxFLP_USE_TEXTCTRL);
     
-    flexGridSizer->Add(m_filePickerProgram, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5);
+    flexGridSizer->Add(m_filePickerProgram, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 0);
     m_filePickerProgram->SetMinSize(wxSize(200,-1));
+    
+    m_staticTextDefaultGenerator = new wxStaticText(this, wxID_ANY, _("Default Generator:"), wxDefaultPosition, wxSize(-1,-1), 0);
+    
+    flexGridSizer->Add(m_staticTextDefaultGenerator, 0, wxALL|wxALIGN_CENTER_VERTICAL, 0);
+    
+    wxArrayString m_choiceDefaultGeneratorArr;
+    m_choiceDefaultGenerator = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxSize(-1,-1), m_choiceDefaultGeneratorArr, 0);
+    
+    flexGridSizer->Add(m_choiceDefaultGenerator, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 0);
     
     m_staticLine = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxSize(-1,-1), wxLI_HORIZONTAL);
     
@@ -49,9 +58,6 @@ CMakeSettingsDialogBase::CMakeSettingsDialogBase(wxWindow* parent, wxWindowID id
     
     boxSizerMain->Add(m_stdBtnSizer, 0, wxALL|wxEXPAND, 5);
     
-    m_buttonHelp = new wxButton(this, wxID_HELP, wxT(""), wxDefaultPosition, wxSize(-1, -1), 0);
-    m_stdBtnSizer->AddButton(m_buttonHelp);
-    
     m_buttonOk = new wxButton(this, wxID_OK, wxT(""), wxDefaultPosition, wxSize(-1, -1), 0);
     m_buttonOk->SetDefault();
     m_stdBtnSizer->AddButton(m_buttonOk);
@@ -60,19 +66,14 @@ CMakeSettingsDialogBase::CMakeSettingsDialogBase(wxWindow* parent, wxWindowID id
     m_stdBtnSizer->AddButton(m_buttonCancel);
     m_stdBtnSizer->Realize();
     
-    SetMinSize( wxSize(400,120) );
-    SetSizeHints(400,120);
+    SetMinSize( wxSize(400,150) );
+    SetSizeHints(400,150);
     if ( GetSizer() ) {
          GetSizer()->Fit(this);
     }
     Centre(wxBOTH);
-    // Connect events
-    m_buttonHelp->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(CMakeSettingsDialogBase::OnShowHelp), NULL, this);
-    
 }
 
 CMakeSettingsDialogBase::~CMakeSettingsDialogBase()
 {
-    m_buttonHelp->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(CMakeSettingsDialogBase::OnShowHelp), NULL, this);
-    
 }

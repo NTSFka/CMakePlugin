@@ -31,7 +31,7 @@ protected:
     wxStaticText* m_staticTextBuildDir;
     wxDirPickerCtrl* m_dirPickerBuildDir;
     wxStaticText* m_staticTextGenerator;
-    wxComboBox* m_comboBoxGenerator;
+    wxChoice* m_choiceGenerator;
     wxStaticText* m_staticTextBuildType;
     wxComboBox* m_comboBoxBuildType;
     wxStaticText* m_staticTextArguments;
