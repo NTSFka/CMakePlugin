@@ -108,6 +108,7 @@ CMakeProjectSettingsPanelBase::CMakeProjectSettingsPanelBase(wxWindow* parent, w
     m_staticTextBuildDir->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeProjectSettingsPanelBase::OnCheck2), NULL, this);
     m_dirPickerBuildDir->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeProjectSettingsPanelBase::OnCheck2), NULL, this);
     m_staticTextGenerator->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeProjectSettingsPanelBase::OnCheck2), NULL, this);
+    m_choiceGenerator->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeProjectSettingsPanelBase::OnCheck2), NULL, this);
     m_staticTextBuildType->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeProjectSettingsPanelBase::OnCheck2), NULL, this);
     m_comboBoxBuildType->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeProjectSettingsPanelBase::OnCheck2), NULL, this);
     m_staticTextArguments->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeProjectSettingsPanelBase::OnCheck2), NULL, this);
@@ -124,6 +125,7 @@ CMakeProjectSettingsPanelBase::~CMakeProjectSettingsPanelBase()
     m_staticTextBuildDir->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeProjectSettingsPanelBase::OnCheck2), NULL, this);
     m_dirPickerBuildDir->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeProjectSettingsPanelBase::OnCheck2), NULL, this);
     m_staticTextGenerator->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeProjectSettingsPanelBase::OnCheck2), NULL, this);
+    m_choiceGenerator->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeProjectSettingsPanelBase::OnCheck2), NULL, this);
     m_staticTextBuildType->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeProjectSettingsPanelBase::OnCheck2), NULL, this);
     m_comboBoxBuildType->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeProjectSettingsPanelBase::OnCheck2), NULL, this);
     m_staticTextArguments->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeProjectSettingsPanelBase::OnCheck2), NULL, this);
