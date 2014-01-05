@@ -30,7 +30,7 @@ static unsigned char xml_res_file_0[] = {
 47,119,120,120,114,99,34,32,118,101,114,115,105,111,110,61,34,50,46,51,
 46,48,46,49,34,47,62,10};
 
-void wxCrafterh33zcvInitBitmapResources()
+void wxCrafterR3nJ3cInitBitmapResources()
 {
 
     // Check for memory FS. If not present, load the handler:
@@ -43,6 +43,6 @@ void wxCrafterh33zcvInitBitmapResources()
         else wxFileSystem::AddHandler(new wxMemoryFSHandlerBase);
     }
 
-    XRC_ADD_FILE(wxT("XRC_resource/CMakeSettingsDialogBase_bitmaps.cpp$C__Users_Geo_Development_Cpp_codelite-dev_CMakePlugin_CMakeSettingsDialogBase_bitmaps.xrc"), xml_res_file_0, xml_res_size_0, wxT("text/xml"));
-    wxXmlResource::Get()->Load(wxT("memory:XRC_resource/CMakeSettingsDialogBase_bitmaps.cpp$C__Users_Geo_Development_Cpp_codelite-dev_CMakePlugin_CMakeSettingsDialogBase_bitmaps.xrc"));
+    XRC_ADD_FILE(wxT("XRC_resource/CMakePluginUi_bitmaps.cpp$_home_fatkaj_Development_Cpp_CMakePlugin_CMakePluginUi_bitmaps.xrc"), xml_res_file_0, xml_res_size_0, wxT("text/xml"));
+    wxXmlResource::Get()->Load(wxT("memory:XRC_resource/CMakePluginUi_bitmaps.cpp$_home_fatkaj_Development_Cpp_CMakePlugin_CMakePluginUi_bitmaps.xrc"));
 }

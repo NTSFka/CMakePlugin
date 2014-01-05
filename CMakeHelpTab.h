@@ -29,7 +29,7 @@
 #include <map>
 
 // UI
-#include "CMakeHelpTabBase.h"
+#include "CMakePluginUi.h"
 
 /* ************************************************************************ */
 /* FORWARD DECLARATIONS                                                     */

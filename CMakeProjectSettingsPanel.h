@@ -29,7 +29,7 @@
 #include "project.h"
 
 // UI
-#include "CMakeProjectSettingsPanelBase.h"
+#include "CMakePluginUi.h"
 
 // CMakePlugin
 #include "CMakeProjectSettings.h"
