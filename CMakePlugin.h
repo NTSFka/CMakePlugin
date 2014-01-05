@@ -210,6 +210,14 @@ public:
     wxArrayString GetSupportedGenerators() const;
 
 
+    /**
+     * @brief Check if Help pane is detached.
+     *
+     * @return
+     */
+    bool IsPaneDetached() const;
+
+
 // Public Operations
 public:
 
@@ -297,14 +305,6 @@ public:
      * @param event
      */
     void OnSettings(wxCommandEvent& event);
-
-
-    /**
-     * @brief On CMake help dialog.
-     *
-     * @param event
-     */
-    void OnHelp(wxCommandEvent& event);
 
 
     /**

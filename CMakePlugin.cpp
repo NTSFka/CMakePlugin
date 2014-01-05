@@ -50,18 +50,20 @@
 #include "file_logger.h"
 #include "macromanager.h"
 #include "async_executable_cmd.h"
+#include "dockablepane.h"
+#include "detachedpanesinfo.h"
 
 // CMakePlugin
 #include "CMake.h"
 #include "CMakeGenerator.h"
 #include "CMakeWorkspaceMenu.h"
 #include "CMakeProjectMenu.h"
-#include "CMakeHelpDialog.h"
 #include "CMakeSettingsDialog.h"
 #include "CMakeSettingsManager.h"
 #include "CMakeProjectSettings.h"
 #include "CMakeProjectSettingsPanel.h"
 #include "CMakeGenerator.h"
+#include "CMakeHelpTab.h"
 
 /* ************************************************************************ */
 /* VARIABLES                                                                */
@@ -72,6 +74,10 @@ static CMakePlugin* g_plugin = NULL;
 /* ************************************************************************ */
 
 const wxString CMakePlugin::CMAKELISTS_FILE = "CMakeLists.txt";
+
+/* ************************************************************************ */
+
+static const wxString HELP_TAB_NAME = "CMake Help";
 
 /* ************************************************************************ */
 /* FUNCTIONS                                                                */
@@ -185,6 +191,14 @@ CMakePlugin::CMakePlugin(IManager* manager)
 
     // Create cmake application
     m_cmake.reset(new CMake(m_configuration->GetProgramPath()));
+
+    Notebook* book = m_mgr->GetWorkspacePaneNotebook();
+    if (IsPaneDetached()) {
+        DockablePane* cp = new DockablePane(book->GetParent()->GetParent(), book, HELP_TAB_NAME, wxNullBitmap, wxSize(200, 200));
+        cp->SetChildNoReparent(new CMakeHelpTab(cp, GetCMake()));
+    } else {
+        book->AddPage(new CMakeHelpTab(book, GetCMake()), HELP_TAB_NAME, false);
+    }
 
     // Bind events
     EventNotifier::Get()->Bind(wxEVT_CMD_PROJ_SETTINGS_SAVED, wxCommandEventHandler(CMakePlugin::OnSaveConfig), this);
@@ -301,6 +315,21 @@ CMakePlugin::GetSupportedGenerators() const
 
 /* ************************************************************************ */
 
+bool
+CMakePlugin::IsPaneDetached() const
+{
+    wxASSERT(m_mgr);
+    IConfigTool* configTool = m_mgr->GetConfigTool();
+    wxASSERT(configTool);
+
+    DetachedPanesInfo dpi;
+    configTool->ReadObject("DetachedPanesList", &dpi);
+    const wxArrayString& detachedPanes = dpi.GetPanes();
+    return detachedPanes.Index(HELP_TAB_NAME) != wxNOT_FOUND;
+}
+
+/* ************************************************************************ */
+
 clToolBar*
 CMakePlugin::CreateToolBar(wxWindow* parent)
 {
@@ -315,13 +344,10 @@ CMakePlugin::CreatePluginMenu(wxMenu* pluginsMenu)
 {
     wxMenu* menu = new wxMenu();
     menu->Append(new wxMenuItem(menu, XRCID("cmake_settings"), _("Settings...")));
-    menu->AppendSeparator();
-    menu->Append(new wxMenuItem(menu, XRCID("cmake_help"), _("Help...")));
 
     pluginsMenu->Append(wxID_ANY, "CMake", menu);
 
     wxTheApp->Bind(wxEVT_COMMAND_MENU_SELECTED, &CMakePlugin::OnSettings, this, XRCID("cmake_settings"));
-    wxTheApp->Bind(wxEVT_COMMAND_MENU_SELECTED, &CMakePlugin::OnHelp, this, XRCID("cmake_help"));
 }
 
 /* ************************************************************************ */
@@ -412,9 +438,17 @@ CMakePlugin::UnHookProjectSettingsTab(wxBookCtrlBase* notebook,
 void
 CMakePlugin::UnPlug()
 {
+    wxASSERT(m_mgr);
+    Notebook* notebook = m_mgr->GetWorkspacePaneNotebook();
+    wxASSERT(notebook);
+
+    size_t pos = notebook->GetPageIndex("CMake Help");
+    if (pos != Notebook::npos) {
+        notebook->RemovePage(pos);
+    }
+
     // Unbind events
     wxTheApp->Unbind(wxEVT_COMMAND_MENU_SELECTED, &CMakePlugin::OnSettings, this, XRCID("cmake_settings"));
-    wxTheApp->Unbind(wxEVT_COMMAND_MENU_SELECTED, &CMakePlugin::OnHelp, this, XRCID("cmake_help"));
 
     EventNotifier::Get()->Unbind(wxEVT_CMD_PROJ_SETTINGS_SAVED, wxCommandEventHandler(CMakePlugin::OnSaveConfig), this);
     EventNotifier::Get()->Unbind(wxEVT_GET_PROJECT_BUILD_CMD, clBuildEventHandler(CMakePlugin::OnGetBuildCommand), this);
@@ -462,27 +496,6 @@ CMakePlugin::OnSettings(wxCommandEvent& event)
         m_configuration->SetProgramPath(dlg.GetCMakePath());
         m_configuration->SetDefaultGenerator(dlg.GetDefaultGenerator());
     }
-}
-
-/* ************************************************************************ */
-
-void
-CMakePlugin::OnHelp(wxCommandEvent& event)
-{
-    wxASSERT(m_cmake);
-
-    if (!m_cmake->IsOk()) {
-        wxMessageBox(_("CMake program not found! Please check if cmake path is set properly."),
-                     wxMessageBoxCaptionStr, wxOK | wxCENTER | wxICON_ERROR);
-        return;
-    }
-
-    if (m_cmake->IsDirty()) {
-        wxBusyInfo wait("Please wait, loading CMake data...");
-        m_cmake->LoadData();
-    }
-
-    CMakeHelpDialog(NULL, m_cmake.get()).ShowModal();
 }
 
 /* ************************************************************************ */

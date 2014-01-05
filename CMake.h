@@ -189,10 +189,11 @@ public:
     /**
      * @brief Loads data from CMake application.
      *
-     * @param force If data should be loaded from cmake instead of
-     *              SQLite database.
+     * @param force      If data should be loaded from cmake instead of
+     *                   SQLite database.
+     * @param onlyCached Loads data only if are cached.
      */
-    void LoadData(bool force = false);
+    void LoadData(bool force = false, bool onlyCached = false);
 
 
 // Private Operations

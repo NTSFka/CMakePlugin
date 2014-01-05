@@ -3,8 +3,8 @@
 // Do not modify this file by hand!
 //////////////////////////////////////////////////////////////////////
 
-#ifndef CMAKEHELPPANEL_BASE_CLASSES_H
-#define CMAKEHELPPANEL_BASE_CLASSES_H
+#ifndef CMAKEHELPTAB_BASE_CLASSES_H
+#define CMAKEHELPTAB_BASE_CLASSES_H
 
 #include <wx/settings.h>
 #include <wx/xrc/xmlres.h>
@@ -12,14 +12,21 @@
 #include <wx/panel.h>
 #include <wx/artprov.h>
 #include <wx/sizer.h>
+#include <wx/stattext.h>
+#include <wx/button.h>
+#include <wx/radiobox.h>
 #include <wx/splitter.h>
 #include <wx/srchctrl.h>
 #include <wx/listbox.h>
 #include <wx/html/htmlwin.h>
 
-class CMakeHelpPanelBase : public wxPanel
+class CMakeHelpTabBase : public wxPanel
 {
 protected:
+    wxStaticText* m_staticTextVersion;
+    wxStaticText* m_staticTextVersionValue;
+    wxButton* m_buttonReload;
+    wxRadioBox* m_radioBoxTopic;
     wxSplitterWindow* m_splitter;
     wxPanel* m_splitterPageList;
     wxSearchCtrl* m_searchCtrlFilter;
@@ -28,13 +35,17 @@ protected:
     wxHtmlWindow* m_htmlWinText;
 
 protected:
+    virtual void OnReload(wxCommandEvent& event) { event.Skip(); }
+    virtual void OnChangeTopic(wxCommandEvent& event) { event.Skip(); }
+    virtual void OnRightClick(wxMouseEvent& event) { event.Skip(); }
     virtual void OnSearch(wxCommandEvent& event) { event.Skip(); }
     virtual void OnSearchCancel(wxCommandEvent& event) { event.Skip(); }
     virtual void OnSelect(wxCommandEvent& event) { event.Skip(); }
+    virtual void OnInsert(wxCommandEvent& event) { event.Skip(); }
 
 public:
-    CMakeHelpPanelBase(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(500,300), long style = wxTAB_TRAVERSAL);
-    virtual ~CMakeHelpPanelBase();
+    CMakeHelpTabBase(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(300,400), long style = wxTAB_TRAVERSAL);
+    virtual ~CMakeHelpTabBase();
 };
 
 #endif

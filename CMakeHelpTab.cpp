@@ -23,33 +23,78 @@
 /* ************************************************************************ */
 
 // Declaration
-#include "CMakeHelpPanel.h"
+#include "CMakeHelpTab.h"
+
+// wxWidgets
+#include <wx/msgdlg.h>
+#include <wx/busyinfo.h>
+#include <wx/menu.h>
+
+// CMakePlugin
+#include "CMake.h"
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
 /* ************************************************************************ */
 
-CMakeHelpPanel::CMakeHelpPanel(wxWindow* parent, wxWindowID id,
-                               const wxPoint& pos, const wxSize& size,
-                               long style)
-    : CMakeHelpPanelBase(parent, id, pos, size, style)
+CMakeHelpTab::CMakeHelpTab(wxWindow* parent, CMake* cmake)
+    : CMakeHelpTabBase(parent)
+    , m_cmake(cmake)
 {
-    // Nothing to do
+    wxASSERT(cmake);
+
+    // Load data (cached)
+    LoadData();
 }
 
 /* ************************************************************************ */
 
-CMakeHelpPanel::~CMakeHelpPanel()
+bool
+CMakeHelpTab::LoadData(bool force)
 {
-    // Nothing to do
+    // Unable to reload data
+    if (!m_cmake->IsOk())
+        return false;
+
+    wxBusyInfo("Please wait, loading CMake Help data...");
+
+    // Reload data forced
+    m_cmake->LoadData(force, !force);
+
+    // Set CMake version
+    m_staticTextVersionValue->SetLabel(m_cmake->GetVersion());
+    m_staticTextVersionValue->SetForegroundColour(wxNullColour);
+
+    m_radioBoxTopic->Select(0);
+
+    return true;
 }
 
 /* ************************************************************************ */
 
 void
-CMakeHelpPanel::SetData(const std::map<wxString, wxString>* data)
+CMakeHelpTab::OnChangeTopic(wxCommandEvent& event)
 {
-    m_data = data;
+    switch(event.GetInt()) {
+    default:
+        m_data = NULL;
+        break;
+    case 0:
+        m_data = &m_cmake->GetModules();
+        break;
+    case 1:
+        m_data = &m_cmake->GetCommands();
+        break;
+    case 2:
+        m_data = &m_cmake->GetVariables();
+        break;
+    case 3:
+        m_data = &m_cmake->GetProperties();
+        break;
+    }
+
+    // Clear filter
+    m_searchCtrlFilter->Clear();
 
     // List all items
     ListAll();
@@ -58,7 +103,35 @@ CMakeHelpPanel::SetData(const std::map<wxString, wxString>* data)
 /* ************************************************************************ */
 
 void
-CMakeHelpPanel::OnSelect(wxCommandEvent& event)
+CMakeHelpTab::OnInsert(wxCommandEvent& event)
+{
+    // TODO insert value
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpTab::OnSearch(wxCommandEvent& event)
+{
+    // List subset
+    ListFiltered(event.GetString());
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpTab::OnSearchCancel(wxCommandEvent& event)
+{
+    wxUnusedVar(event);
+
+    // List all items
+    ListAll();
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpTab::OnSelect(wxCommandEvent& event)
 {
     wxASSERT(m_data);
 
@@ -78,31 +151,25 @@ CMakeHelpPanel::OnSelect(wxCommandEvent& event)
 /* ************************************************************************ */
 
 void
-CMakeHelpPanel::OnSearch(wxCommandEvent& event)
+CMakeHelpTab::OnReload(wxCommandEvent& event)
 {
-    // List subset
-    ListFiltered(event.GetString());
+    if (!LoadData(true)) {
+        wxMessageBox(_("Unable to find cmake. Please, check if path to cmake binary is right."),
+                     wxMessageBoxCaptionStr, wxOK | wxCENTER | wxICON_ERROR);
+    }
 }
 
 /* ************************************************************************ */
 
 void
-CMakeHelpPanel::OnSearchCancel(wxCommandEvent& event)
-{
-    wxUnusedVar(event);
-
-    // List all items
-    ListAll();
-}
-
-/* ************************************************************************ */
-
-void
-CMakeHelpPanel::ListAll()
+CMakeHelpTab::ListAll()
 {
     // Remove old data
     m_listBoxList->Clear();
     m_htmlWinText->SetPage("");
+
+    if (!m_data)
+        return;
 
     // Foreach data and store names into list
     for (std::map<wxString, wxString>::const_iterator it = m_data->begin(),
@@ -114,13 +181,16 @@ CMakeHelpPanel::ListAll()
 /* ************************************************************************ */
 
 void
-CMakeHelpPanel::ListFiltered(const wxString& search)
+CMakeHelpTab::ListFiltered(const wxString& search)
 {
     const wxString searchMatches = "*" + search + "*";
 
     // Remove old data
     m_listBoxList->Clear();
     m_htmlWinText->SetPage("");
+
+    if (!m_data)
+        return;
 
     // Foreach data and store names into list
     for (std::map<wxString, wxString>::const_iterator it = m_data->begin(),
@@ -129,6 +199,17 @@ CMakeHelpPanel::ListFiltered(const wxString& search)
         if (it->first.Matches(searchMatches))
             m_listBoxList->Append(it->first);
     }
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpTab::OnRightClick(wxMouseEvent& event)
+{
+    wxMenu menu;
+    menu.Append(wxID_ANY, "Switch view", "Changes view between horizontal and vertical splitting");
+    //menu.Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MyFrame::OnPopupClick, NULL, this);
+    PopupMenu(&menu);
 }
 
 /* ************************************************************************ */

@@ -30,7 +30,7 @@ static unsigned char xml_res_file_0[] = {
 47,119,120,120,114,99,34,32,118,101,114,115,105,111,110,61,34,50,46,51,
 46,48,46,49,34,47,62,10};
 
-void wxCrafterYVsKJwInitBitmapResources()
+void wxCrafter0j4pQ3InitBitmapResources()
 {
 
     // Check for memory FS. If not present, load the handler:
@@ -43,6 +43,6 @@ void wxCrafterYVsKJwInitBitmapResources()
         else wxFileSystem::AddHandler(new wxMemoryFSHandlerBase);
     }
 
-    XRC_ADD_FILE(wxT("XRC_resource/CMakeHelpPanelBase_bitmaps.cpp$_media_fatkaj_c1abbfbd-54c7-4423-85f1-97cf609bd5d2_Cpp_codelite-dev_CMakePlugin_CMakeHelpPanelBase_bitmaps.xrc"), xml_res_file_0, xml_res_size_0, wxT("text/xml"));
-    wxXmlResource::Get()->Load(wxT("memory:XRC_resource/CMakeHelpPanelBase_bitmaps.cpp$_media_fatkaj_c1abbfbd-54c7-4423-85f1-97cf609bd5d2_Cpp_codelite-dev_CMakePlugin_CMakeHelpPanelBase_bitmaps.xrc"));
+    XRC_ADD_FILE(wxT("XRC_resource/CMakeHelpTabBase_bitmaps.cpp$_home_fatkaj_Development_Cpp_codelite-dev_CMakePlugin_CMakeHelpTabBase_bitmaps.xrc"), xml_res_file_0, xml_res_size_0, wxT("text/xml"));
+    wxXmlResource::Get()->Load(wxT("memory:XRC_resource/CMakeHelpTabBase_bitmaps.cpp$_home_fatkaj_Development_Cpp_codelite-dev_CMakePlugin_CMakeHelpTabBase_bitmaps.xrc"));
 }

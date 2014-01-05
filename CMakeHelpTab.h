@@ -18,15 +18,18 @@
 /*                                                                          */
 /* ************************************************************************ */
 
-#ifndef CMAKE_HELP_DIALOG_H_
-#define CMAKE_HELP_DIALOG_H_
+#ifndef CMAKE_HELP_TAB_H_
+#define CMAKE_HELP_TAB_H_
 
 /* ************************************************************************ */
 /* INCLUDES                                                                 */
 /* ************************************************************************ */
 
+// C++
+#include <map>
+
 // UI
-#include "CMakeHelpDialogBase.h"
+#include "CMakeHelpTabBase.h"
 
 /* ************************************************************************ */
 /* FORWARD DECLARATIONS                                                     */
@@ -39,9 +42,9 @@ class CMake;
 /* ************************************************************************ */
 
 /**
- * @brief Help dialog.
+ * @brief Dockable window with CMake help.
  */
-class CMakeHelpDialog : public CMakeHelpDialogBase
+class CMakeHelpTab : public CMakeHelpTabBase
 {
 
 // Public Ctors & Dtors
@@ -49,28 +52,119 @@ public:
 
 
     /**
-     * @brief Create a CMake settings dialog
+     * @brief Constructor.
      *
      * @param parent Pointer to parent window.
-     * @param cmake  CMake pointer.
+     * @param cmake  Pointer to CMake object.
      */
-    explicit CMakeHelpDialog(wxWindow* parent, CMake* cmake);
+    CMakeHelpTab(wxWindow* parent, CMake* cmake);
+
+
+// Protected Events
+protected:
 
 
     /**
-     * @brief Destructor
+     * @brief On topic change.
+     *
+     * @param event
      */
-    ~CMakeHelpDialog();
+    virtual void OnChangeTopic(wxCommandEvent& event);
+
+
+    /**
+     * @brief On item insert into editor.
+     *
+     * @param event
+     */
+    virtual void OnInsert(wxCommandEvent& event);
+
+
+    /**
+     * @brief On item search.
+     *
+     * @param event
+     */
+    virtual void OnSearch(wxCommandEvent& event);
+
+
+    /**
+     * @brief On item search cancel.
+     *
+     * @param event
+     */
+    virtual void OnSearchCancel(wxCommandEvent& event);
+
+
+    /**
+     * @brief On item select.
+     *
+     * @param event
+     */
+    virtual void OnSelect(wxCommandEvent& event);
+
+
+    /**
+     * @brief On CMake help data reload.
+     *
+     * @param event
+     */
+    virtual void OnReload(wxCommandEvent& event);
+
+
+    /**
+     * @brief On right mouse button click event.
+     *
+     * @param event
+     */
+    virtual void OnRightClick(wxMouseEvent& event);
+
+
+// Protected Operations
+protected:
+
+
+    /**
+     * @brief Loads data from CMake object into UI objects.
+     *
+     * @param force If data should be reloaded from CMake instead
+     *              from database.
+     *
+     * @return If data were loaded.
+     */
+    bool LoadData(bool force = false);
+
+
+// Private Operations
+private:
+
+
+    /**
+     * @brief List all items.
+     */
+    void ListAll();
+
+
+    /**
+     * @brief List only items that match search string.
+     *
+     * @param search
+     */
+    void ListFiltered(const wxString& search);
 
 
 // Private Data Members
 private:
 
+
     /// A pointer to cmake
     CMake* const m_cmake;
+
+    /// Current topic data.
+    const std::map<wxString, wxString>* m_data;
 
 };
 
 /* ************************************************************************ */
 
-#endif // CMAKE_HELP_DIALOG_H_
+#endif // CMAKE_HELP_TAB_H_

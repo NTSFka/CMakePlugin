@@ -33,6 +33,7 @@
 #include "procutils.h"
 #include "workspace.h"
 #include "globals.h"
+#include "file_logger.h"
 
 /* ************************************************************************ */
 /* FUNCTIONS                                                                */
@@ -49,10 +50,12 @@ void LoadList(const wxString& command, const wxString& type, CMake::HelpMap& lis
 {
     // Get list
     wxArrayString names;
-    long res = wxExecute(command + " --help-" + type + "-list", names);
+    const wxString cmdList = command + " --help-" + type + "-list";
+    long res = wxExecute(cmdList, names);
 
     // Unable to load
     if (res != 0) {
+        CL_ERROR("CMakePlugin: Unable to call: " + cmdList);
         return;
     }
 
@@ -67,7 +70,13 @@ void LoadList(const wxString& command, const wxString& type, CMake::HelpMap& lis
     // Foreach names
     for (wxArrayString::const_iterator it = names.begin(), ite = names.end(); it != ite; ++it) {
         // Export help
-        wxExecute(command + " --help-" + type + " " + *it + " " + tmpFileName, wxEXEC_SYNC);
+        const wxString cmdItem = command + " --help-" + type + " " + *it + " " + tmpFileName;
+        res = wxExecute(cmdItem, wxEXEC_SYNC);
+
+        if (res != 0) {
+            CL_ERROR("CMakePlugin: Unable to call: " + cmdItem);
+            continue;
+        }
 
         // Read help
         if (!ReadFileWithConversion(tmpFileName, html))
@@ -185,7 +194,7 @@ CMake::IsOk() const
 /* ************************************************************************ */
 
 void
-CMake::LoadData(bool force)
+CMake::LoadData(bool force, bool onlyCached)
 {
     // Loading data again is not required
     if (!m_dirty && !force)
@@ -206,6 +215,10 @@ CMake::LoadData(bool force)
 
     // Load data from database
     if (!force && dbOk && LoadFromDatabase(db))
+        return;
+
+    // Do not continue
+    if (onlyCached)
         return;
 
     // Unable to use CMake
