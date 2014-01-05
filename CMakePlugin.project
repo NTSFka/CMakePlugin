@@ -54,28 +54,13 @@
   <Dependencies Name="Win_wxWidgets_29"/>
   <VirtualDirectory Name="wxcrafter">
     <VirtualDirectory Name="resources">
-      <File Name="CMakeProjectSettingsPanel_bitmaps.cpp"/>
-      <File Name="CMakeSettingsDialogBase_bitmaps.cpp"/>
-      <File Name="CMakeProjectSettingsPanel_bitmaps.xrc"/>
-      <File Name="CMakeSettingsDialogBase_bitmaps.xrc"/>
-      <File Name="CMakeHelpTabBase_bitmaps.cpp"/>
-      <File Name="CMakeHelpTabBase_bitmaps.xrc"/>
-      <File Name="../../CMakePlugin/CMakePluginUi_bitmaps.cpp"/>
+      <File Name="CMakePluginUi_bitmaps.cpp"/>
     </VirtualDirectory>
     <VirtualDirectory Name="base">
-      <File Name="CMakeHelpTabBase.h"/>
-      <File Name="CMakeHelpTabBase.cpp"/>
-      <File Name="CMakeProjectSettingsPanelBase.cpp"/>
-      <File Name="CMakeProjectSettingsPanelBase.h"/>
-      <File Name="CMakeSettingsDialogBase.cpp"/>
-      <File Name="CMakeSettingsDialogBase.h"/>
-      <File Name="../../CMakePlugin/CMakePluginUi.h"/>
-      <File Name="../../CMakePlugin/CMakePluginUi.cpp"/>
+      <File Name="CMakePluginUi.h"/>
+      <File Name="CMakePluginUi.cpp"/>
     </VirtualDirectory>
     <File Name="CMakePlugin.wxcp"/>
-    <File Name="CMakeProjectSettingsPanel.wxcp"/>
-    <File Name="CMakeSettingsDialog.wxcp"/>
-    <File Name="CMakeHelpTab.wxcp"/>
   </VirtualDirectory>
   <Dependencies Name="WinDebugUnicode"/>
   <Dependencies Name="WinReleaseUnicode"/>

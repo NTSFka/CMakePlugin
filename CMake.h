@@ -33,6 +33,7 @@
 #include <wx/filename.h>
 #include <wx/arrstr.h>
 #include <wx/vector.h>
+#include <wx/progdlg.h>
 
 /* ************************************************************************ */
 /* FORWARD DECLARATIONS                                                     */
@@ -192,8 +193,10 @@ public:
      * @param force      If data should be loaded from cmake instead of
      *                   SQLite database.
      * @param onlyCached Loads data only if are cached.
+     * @param progress   Optional progress dialog.
      */
-    void LoadData(bool force = false, bool onlyCached = false);
+    void LoadData(bool force = false, bool onlyCached = false,
+                  wxProgressDialog* progress = NULL);
 
 
 // Private Operations
@@ -202,8 +205,10 @@ private:
 
     /**
      * @brief Reads everything from CMake.
+     *
+     * @param progress Optional progress dialog.
      */
-    void LoadFromCMake();
+    void LoadFromCMake(wxProgressDialog* progress = NULL);
 
 
     /**
@@ -220,10 +225,12 @@ private:
      * @brief Stores data into SQLite3 database.
      *
      * @param db Database.
+     * @param progress Optional progress dialog.
      *
      * @return If data is stored.
      */
-    bool StoreIntoDatabase(wxSQLite3Database& db) const;
+    bool StoreIntoDatabase(wxSQLite3Database& db,
+                           wxProgressDialog* progress = NULL) const;
 
 
 // Private Data Members

@@ -29,6 +29,8 @@
 #include <wx/msgdlg.h>
 #include <wx/busyinfo.h>
 #include <wx/menu.h>
+#include <wx/progdlg.h>
+#include <wx/windowptr.h>
 
 // CMakePlugin
 #include "CMake.h"
@@ -56,10 +58,18 @@ CMakeHelpTab::LoadData(bool force)
     if (!m_cmake->IsOk())
         return false;
 
-    wxBusyInfo("Please wait, loading CMake Help data...");
+    //wxBusyInfo("Please wait, loading CMake Help data...");
+    wxWindowPtr<wxProgressDialog> progress;
+
+    if (force) {
+        progress.reset(new wxProgressDialog("CMake Help data", _("Please wait...")));
+    }
 
     // Reload data forced
-    m_cmake->LoadData(force, !force);
+    m_cmake->LoadData(force, !force, progress.get());
+
+    // Delete dialog
+    progress.reset();
 
     // Set CMake version
     m_staticTextVersionValue->SetLabel(m_cmake->GetVersion());
