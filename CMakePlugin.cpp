@@ -195,9 +195,9 @@ CMakePlugin::CMakePlugin(IManager* manager)
     Notebook* book = m_mgr->GetWorkspacePaneNotebook();
     if (IsPaneDetached()) {
         DockablePane* cp = new DockablePane(book->GetParent()->GetParent(), book, HELP_TAB_NAME, wxNullBitmap, wxSize(200, 200));
-        cp->SetChildNoReparent(new CMakeHelpTab(cp, GetCMake()));
+        cp->SetChildNoReparent(new CMakeHelpTab(cp, this));
     } else {
-        book->AddPage(new CMakeHelpTab(book, GetCMake()), HELP_TAB_NAME, false);
+        book->AddPage(new CMakeHelpTab(book, this), HELP_TAB_NAME, false);
     }
 
     // Bind events

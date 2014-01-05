@@ -32,21 +32,24 @@
 
 // Codelite
 #include "file_logger.h"
+#include "imanager.h"
+#include "ieditor.h"
 
 // CMakePlugin
+#include "CMakePlugin.h"
 #include "CMake.h"
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
 /* ************************************************************************ */
 
-CMakeHelpTab::CMakeHelpTab(wxWindow* parent, CMake* cmake)
+CMakeHelpTab::CMakeHelpTab(wxWindow* parent, CMakePlugin* plugin)
     : CMakeHelpTabBase(parent)
-    , m_cmake(cmake)
+    , m_plugin(plugin)
     , m_force(false)
     , m_busy(false)
 {
-    wxASSERT(cmake);
+    wxASSERT(plugin);
 
     Bind(wxEVT_CLOSE_WINDOW, &CMakeHelpTab::OnClose, this);
     Bind(EVT_UPDATE_THREAD, &CMakeHelpTab::OnThreadUpdate, this);
@@ -60,25 +63,28 @@ CMakeHelpTab::CMakeHelpTab(wxWindow* parent, CMake* cmake)
 void
 CMakeHelpTab::OnChangeTopic(wxCommandEvent& event)
 {
+    const CMake* cmake = m_plugin->GetCMake();
+    wxASSERT(cmake);
+
     switch(event.GetInt()) {
     default:
         m_data = NULL;
         break;
 
     case 0:
-        m_data = &m_cmake->GetModules();
+        m_data = &cmake->GetModules();
         break;
 
     case 1:
-        m_data = &m_cmake->GetCommands();
+        m_data = &cmake->GetCommands();
         break;
 
     case 2:
-        m_data = &m_cmake->GetVariables();
+        m_data = &cmake->GetVariables();
         break;
 
     case 3:
-        m_data = &m_cmake->GetProperties();
+        m_data = &cmake->GetProperties();
         break;
     }
 
@@ -94,7 +100,14 @@ CMakeHelpTab::OnChangeTopic(wxCommandEvent& event)
 void
 CMakeHelpTab::OnInsert(wxCommandEvent& event)
 {
-    // TODO insert value
+    IEditor* editor = m_plugin->GetManager()->GetActiveEditor();
+
+    // No active editor
+    if (!editor)
+        return;
+
+    // Insert value
+    editor->InsertText(editor->GetCurrentPosition(), m_listBoxList->GetString(event.GetInt()));
 }
 
 /* ************************************************************************ */
@@ -142,6 +155,13 @@ CMakeHelpTab::OnSelect(wxCommandEvent& event)
 void
 CMakeHelpTab::OnReload(wxCommandEvent& event)
 {
+    wxUnusedVar(event);
+
+    if (!m_plugin->GetCMake()->IsOk()) {
+        wxMessageBox(_("CMake application path is invalid!"), wxMessageBoxCaptionStr,  wxOK | wxCENTER | wxICON_ERROR);
+        return;
+    }
+
     LoadData(true);
 }
 
@@ -263,7 +283,7 @@ CMakeHelpTab::Entry()
     m_busy = true;
 
     // Load data
-    bool done = m_cmake->LoadData(m_force, this);
+    bool done = m_plugin->GetCMake()->LoadData(m_force, this);
 
     m_busy = false;
 
@@ -273,7 +293,7 @@ CMakeHelpTab::Entry()
         Layout();
 
         // Set CMake version
-        m_staticTextVersionValue->SetLabel(m_cmake->GetVersion());
+        m_staticTextVersionValue->SetLabel(m_plugin->GetCMake()->GetVersion());
 
         wxCommandEvent event;
         event.SetInt(0);
@@ -294,7 +314,7 @@ CMakeHelpTab::LoadData(bool force)
     }
 
     // Unable to reload data
-    if (!m_cmake->IsOk()) {
+    if (!m_plugin->GetCMake()->IsOk()) {
         return;
     }
 

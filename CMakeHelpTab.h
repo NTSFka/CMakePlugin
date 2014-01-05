@@ -38,7 +38,7 @@
 /* FORWARD DECLARATIONS                                                     */
 /* ************************************************************************ */
 
-class CMake;
+class CMakePlugin;
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
@@ -58,9 +58,9 @@ public:
      * @brief Constructor.
      *
      * @param parent Pointer to parent window.
-     * @param cmake  Pointer to CMake object.
+     * @param plugin Pointer to the plugin.
      */
-    CMakeHelpTab(wxWindow* parent, CMake* cmake);
+    CMakeHelpTab(wxWindow* parent, CMakePlugin* plugin);
 
 
 // Protected Events
@@ -198,8 +198,8 @@ private:
 private:
 
 
-    /// A pointer to cmake
-    CMake* const m_cmake;
+    /// A pointer to cmake plugin.
+    CMakePlugin* const m_plugin;
 
     /// Current topic data.
     const std::map<wxString, wxString>* m_data;
