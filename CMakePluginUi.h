@@ -25,6 +25,7 @@
 #include <wx/srchctrl.h>
 #include <wx/listbox.h>
 #include <wx/html/htmlwin.h>
+#include <wx/gauge.h>
 #include <wx/checkbox.h>
 #include <wx/combobox.h>
 #include <wx/textctrl.h>
@@ -62,8 +63,10 @@ protected:
     wxListBox* m_listBoxList;
     wxPanel* m_splitterPageText;
     wxHtmlWindow* m_htmlWinText;
+    wxGauge* m_gaugeLoad;
 
 protected:
+    virtual void OnUpdateUi(wxUpdateUIEvent& event) { event.Skip(); }
     virtual void OnReload(wxCommandEvent& event) { event.Skip(); }
     virtual void OnChangeTopic(wxCommandEvent& event) { event.Skip(); }
     virtual void OnRightClick(wxMouseEvent& event) { event.Skip(); }

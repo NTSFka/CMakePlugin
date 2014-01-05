@@ -115,12 +115,12 @@ CMakeHelpTabBase::CMakeHelpTabBase(wxWindow* parent, wxWindowID id, const wxPoin
     m_radioBoxTopicArr.Add(wxT("Commands"));
     m_radioBoxTopicArr.Add(wxT("Properties"));
     m_radioBoxTopicArr.Add(wxT("Variables"));
-    m_radioBoxTopic = new wxRadioBox(this, wxID_ANY, _("Topic"), wxDefaultPosition, wxSize(-1,-1), m_radioBoxTopicArr, 1, 0);
+    m_radioBoxTopic = new wxRadioBox(this, wxID_ANY, _("Topic"), wxDefaultPosition, wxSize(-1,-1), m_radioBoxTopicArr, 4, 0);
     m_radioBoxTopic->SetSelection(0);
     
     boxSizerMain->Add(m_radioBoxTopic, 0, wxALL|wxEXPAND, 5);
     
-    m_splitter = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition, wxSize(-1,-1), wxSP_3D);
+    m_splitter = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition, wxSize(-1,-1), wxSP_LIVE_UPDATE|wxSP_NO_XP_THEME|wxSP_3DSASH);
     m_splitter->SetSashGravity(0.3);
     m_splitter->SetMinimumPaneSize(100);
     
@@ -156,6 +156,12 @@ CMakeHelpTabBase::CMakeHelpTabBase(wxWindow* parent, wxWindowID id, const wxPoin
     
     boxSizerText->Add(m_htmlWinText, 1, wxALL|wxEXPAND, 0);
     
+    m_gaugeLoad = new wxGauge(this, wxID_ANY, 100, wxDefaultPosition, wxSize(-1,-1), wxGA_HORIZONTAL);
+    m_gaugeLoad->Hide();
+    m_gaugeLoad->SetValue(0);
+    
+    boxSizerMain->Add(m_gaugeLoad, 0, wxLEFT|wxRIGHT|wxBOTTOM|wxEXPAND, 5);
+    
     SetMinSize( wxSize(300,400) );
     SetSizeHints(300,400);
     if ( GetSizer() ) {
@@ -163,27 +169,41 @@ CMakeHelpTabBase::CMakeHelpTabBase(wxWindow* parent, wxWindowID id, const wxPoin
     }
     Centre(wxBOTH);
     // Connect events
+    m_staticTextVersion->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeHelpTabBase::OnUpdateUi), NULL, this);
+    m_staticTextVersionValue->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeHelpTabBase::OnUpdateUi), NULL, this);
     m_buttonReload->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(CMakeHelpTabBase::OnReload), NULL, this);
+    m_buttonReload->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeHelpTabBase::OnUpdateUi), NULL, this);
     m_radioBoxTopic->Connect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(CMakeHelpTabBase::OnChangeTopic), NULL, this);
+    m_radioBoxTopic->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeHelpTabBase::OnUpdateUi), NULL, this);
     m_splitter->Connect(wxEVT_RIGHT_DOWN, wxMouseEventHandler(CMakeHelpTabBase::OnRightClick), NULL, this);
     m_searchCtrlFilter->Connect(wxEVT_COMMAND_SEARCHCTRL_SEARCH_BTN, wxCommandEventHandler(CMakeHelpTabBase::OnSearch), NULL, this);
     m_searchCtrlFilter->Connect(wxEVT_COMMAND_SEARCHCTRL_CANCEL_BTN, wxCommandEventHandler(CMakeHelpTabBase::OnSearchCancel), NULL, this);
     m_searchCtrlFilter->Connect(wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler(CMakeHelpTabBase::OnSearch), NULL, this);
+    m_searchCtrlFilter->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeHelpTabBase::OnUpdateUi), NULL, this);
     m_listBoxList->Connect(wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler(CMakeHelpTabBase::OnSelect), NULL, this);
     m_listBoxList->Connect(wxEVT_COMMAND_LISTBOX_DOUBLECLICKED, wxCommandEventHandler(CMakeHelpTabBase::OnInsert), NULL, this);
+    m_listBoxList->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeHelpTabBase::OnUpdateUi), NULL, this);
+    m_htmlWinText->Connect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeHelpTabBase::OnUpdateUi), NULL, this);
     
 }
 
 CMakeHelpTabBase::~CMakeHelpTabBase()
 {
+    m_staticTextVersion->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeHelpTabBase::OnUpdateUi), NULL, this);
+    m_staticTextVersionValue->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeHelpTabBase::OnUpdateUi), NULL, this);
     m_buttonReload->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(CMakeHelpTabBase::OnReload), NULL, this);
+    m_buttonReload->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeHelpTabBase::OnUpdateUi), NULL, this);
     m_radioBoxTopic->Disconnect(wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler(CMakeHelpTabBase::OnChangeTopic), NULL, this);
+    m_radioBoxTopic->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeHelpTabBase::OnUpdateUi), NULL, this);
     m_splitter->Disconnect(wxEVT_RIGHT_DOWN, wxMouseEventHandler(CMakeHelpTabBase::OnRightClick), NULL, this);
     m_searchCtrlFilter->Disconnect(wxEVT_COMMAND_SEARCHCTRL_SEARCH_BTN, wxCommandEventHandler(CMakeHelpTabBase::OnSearch), NULL, this);
     m_searchCtrlFilter->Disconnect(wxEVT_COMMAND_SEARCHCTRL_CANCEL_BTN, wxCommandEventHandler(CMakeHelpTabBase::OnSearchCancel), NULL, this);
     m_searchCtrlFilter->Disconnect(wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler(CMakeHelpTabBase::OnSearch), NULL, this);
+    m_searchCtrlFilter->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeHelpTabBase::OnUpdateUi), NULL, this);
     m_listBoxList->Disconnect(wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler(CMakeHelpTabBase::OnSelect), NULL, this);
     m_listBoxList->Disconnect(wxEVT_COMMAND_LISTBOX_DOUBLECLICKED, wxCommandEventHandler(CMakeHelpTabBase::OnInsert), NULL, this);
+    m_listBoxList->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeHelpTabBase::OnUpdateUi), NULL, this);
+    m_htmlWinText->Disconnect(wxEVT_UPDATE_UI, wxUpdateUIEventHandler(CMakeHelpTabBase::OnUpdateUi), NULL, this);
     
 }
 

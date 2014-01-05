@@ -27,13 +27,21 @@
 
 // wxWidgets
 #include <wx/regex.h>
-#include <wx/wxsqlite3.h>
+#include <wx/event.h>
+#include <wx/thread.h>
+#include <wx/scopedptr.h>
 
 // Codelite
 #include "procutils.h"
 #include "workspace.h"
 #include "globals.h"
 #include "file_logger.h"
+
+/* ************************************************************************ */
+/* DEFINITIONS                                                              */
+/* ************************************************************************ */
+
+wxDEFINE_EVENT(EVT_UPDATE_THREAD, wxThreadEvent);
 
 /* ************************************************************************ */
 /* FUNCTIONS                                                                */
@@ -71,33 +79,27 @@ static wxString JoinHtml(const wxArrayString& array)
  * @param progress Optional progress dialog.
  */
 static void LoadList(const wxString& command, const wxString& type,
-                     CMake::HelpMap& list, wxProgressDialog* progress)
+                     CMake::HelpMap& list)
 {
     // Get list
     wxArrayString names;
     const wxString cmdList = command + " --help-" + type + "-list";
-    long res = wxExecute(cmdList, names);
-
-    // Unable to load
-    if (res != 0) {
-        CL_ERROR("CMakePlugin: Unable to call: " + cmdList);
-        return;
-    }
+    ProcUtils::SafeExecuteCommand(cmdList, names);
 
     // Remove version
-    names.RemoveAt(0);
+    if (!names.IsEmpty())
+        names.RemoveAt(0);
 
     // Foreach names
     for (wxArrayString::const_iterator it = names.begin(), ite = names.end(); it != ite; ++it) {
         // Export help
         wxArrayString desc;
-        const wxString cmdItem = command + " --help-" + type + " " + *it;
-        res = wxExecute(cmdItem, desc);
+        const wxString cmdItem = command + " --help-" + type + " \"" + *it + "\"";
+        ProcUtils::SafeExecuteCommand(cmdItem, desc);
 
-        if (res != 0) {
-            CL_ERROR("CMakePlugin: Unable to call: " + cmdItem);
+        // Skip empty results
+        if (desc.IsEmpty())
             continue;
-        }
 
         // Remove first line (cmake version)
         if (desc.Item(0).Matches("*cmake version*"))
@@ -109,61 +111,15 @@ static void LoadList(const wxString& command, const wxString& type,
 }
 
 /* ************************************************************************ */
-
-/**
- * @brief Prepare database for CMake.
- *
- * @param db       Database
- * @param filename Path where the database is stored.
- *
- * @return If database can be usable
- */
-static bool PrepareDatabase(wxSQLite3Database& db, const wxFileName& filename)
-{
-    try {
-        // Try to open database
-        db.Open(filename.GetFullPath());
-
-        // Not opened
-        if (!db.IsOpen())
-            return false;
-
-        db.Begin();
-
-        // Create tables
-        db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS commands (name TEXT, desc TEXT)");
-        db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS modules (name TEXT, desc TEXT)");
-        db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS properties (name TEXT, desc TEXT)");
-        db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS variables (name TEXT, desc TEXT)");
-        db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS strings (name TEXT, desc TEXT)");
-
-        // Create indices
-        db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS commands_idx ON commands(name)");
-        db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS modules_idx ON modules(name)");
-        db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS properties_idx ON properties(name)");
-        db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS variables_idx ON variables(name)");
-        db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS strings_idx ON strings(name)");
-
-        db.Commit();
-
-        // Everything is OK
-        return true;
-
-    } catch (const wxSQLite3Exception& e) {
-        // Unable to use SQLite database
-        return false;
-    }
-}
-
-/* ************************************************************************ */
 /* CLASSES                                                                  */
 /* ************************************************************************ */
 
 CMake::CMake(const wxFileName& path)
-    : m_dirty(true)
-    , m_path(path)
+    : m_path(path)
+    , m_dbFileName(wxStandardPaths::Get().GetUserDataDir(), "cmake.db")
 {
-    // Nothing to do
+    // Prepare database
+    PrepareDatabase();
 }
 
 /* ************************************************************************ */
@@ -218,12 +174,11 @@ CMake::IsOk() const
 
 /* ************************************************************************ */
 
-void
-CMake::LoadData(bool force, bool onlyCached, wxProgressDialog* progress)
+bool
+CMake::LoadData(bool force, wxEvtHandler* handler)
 {
-    // Loading data again is not required
-    if (!m_dirty && !force)
-        return;
+    // Update thread event
+    wxScopedPtr<wxThreadEvent> event(new wxThreadEvent(EVT_UPDATE_THREAD));
 
     // Clear old data
     m_version.clear();
@@ -232,25 +187,14 @@ CMake::LoadData(bool force, bool onlyCached, wxProgressDialog* progress)
     m_properties.clear();
     m_variables.clear();
 
-    // Create SQLite database
-    wxSQLite3Database db;
-
-    // Open it
-    bool dbOk = PrepareDatabase(db, wxFileName(wxStandardPaths::Get().GetUserDataDir(), "cmake.db"));
-
     // Load data from database
-    if (!force && dbOk && LoadFromDatabase(db)) {
-        return;
-    }
-
-    // Do not continue
-    if (onlyCached) {
-        return;
+    if (!force && m_dbInitialized && LoadFromDatabase()) {
+        return true;
     }
 
     // Unable to use CMake
     if (!IsOk())
-        return;
+        return false;
 
     // Get cmake program path
     const wxString program = GetPath().GetFullPath();
@@ -272,95 +216,175 @@ CMake::LoadData(bool force, bool onlyCached, wxProgressDialog* progress)
     }
 
     // Load data
-    LoadFromCMake(progress);
+    LoadFromCMake(handler);
 
     // Database is open so we can store result into database
-    if (dbOk) {
-        StoreIntoDatabase(db, progress);
+    if (m_dbInitialized) {
+        StoreIntoDatabase();
     }
 
-    if (progress)
-        progress->Update(progress->GetRange(), "Done");
+    if (handler) {
+        event->SetInt(100);
+        handler->QueueEvent(event->Clone());
+    }
 
-    m_dirty = false;
+    return true;
 }
 
 /* ************************************************************************ */
 
 void
-CMake::LoadFromCMake(wxProgressDialog* progress)
+CMake::PrepareDatabase()
+{
+    m_dbInitialized = false;
+
+    try {
+        // Try to open database
+        m_db.Open(GetDatabaseFileName().GetFullPath());
+
+        // Not opened
+        if (!m_db.IsOpen())
+            return;
+
+        m_db.Begin();
+
+        // Create tables
+        m_db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS commands (name TEXT, desc TEXT)");
+        m_db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS modules (name TEXT, desc TEXT)");
+        m_db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS properties (name TEXT, desc TEXT)");
+        m_db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS variables (name TEXT, desc TEXT)");
+        m_db.ExecuteUpdate("CREATE TABLE IF NOT EXISTS strings (name TEXT, desc TEXT)");
+
+        // Create indices
+        m_db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS commands_idx ON commands(name)");
+        m_db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS modules_idx ON modules(name)");
+        m_db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS properties_idx ON properties(name)");
+        m_db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS variables_idx ON variables(name)");
+        m_db.ExecuteUpdate("CREATE UNIQUE INDEX IF NOT EXISTS strings_idx ON strings(name)");
+
+        m_db.Commit();
+
+        // Database is not needed to be opened the whole time
+        m_db.Close();
+
+        // Everything is OK
+        m_dbInitialized = true;
+
+    } catch (const wxSQLite3Exception& e) {
+        // Unable to use SQLite database
+        CL_ERROR("CMake DoPrepareDatabase error: %s", e.GetMessage());
+    }
+}
+
+/* ************************************************************************ */
+
+void
+CMake::LoadFromCMake(wxEvtHandler* handler)
 {
     // Get cmake program path
     const wxString program = GetPath().GetFullPath();
 
-    if (progress) progress->Pulse("Loading commands...");
-    LoadList(program, "command",  m_commands, progress);
+    wxScopedPtr<wxThreadEvent> event(new wxThreadEvent(EVT_UPDATE_THREAD));
 
-    if (progress) progress->Pulse("Loading modules...");
-    LoadList(program, "module",   m_modules, progress);
+    if (handler) {
+        event->SetInt(0);
+        handler->QueueEvent(event->Clone());
+    }
 
-    if (progress) progress->Pulse("Loading properties...");
-    LoadList(program, "property", m_properties, progress);
+    LoadList(program, "command",  m_commands);
 
-    if (progress) progress->Pulse("Loading variables...");
-    LoadList(program, "variable", m_variables, progress);
+    if (handler) {
+        event->SetInt(25);
+        handler->QueueEvent(event->Clone());
+    }
+
+    LoadList(program, "module",   m_modules);
+
+
+    if (handler) {
+        event->SetInt(50);
+        handler->QueueEvent(event->Clone());
+    }
+
+    LoadList(program, "property", m_properties);
+
+
+    if (handler) {
+        event->SetInt(75);
+        handler->QueueEvent(event->Clone());
+    }
+
+    LoadList(program, "variable", m_variables);
 }
 
 /* ************************************************************************ */
 
 bool
-CMake::LoadFromDatabase(wxSQLite3Database& db)
+CMake::LoadFromDatabase()
 {
-    // Database is closed
-    if (!db.IsOpen())
+    if (!m_dbInitialized) {
         return false;
-
-    // Strings - Version
-    {
-        wxSQLite3ResultSet res = db.ExecuteQuery("SELECT desc FROM strings WHERE name = 'version'");
-        if (res.NextRow()) {
-            m_version = res.GetAsString(0);
-        }
     }
 
-    // No data stored
-    if (m_version.IsEmpty())
-        return false;
-
-    // Commands
+    try
     {
-        wxSQLite3ResultSet res = db.ExecuteQuery("SELECT name, desc FROM commands");
-        while (res.NextRow()) {
-            m_commands[res.GetAsString(0)] = res.GetAsString(1);
+        // Open
+        m_db.Open(GetDatabaseFileName().GetFullPath());
+
+        // Not opened
+        if (!m_db.IsOpen())
+            return false;
+
+        // Strings - Version
+        {
+            wxSQLite3ResultSet res = m_db.ExecuteQuery("SELECT desc FROM strings WHERE name = 'version'");
+            if (res.NextRow()) {
+                m_version = res.GetAsString(0);
+            }
         }
+
+        // No data stored
+        if (m_version.IsEmpty())
+            return false;
+
+        // Commands
+        {
+            wxSQLite3ResultSet res = m_db.ExecuteQuery("SELECT name, desc FROM commands");
+            while (res.NextRow()) {
+                m_commands[res.GetAsString(0)] = res.GetAsString(1);
+            }
+        }
+
+        // Modules
+        {
+            wxSQLite3ResultSet res = m_db.ExecuteQuery("SELECT name, desc FROM modules");
+            while (res.NextRow()) {
+                m_modules[res.GetAsString(0)] = res.GetAsString(1);
+            }
+        }
+
+        // Properties
+        {
+            wxSQLite3ResultSet res = m_db.ExecuteQuery("SELECT name, desc FROM properties");
+            while (res.NextRow()) {
+                m_properties[res.GetAsString(0)] = res.GetAsString(1);
+            }
+        }
+
+        // Variables
+        {
+            wxSQLite3ResultSet res = m_db.ExecuteQuery("SELECT name, desc FROM variables");
+            while (res.NextRow()) {
+                m_variables[res.GetAsString(0)] = res.GetAsString(1);
+            }
+        }
+
+    } catch (const wxSQLite3Exception& e) {
+        CL_ERROR("Error occured while loading data from CMake database: %s", e.GetMessage());
     }
 
-    // Modules
-    {
-        wxSQLite3ResultSet res = db.ExecuteQuery("SELECT name, desc FROM modules");
-        while (res.NextRow()) {
-            m_modules[res.GetAsString(0)] = res.GetAsString(1);
-        }
-    }
-
-    // Properties
-    {
-        wxSQLite3ResultSet res = db.ExecuteQuery("SELECT name, desc FROM properties");
-        while (res.NextRow()) {
-            m_properties[res.GetAsString(0)] = res.GetAsString(1);
-        }
-    }
-
-    // Variables
-    {
-        wxSQLite3ResultSet res = db.ExecuteQuery("SELECT name, desc FROM variables");
-        while (res.NextRow()) {
-            m_variables[res.GetAsString(0)] = res.GetAsString(1);
-        }
-    }
-
-    // Data is OK
-    m_dirty = false;
+    // Not needed anymore
+    m_db.Close();
 
     // Everything is loaded
     return true;
@@ -368,100 +392,85 @@ CMake::LoadFromDatabase(wxSQLite3Database& db)
 
 /* ************************************************************************ */
 
-bool
-CMake::StoreIntoDatabase(wxSQLite3Database& db, wxProgressDialog* progress) const
+void
+CMake::StoreIntoDatabase()
 {
-    // Database is closed
-    if (!db.IsOpen())
-        return false;
+    if (!m_dbInitialized) {
+        CL_WARNING("CMake: can't store data into database. Database was not initialized properly");
+        return;
+    }
 
-    // Commands
+    try
     {
-        if (progress)
-            progress->Pulse("Storing commands...");
+        // Open
+        m_db.Open(GetDatabaseFileName().GetFullPath());
 
-        db.Begin();
+        // Not opened
+        if (!m_db.IsOpen())
+            return;
 
-        db.ExecuteUpdate("DELETE FROM commands");
-        wxSQLite3Statement stmt = db.PrepareStatement("INSERT INTO commands (name, desc) VALUES(?, ?)");
-        for (HelpMap::const_iterator it = m_commands.begin(), ite = m_commands.end(); it != ite; ++it) {
-            stmt.Bind(1, it->first);
-            stmt.Bind(2, it->second);
+        m_db.Begin();
+
+        // Commands
+        {
+            m_db.ExecuteUpdate("DELETE FROM commands");
+            wxSQLite3Statement stmt = m_db.PrepareStatement("INSERT INTO commands (name, desc) VALUES(?, ?)");
+            for (HelpMap::const_iterator it = m_commands.begin(), ite = m_commands.end(); it != ite; ++it) {
+                stmt.Bind(1, it->first);
+                stmt.Bind(2, it->second);
+                stmt.ExecuteUpdate();
+            }
+        }
+
+        // Modules
+        {
+            m_db.ExecuteUpdate("DELETE FROM modules");
+            wxSQLite3Statement stmt = m_db.PrepareStatement("INSERT INTO modules (name, desc) VALUES(?, ?)");
+            for (HelpMap::const_iterator it = m_modules.begin(), ite = m_modules.end(); it != ite; ++it) {
+                stmt.Bind(1, it->first);
+                stmt.Bind(2, it->second);
+                stmt.ExecuteUpdate();
+            }
+        }
+
+        // Properties
+        {
+            m_db.ExecuteUpdate("DELETE FROM properties");
+            wxSQLite3Statement stmt = m_db.PrepareStatement("INSERT INTO properties (name, desc) VALUES(?, ?)");
+            for (HelpMap::const_iterator it = m_properties.begin(), ite = m_properties.end(); it != ite; ++it) {
+                stmt.Bind(1, it->first);
+                stmt.Bind(2, it->second);
+                stmt.ExecuteUpdate();
+            }
+        }
+
+        // Variables
+        {
+            m_db.ExecuteUpdate("DELETE FROM variables");
+            wxSQLite3Statement stmt = m_db.PrepareStatement("INSERT INTO variables (name, desc) VALUES(?, ?)");
+            for (HelpMap::const_iterator it = m_variables.begin(), ite = m_variables.end(); it != ite; ++it) {
+                stmt.Bind(1, it->first);
+                stmt.Bind(2, it->second);
+                stmt.ExecuteUpdate();
+            }
+        }
+
+        // Strings - Version
+        {
+            wxSQLite3Statement stmt = m_db.PrepareStatement("REPLACE INTO strings (name, desc) VALUES('version', ?)");
+            stmt.Bind(1, m_version);
             stmt.ExecuteUpdate();
         }
 
-        db.Commit();
+        m_db.Commit();
+
+    } catch (wxSQLite3Exception &e) {
+        CL_ERROR("An error occured while storing CMake data into database: %s", e.GetMessage());
     }
 
-    // Modules
-    {
-        if (progress)
-            progress->Pulse("Storing modules...");
+    // Not needed anymore
+    m_db.Close();
 
-        db.Begin();
-
-        db.ExecuteUpdate("DELETE FROM modules");
-        wxSQLite3Statement stmt = db.PrepareStatement("INSERT INTO modules (name, desc) VALUES(?, ?)");
-        for (HelpMap::const_iterator it = m_modules.begin(), ite = m_modules.end(); it != ite; ++it) {
-            stmt.Bind(1, it->first);
-            stmt.Bind(2, it->second);
-            stmt.ExecuteUpdate();
-        }
-
-        db.Commit();
-    }
-
-    // Properties
-    {
-        if (progress)
-            progress->Pulse("Storing properties...");
-
-        db.Begin();
-
-        db.ExecuteUpdate("DELETE FROM properties");
-        wxSQLite3Statement stmt = db.PrepareStatement("INSERT INTO properties (name, desc) VALUES(?, ?)");
-        for (HelpMap::const_iterator it = m_properties.begin(), ite = m_properties.end(); it != ite; ++it) {
-            stmt.Bind(1, it->first);
-            stmt.Bind(2, it->second);
-            stmt.ExecuteUpdate();
-        }
-
-        db.Commit();
-    }
-
-    // Variables
-    {
-        if (progress)
-            progress->Pulse("Storing variables...");
-
-        db.Begin();
-
-        db.ExecuteUpdate("DELETE FROM variables");
-        wxSQLite3Statement stmt = db.PrepareStatement("INSERT INTO variables (name, desc) VALUES(?, ?)");
-        for (HelpMap::const_iterator it = m_variables.begin(), ite = m_variables.end(); it != ite; ++it) {
-            stmt.Bind(1, it->first);
-            stmt.Bind(2, it->second);
-            stmt.ExecuteUpdate();
-        }
-
-        db.Commit();
-    }
-
-    // Strings - Version
-    {
-        if (progress)
-            progress->Pulse("Storing version...");
-
-        db.Begin();
-
-        wxSQLite3Statement stmt = db.PrepareStatement("REPLACE INTO strings (name, desc) VALUES('version', ?)");
-        stmt.Bind(1, m_version);
-        stmt.ExecuteUpdate();
-
-        db.Commit();
-    }
-
-    return true;
 }
 
 /* ************************************************************************ */

@@ -29,8 +29,9 @@
 #include <wx/msgdlg.h>
 #include <wx/busyinfo.h>
 #include <wx/menu.h>
-#include <wx/progdlg.h>
-#include <wx/windowptr.h>
+
+// Codelite
+#include "file_logger.h"
 
 // CMakePlugin
 #include "CMake.h"
@@ -42,44 +43,16 @@
 CMakeHelpTab::CMakeHelpTab(wxWindow* parent, CMake* cmake)
     : CMakeHelpTabBase(parent)
     , m_cmake(cmake)
+    , m_force(false)
+    , m_busy(false)
 {
     wxASSERT(cmake);
 
-    // Load data (cached)
+    Bind(wxEVT_CLOSE_WINDOW, &CMakeHelpTab::OnClose, this);
+    Bind(EVT_UPDATE_THREAD, &CMakeHelpTab::OnThreadUpdate, this);
+
+    // Initial load
     LoadData();
-}
-
-/* ************************************************************************ */
-
-bool
-CMakeHelpTab::LoadData(bool force)
-{
-    // Unable to reload data
-    if (!m_cmake->IsOk())
-        return false;
-
-    //wxBusyInfo("Please wait, loading CMake Help data...");
-    wxWindowPtr<wxProgressDialog> progress;
-
-    if (force) {
-        progress.reset(new wxProgressDialog("CMake Help data", _("Please wait...")));
-    }
-
-    // Reload data forced
-    m_cmake->LoadData(force, !force, progress.get());
-
-    // Delete dialog
-    progress.reset();
-
-    // Set CMake version
-    m_staticTextVersionValue->SetLabel(m_cmake->GetVersion());
-    m_staticTextVersionValue->SetForegroundColour(wxNullColour);
-
-    wxCommandEvent event;
-    event.SetInt(0);
-    OnChangeTopic(event);
-
-    return true;
 }
 
 /* ************************************************************************ */
@@ -91,15 +64,19 @@ CMakeHelpTab::OnChangeTopic(wxCommandEvent& event)
     default:
         m_data = NULL;
         break;
+
     case 0:
         m_data = &m_cmake->GetModules();
         break;
+
     case 1:
         m_data = &m_cmake->GetCommands();
         break;
+
     case 2:
         m_data = &m_cmake->GetVariables();
         break;
+
     case 3:
         m_data = &m_cmake->GetProperties();
         break;
@@ -165,10 +142,7 @@ CMakeHelpTab::OnSelect(wxCommandEvent& event)
 void
 CMakeHelpTab::OnReload(wxCommandEvent& event)
 {
-    if (!LoadData(true)) {
-        wxMessageBox(_("Unable to find cmake. Please, check if path to cmake binary is right."),
-                     wxMessageBoxCaptionStr, wxOK | wxCENTER | wxICON_ERROR);
-    }
+    LoadData(true);
 }
 
 /* ************************************************************************ */
@@ -185,7 +159,7 @@ CMakeHelpTab::ListAll()
 
     // Foreach data and store names into list
     for (std::map<wxString, wxString>::const_iterator it = m_data->begin(),
-         ite = m_data->end(); it != ite; ++it) {
+            ite = m_data->end(); it != ite; ++it) {
         m_listBoxList->Append(it->first);
     }
 }
@@ -206,7 +180,7 @@ CMakeHelpTab::ListFiltered(const wxString& search)
 
     // Foreach data and store names into list
     for (std::map<wxString, wxString>::const_iterator it = m_data->begin(),
-         ite = m_data->end(); it != ite; ++it) {
+            ite = m_data->end(); it != ite; ++it) {
         // Store only that starts with given string
         if (it->first.Matches(searchMatches))
             m_listBoxList->Append(it->first);
@@ -232,14 +206,108 @@ CMakeHelpTab::OnSplitterSwitch(wxCommandEvent& event)
     switch (m_splitter->GetSplitMode()) {
     default:
         break;
+
     case wxSPLIT_HORIZONTAL:
         m_splitter->Unsplit();
         m_splitter->SplitVertically(m_splitterPageList, m_splitterPageText);
         break;
+
     case wxSPLIT_VERTICAL:
         m_splitter->Unsplit();
         m_splitter->SplitHorizontally(m_splitterPageList, m_splitterPageText);
         break;
+    }
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpTab::OnThreadUpdate(wxThreadEvent& event)
+{
+    // Notify about update
+    m_gaugeLoad->SetValue(event.GetInt());
+    m_gaugeLoad->Update();
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpTab::OnClose(wxCloseEvent& event)
+{
+    // Wait for thread
+    if (GetThread() && GetThread()->IsRunning())
+        GetThread()->Wait();
+
+    Destroy();
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpTab::OnUpdateUi(wxUpdateUIEvent& event)
+{
+    event.Enable(!m_busy);
+}
+
+/* ************************************************************************ */
+
+wxThread::ExitCode
+CMakeHelpTab::Entry()
+{
+    // Show gauge
+    if (!m_gaugeLoad->IsShown()) {
+        m_gaugeLoad->Show();
+        Layout();
+    }
+
+    m_busy = true;
+
+    // Load data
+    bool done = m_cmake->LoadData(m_force, this);
+
+    m_busy = false;
+
+    // Done
+    if (done) {
+        m_gaugeLoad->Hide();
+        Layout();
+
+        // Set CMake version
+        m_staticTextVersionValue->SetLabel(m_cmake->GetVersion());
+
+        wxCommandEvent event;
+        event.SetInt(0);
+        OnChangeTopic(event);
+    }
+
+    return static_cast<wxThread::ExitCode>(0);
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpTab::LoadData(bool force)
+{
+    // Thread is busy
+    if (m_busy) {
+        return;
+    }
+
+    // Unable to reload data
+    if (!m_cmake->IsOk()) {
+        return;
+    }
+
+    m_force = force;
+
+    if (CreateThread(wxTHREAD_JOINABLE) != wxTHREAD_NO_ERROR) {
+        CL_ERROR("Could not create the worker thread!");
+        return;
+    }
+
+    if (GetThread()->Run() != wxTHREAD_NO_ERROR) {
+        CL_ERROR("Could not run the worker thread!");
+        return;
     }
 }
 

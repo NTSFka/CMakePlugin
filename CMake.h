@@ -34,12 +34,13 @@
 #include <wx/arrstr.h>
 #include <wx/vector.h>
 #include <wx/progdlg.h>
+#include <wx/wxsqlite3.h>
 
 /* ************************************************************************ */
-/* FORWARD DECLARATIONS                                                     */
+/* DECLARATIONS                                                             */
 /* ************************************************************************ */
 
-class wxSQLite3Database;
+wxDECLARE_EVENT(EVT_UPDATE_THREAD, wxThreadEvent);
 
 /* ************************************************************************ */
 /* CLASSES                                                                  */
@@ -109,16 +110,6 @@ public:
 
 
     /**
-     * @brief Returns if data is dirty.
-     *
-     * @return
-     */
-    bool IsDirty() const {
-        return m_dirty;
-    }
-
-
-    /**
      * @brief Returns CMake version.
      *
      * @return
@@ -168,6 +159,16 @@ public:
     }
 
 
+    /**
+     * @brief Returns path of database file.
+     *
+     * @return
+     */
+    const wxFileName& GetDatabaseFileName() const {
+        return m_dbFileName;
+    }
+
+
 // Public Mutators
 public:
 
@@ -179,7 +180,6 @@ public:
      */
     void SetPath(const wxFileName& path) {
         m_path = path;
-        m_dirty = true;
     }
 
 
@@ -190,13 +190,13 @@ public:
     /**
      * @brief Loads data from CMake application.
      *
-     * @param force      If data should be loaded from cmake instead of
-     *                   SQLite database.
-     * @param onlyCached Loads data only if are cached.
-     * @param progress   Optional progress dialog.
+     * @param force   If data should be loaded from cmake instead of
+     *                SQLite database.
+     * @param handler Optional update thread handler.
+     *
+     * @return If data was loaded.
      */
-    void LoadData(bool force = false, bool onlyCached = false,
-                  wxProgressDialog* progress = NULL);
+    bool LoadData(bool force = false, wxEvtHandler* handler = NULL);
 
 
 // Private Operations
@@ -204,41 +204,36 @@ private:
 
 
     /**
+     * @brief Prepare database for CMake.
+     */
+    void PrepareDatabase();
+
+
+    /**
      * @brief Reads everything from CMake.
      *
-     * @param progress Optional progress dialog.
+     * @param handler Optional update thread handler.
      */
-    void LoadFromCMake(wxProgressDialog* progress = NULL);
+    void LoadFromCMake(wxEvtHandler* handler);
 
 
     /**
      * @brief Loads data from SQLite3 database.
      *
-     * @param db Database.
-     *
      * @return If data is loaded.
      */
-    bool LoadFromDatabase(wxSQLite3Database& db);
+    bool LoadFromDatabase();
 
 
     /**
      * @brief Stores data into SQLite3 database.
-     *
-     * @param db Database.
-     * @param progress Optional progress dialog.
-     *
-     * @return If data is stored.
      */
-    bool StoreIntoDatabase(wxSQLite3Database& db,
-                           wxProgressDialog* progress = NULL) const;
+    void StoreIntoDatabase();
 
 
 // Private Data Members
 private:
 
-
-    /// If data is dirty and need to be reloaded.
-    bool m_dirty;
 
     /// CMake application path.
     wxFileName m_path;
@@ -257,6 +252,15 @@ private:
 
     /// List of variables.
     HelpMap m_variables;
+
+    /// Path of database file.
+    wxFileName m_dbFileName;
+
+    /// A database that contains all cmake help content.
+    wxSQLite3Database m_db;
+
+    /// Was the database initialized properly?
+    bool m_dbInitialized;
 
 };
 

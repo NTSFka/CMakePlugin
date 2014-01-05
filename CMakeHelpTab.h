@@ -28,6 +28,9 @@
 // C++
 #include <map>
 
+// wxWidgets
+#include <wx/thread.h>
+
 // UI
 #include "CMakePluginUi.h"
 
@@ -44,7 +47,7 @@ class CMake;
 /**
  * @brief Dockable window with CMake help.
  */
-class CMakeHelpTab : public CMakeHelpTabBase
+class CMakeHelpTab : public CMakeHelpTabBase, public wxThreadHelper
 {
 
 // Public Ctors & Dtors
@@ -128,8 +131,40 @@ protected:
     void OnSplitterSwitch(wxCommandEvent& event);
 
 
+    /**
+     * @brief Updates UI.
+     *
+     * @param event
+     */
+    void OnThreadUpdate(wxThreadEvent& event);
+
+
+    /**
+     * @brief On tab close.
+     *
+     * @param event
+     */
+    void OnClose(wxCloseEvent& event);
+
+
+    /**
+     * @brief Some items update UI.
+     *
+     * @param event
+     */
+    virtual void OnUpdateUi(wxUpdateUIEvent& event);
+
+
 // Protected Operations
 protected:
+
+
+    /**
+     * @brief Does the thread things.
+     *
+     * @return Exit code.
+     */
+    virtual wxThread::ExitCode Entry();
 
 
     /**
@@ -137,10 +172,8 @@ protected:
      *
      * @param force If data should be reloaded from CMake instead
      *              from database.
-     *
-     * @return If data were loaded.
      */
-    bool LoadData(bool force = false);
+    void LoadData(bool force = false);
 
 
 // Private Operations
@@ -170,6 +203,12 @@ private:
 
     /// Current topic data.
     const std::map<wxString, wxString>* m_data;
+
+    /// Temporary variable.
+    bool m_force;
+
+    /// Busy flag
+    bool m_busy;
 
 };
 
