@@ -65,7 +65,7 @@ CMakeHelpTabBase::CMakeHelpTabBase(wxWindow* parent, wxWindowID id, const wxPoin
     wxBoxSizer* boxSizerList = new wxBoxSizer(wxVERTICAL);
     m_splitterPageList->SetSizer(boxSizerList);
     
-    m_searchCtrlFilter = new wxSearchCtrl(m_splitterPageList, wxID_ANY, wxT(""), wxDefaultPosition, wxSize(-1,-1), 0);
+    m_searchCtrlFilter = new wxSearchCtrl(m_splitterPageList, wxID_ANY, wxT(""), wxDefaultPosition, wxSize(-1,-1), wxTE_PROCESS_ENTER);
     m_searchCtrlFilter->SetFocus();
     m_searchCtrlFilter->ShowSearchButton(true);
     m_searchCtrlFilter->ShowCancelButton(false);
@@ -102,6 +102,7 @@ CMakeHelpTabBase::CMakeHelpTabBase(wxWindow* parent, wxWindowID id, const wxPoin
     m_splitter->Connect(wxEVT_RIGHT_DOWN, wxMouseEventHandler(CMakeHelpTabBase::OnRightClick), NULL, this);
     m_searchCtrlFilter->Connect(wxEVT_COMMAND_SEARCHCTRL_SEARCH_BTN, wxCommandEventHandler(CMakeHelpTabBase::OnSearch), NULL, this);
     m_searchCtrlFilter->Connect(wxEVT_COMMAND_SEARCHCTRL_CANCEL_BTN, wxCommandEventHandler(CMakeHelpTabBase::OnSearchCancel), NULL, this);
+    m_searchCtrlFilter->Connect(wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler(CMakeHelpTabBase::OnSearch), NULL, this);
     m_listBoxList->Connect(wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler(CMakeHelpTabBase::OnSelect), NULL, this);
     m_listBoxList->Connect(wxEVT_COMMAND_LISTBOX_DOUBLECLICKED, wxCommandEventHandler(CMakeHelpTabBase::OnInsert), NULL, this);
     
@@ -114,6 +115,7 @@ CMakeHelpTabBase::~CMakeHelpTabBase()
     m_splitter->Disconnect(wxEVT_RIGHT_DOWN, wxMouseEventHandler(CMakeHelpTabBase::OnRightClick), NULL, this);
     m_searchCtrlFilter->Disconnect(wxEVT_COMMAND_SEARCHCTRL_SEARCH_BTN, wxCommandEventHandler(CMakeHelpTabBase::OnSearch), NULL, this);
     m_searchCtrlFilter->Disconnect(wxEVT_COMMAND_SEARCHCTRL_CANCEL_BTN, wxCommandEventHandler(CMakeHelpTabBase::OnSearchCancel), NULL, this);
+    m_searchCtrlFilter->Disconnect(wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler(CMakeHelpTabBase::OnSearch), NULL, this);
     m_listBoxList->Disconnect(wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler(CMakeHelpTabBase::OnSelect), NULL, this);
     m_listBoxList->Disconnect(wxEVT_COMMAND_LISTBOX_DOUBLECLICKED, wxCommandEventHandler(CMakeHelpTabBase::OnInsert), NULL, this);
     

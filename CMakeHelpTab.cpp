@@ -65,7 +65,9 @@ CMakeHelpTab::LoadData(bool force)
     m_staticTextVersionValue->SetLabel(m_cmake->GetVersion());
     m_staticTextVersionValue->SetForegroundColour(wxNullColour);
 
-    m_radioBoxTopic->Select(0);
+    wxCommandEvent event;
+    event.SetInt(0);
+    OnChangeTopic(event);
 
     return true;
 }
@@ -208,8 +210,27 @@ CMakeHelpTab::OnRightClick(wxMouseEvent& event)
 {
     wxMenu menu;
     menu.Append(wxID_ANY, "Switch view", "Changes view between horizontal and vertical splitting");
-    //menu.Connect(wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MyFrame::OnPopupClick, NULL, this);
+    menu.Bind(wxEVT_COMMAND_MENU_SELECTED, &CMakeHelpTab::OnSplitterSwitch, this);
     PopupMenu(&menu);
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpTab::OnSplitterSwitch(wxCommandEvent& event)
+{
+    switch (m_splitter->GetSplitMode()) {
+    default:
+        break;
+    case wxSPLIT_HORIZONTAL:
+        m_splitter->Unsplit();
+        m_splitter->SplitVertically(m_splitterPageList, m_splitterPageText);
+        break;
+    case wxSPLIT_VERTICAL:
+        m_splitter->Unsplit();
+        m_splitter->SplitHorizontally(m_splitterPageList, m_splitterPageText);
+        break;
+    }
 }
 
 /* ************************************************************************ */

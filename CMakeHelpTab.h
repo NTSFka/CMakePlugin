@@ -120,6 +120,14 @@ protected:
     virtual void OnRightClick(wxMouseEvent& event);
 
 
+    /**
+     * @brief On splitter orientation switch.
+     *
+     * @param event
+     */
+    void OnSplitterSwitch(wxCommandEvent& event);
+
+
 // Protected Operations
 protected:
 

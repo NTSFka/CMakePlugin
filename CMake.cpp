@@ -40,13 +40,36 @@
 /* ************************************************************************ */
 
 /**
+ * @brief Joins array of strings into single string.
+ *
+ * @param array Input array.
+ *
+ * @return Result string.
+ */
+static wxString JoinHtml(const wxArrayString& array)
+{
+    wxString result;
+
+    for (wxArrayString::const_iterator it = array.begin(), ite = array.end(); it != ite; ++it) {
+        if (it != array.begin()) {
+            result += "<br />";
+        }
+        result += *it;
+    }
+
+    return result;
+}
+
+/* ************************************************************************ */
+
+/**
  * @brief Loads help of type from command into list.
  *
  * @param command CMake command.
  * @param type    Help type.
  * @param list    Output variable.
  */
-void LoadList(const wxString& command, const wxString& type, CMake::HelpMap& list)
+static void LoadList(const wxString& command, const wxString& type, CMake::HelpMap& list)
 {
     // Get list
     wxArrayString names;
@@ -62,28 +85,23 @@ void LoadList(const wxString& command, const wxString& type, CMake::HelpMap& lis
     // Remove version
     names.RemoveAt(0);
 
-    // Create temp file name
-    // This is required because cmake is able export to HTML only into file
-    wxString tmpFileName = wxFileName::CreateTempFileName("cmake_") + ".html";
-    wxString html;
-
     // Foreach names
     for (wxArrayString::const_iterator it = names.begin(), ite = names.end(); it != ite; ++it) {
         // Export help
-        const wxString cmdItem = command + " --help-" + type + " " + *it + " " + tmpFileName;
-        res = wxExecute(cmdItem, wxEXEC_SYNC);
+        wxArrayString desc;
+        const wxString cmdItem = command + " --help-" + type + " " + *it;
+        res = wxExecute(cmdItem, desc);
 
         if (res != 0) {
             CL_ERROR("CMakePlugin: Unable to call: " + cmdItem);
             continue;
         }
 
-        // Read help
-        if (!ReadFileWithConversion(tmpFileName, html))
-            continue;
+        // Remove first line (cmake version)
+        desc.RemoveAt(0);
 
-        // Store HTML page
-        list[*it] = html;
+        // Store help page
+        list[*it] = JoinHtml(desc);
     }
 }
 
