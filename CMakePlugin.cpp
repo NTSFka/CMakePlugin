@@ -113,7 +113,7 @@ extern "C" EXPORT PluginInfo GetPluginInfo()
     info.SetAuthor(L"Jiří Fatka");
     info.SetName("CMakePlugin");
     info.SetDescription(_("CMake integration for CodeLite"));
-    info.SetVersion("0.2");
+    info.SetVersion("0.8");
 
     return info;
 }
