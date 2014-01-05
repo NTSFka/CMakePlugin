@@ -495,6 +495,7 @@ CMakePlugin::OnSettings(wxCommandEvent& event)
     if (dlg.ShowModal() == wxID_OK) {
         m_configuration->SetProgramPath(dlg.GetCMakePath());
         m_configuration->SetDefaultGenerator(dlg.GetDefaultGenerator());
+        m_cmake->SetPath(dlg.GetCMakePath());
     }
 }
 
