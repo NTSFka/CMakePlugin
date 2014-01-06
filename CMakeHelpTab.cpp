@@ -118,6 +118,7 @@ CMakeHelpTab::OnSearchCancel(wxCommandEvent& event)
 void
 CMakeHelpTab::OnSelect(wxCommandEvent& event)
 {
+    wxASSERT(!GetThread() || !GetThread()->IsRunning());
     wxASSERT(m_data);
 
     // Get selected name
@@ -140,6 +141,7 @@ CMakeHelpTab::OnReload(wxCommandEvent& event)
 {
     wxUnusedVar(event);
 
+    wxASSERT(m_plugin->GetCMake());
     if (!m_plugin->GetCMake()->IsOk()) {
         wxMessageBox(_("CMake application path is invalid!"), wxMessageBoxCaptionStr,  wxOK | wxCENTER | wxICON_ERROR);
         return;
@@ -283,6 +285,8 @@ CMakeHelpTab::OnUpdateUi(wxUpdateUIEvent& event)
 void
 CMakeHelpTab::ShowTopic(int topic)
 {
+    wxASSERT(!GetThread() || !GetThread()->IsRunning());
+
     const CMake* cmake = m_plugin->GetCMake();
     wxASSERT(cmake);
 
