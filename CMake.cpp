@@ -38,12 +38,6 @@
 #include "file_logger.h"
 
 /* ************************************************************************ */
-/* DEFINITIONS                                                              */
-/* ************************************************************************ */
-
-wxDEFINE_EVENT(EVT_UPDATE_THREAD, wxThreadEvent);
-
-/* ************************************************************************ */
 /* FUNCTIONS                                                                */
 /* ************************************************************************ */
 
@@ -54,7 +48,7 @@ wxDEFINE_EVENT(EVT_UPDATE_THREAD, wxThreadEvent);
  *
  * @return Result string.
  */
-static wxString JoinHtml(const wxArrayString& array)
+static wxString CreateHtml(const wxArrayString& array)
 {
     wxString result;
 
@@ -92,9 +86,14 @@ static void LoadList(const wxString& command, const wxString& type,
 
     // Foreach names
     for (wxArrayString::const_iterator it = names.begin(), ite = names.end(); it != ite; ++it) {
+
+        // Trim name
+        wxString name = *it;
+        name.Trim().Trim(true);
+
         // Export help
         wxArrayString desc;
-        const wxString cmdItem = command + " --help-" + type + " \"" + *it + "\"";
+        const wxString cmdItem = command + " --help-" + type + " \"" + name + "\"";
         ProcUtils::SafeExecuteCommand(cmdItem, desc);
 
         // Skip empty results
@@ -106,7 +105,7 @@ static void LoadList(const wxString& command, const wxString& type,
             desc.RemoveAt(0);
 
         // Store help page
-        list[*it] = JoinHtml(desc);
+        list[name] = CreateHtml(desc);
     }
 }
 
@@ -175,11 +174,8 @@ CMake::IsOk() const
 /* ************************************************************************ */
 
 bool
-CMake::LoadData(bool force, wxEvtHandler* handler)
+CMake::LoadData(bool force, LoadNotifier* notifier)
 {
-    // Update thread event
-    wxScopedPtr<wxThreadEvent> event(new wxThreadEvent(EVT_UPDATE_THREAD));
-
     // Clear old data
     m_version.clear();
     m_commands.clear();
@@ -187,14 +183,27 @@ CMake::LoadData(bool force, wxEvtHandler* handler)
     m_properties.clear();
     m_variables.clear();
 
+    if (notifier) {
+        notifier->Start();
+    }
+
     // Load data from database
     if (!force && m_dbInitialized && LoadFromDatabase()) {
+        // Loading is done
+        if (notifier) {
+            notifier->Done();
+        }
         return true;
     }
 
     // Unable to use CMake
     if (!IsOk())
         return false;
+
+    // Request to stop
+    if (notifier && notifier->RequestStop()) {
+        return false;
+    }
 
     // Get cmake program path
     const wxString program = GetPath().GetFullPath();
@@ -215,17 +224,27 @@ CMake::LoadData(bool force, wxEvtHandler* handler)
         }
     }
 
+    // Request to stop
+    if (notifier && notifier->RequestStop()) {
+        return false;
+    }
+
     // Load data
-    LoadFromCMake(handler);
+    LoadFromCMake(notifier);
+
+    // Request to stop
+    if (notifier && notifier->RequestStop()) {
+        return false;
+    }
 
     // Database is open so we can store result into database
     if (m_dbInitialized) {
         StoreIntoDatabase();
     }
 
-    if (handler) {
-        event->SetInt(100);
-        handler->QueueEvent(event->Clone());
+    // Loading is done
+    if (notifier) {
+        notifier->Done();
     }
 
     return true;
@@ -279,41 +298,53 @@ CMake::PrepareDatabase()
 /* ************************************************************************ */
 
 void
-CMake::LoadFromCMake(wxEvtHandler* handler)
+CMake::LoadFromCMake(LoadNotifier* notifier)
 {
     // Get cmake program path
     const wxString program = GetPath().GetFullPath();
 
-    wxScopedPtr<wxThreadEvent> event(new wxThreadEvent(EVT_UPDATE_THREAD));
+    if (notifier) {
+        // Stop request?
+        if (notifier->RequestStop())
+            return;
 
-    if (handler) {
-        event->SetInt(0);
-        handler->QueueEvent(event->Clone());
+        notifier->Update(0);
     }
 
-    LoadList(program, "command",  m_commands);
+    // Load commands
+    LoadList(program, "command", m_commands);
 
-    if (handler) {
-        event->SetInt(25);
-        handler->QueueEvent(event->Clone());
+    if (notifier) {
+        // Stop request?
+        if (notifier->RequestStop())
+            return;
+
+        notifier->Update(0.25f);
     }
 
-    LoadList(program, "module",   m_modules);
+    // Load modules
+    LoadList(program, "module", m_modules);
 
+    if (notifier) {
+        // Stop request?
+        if (notifier->RequestStop())
+            return;
 
-    if (handler) {
-        event->SetInt(50);
-        handler->QueueEvent(event->Clone());
+        notifier->Update(0.5f);
     }
 
+    // Load properties
     LoadList(program, "property", m_properties);
 
+    if (notifier) {
+        // Stop request?
+        if (notifier->RequestStop())
+            return;
 
-    if (handler) {
-        event->SetInt(75);
-        handler->QueueEvent(event->Clone());
+        notifier->Update(0.75f);
     }
 
+    // Load variables
     LoadList(program, "variable", m_variables);
 }
 

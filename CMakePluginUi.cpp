@@ -115,7 +115,7 @@ CMakeHelpTabBase::CMakeHelpTabBase(wxWindow* parent, wxWindowID id, const wxPoin
     m_radioBoxTopicArr.Add(wxT("Commands"));
     m_radioBoxTopicArr.Add(wxT("Properties"));
     m_radioBoxTopicArr.Add(wxT("Variables"));
-    m_radioBoxTopic = new wxRadioBox(this, wxID_ANY, _("Topic"), wxDefaultPosition, wxSize(-1,-1), m_radioBoxTopicArr, 4, 0);
+    m_radioBoxTopic = new wxRadioBox(this, wxID_ANY, _("Topic"), wxDefaultPosition, wxSize(-1,-1), m_radioBoxTopicArr, 4, wxRA_SPECIFY_COLS);
     m_radioBoxTopic->SetSelection(0);
     
     boxSizerMain->Add(m_radioBoxTopic, 0, wxALL|wxEXPAND, 5);

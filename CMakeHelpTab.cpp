@@ -40,6 +40,14 @@
 #include "CMake.h"
 
 /* ************************************************************************ */
+/* DEFINITIONS                                                              */
+/* ************************************************************************ */
+
+wxDEFINE_EVENT(EVT_THREAD_START, wxThreadEvent);
+wxDEFINE_EVENT(EVT_THREAD_UPDATE, wxThreadEvent);
+wxDEFINE_EVENT(EVT_THREAD_DONE, wxThreadEvent);
+
+/* ************************************************************************ */
 /* CLASSES                                                                  */
 /* ************************************************************************ */
 
@@ -47,12 +55,13 @@ CMakeHelpTab::CMakeHelpTab(wxWindow* parent, CMakePlugin* plugin)
     : CMakeHelpTabBase(parent)
     , m_plugin(plugin)
     , m_force(false)
-    , m_busy(false)
 {
     wxASSERT(plugin);
 
     Bind(wxEVT_CLOSE_WINDOW, &CMakeHelpTab::OnClose, this);
-    Bind(EVT_UPDATE_THREAD, &CMakeHelpTab::OnThreadUpdate, this);
+    Bind(EVT_THREAD_START, &CMakeHelpTab::OnThreadStart, this);
+    Bind(EVT_THREAD_UPDATE, &CMakeHelpTab::OnThreadUpdate, this);
+    Bind(EVT_THREAD_DONE, &CMakeHelpTab::OnThreadDone, this);
 
     // Initial load
     LoadData();
@@ -63,36 +72,7 @@ CMakeHelpTab::CMakeHelpTab(wxWindow* parent, CMakePlugin* plugin)
 void
 CMakeHelpTab::OnChangeTopic(wxCommandEvent& event)
 {
-    const CMake* cmake = m_plugin->GetCMake();
-    wxASSERT(cmake);
-
-    switch(event.GetInt()) {
-    default:
-        m_data = NULL;
-        break;
-
-    case 0:
-        m_data = &cmake->GetModules();
-        break;
-
-    case 1:
-        m_data = &cmake->GetCommands();
-        break;
-
-    case 2:
-        m_data = &cmake->GetVariables();
-        break;
-
-    case 3:
-        m_data = &cmake->GetProperties();
-        break;
-    }
-
-    // Clear filter
-    m_searchCtrlFilter->Clear();
-
-    // List all items
-    ListAll();
+    ShowTopic(event.GetInt());
 }
 
 /* ************************************************************************ */
@@ -100,7 +80,9 @@ CMakeHelpTab::OnChangeTopic(wxCommandEvent& event)
 void
 CMakeHelpTab::OnInsert(wxCommandEvent& event)
 {
-    IEditor* editor = m_plugin->GetManager()->GetActiveEditor();
+    IManager* manager = m_plugin->GetManager();
+    wxASSERT(manager);
+    IEditor* editor = manager->GetActiveEditor();
 
     // No active editor
     if (!editor)
@@ -179,7 +161,7 @@ CMakeHelpTab::ListAll()
 
     // Foreach data and store names into list
     for (std::map<wxString, wxString>::const_iterator it = m_data->begin(),
-            ite = m_data->end(); it != ite; ++it) {
+         ite = m_data->end(); it != ite; ++it) {
         m_listBoxList->Append(it->first);
     }
 }
@@ -200,7 +182,7 @@ CMakeHelpTab::ListFiltered(const wxString& search)
 
     // Foreach data and store names into list
     for (std::map<wxString, wxString>::const_iterator it = m_data->begin(),
-            ite = m_data->end(); it != ite; ++it) {
+         ite = m_data->end(); it != ite; ++it) {
         // Store only that starts with given string
         if (it->first.Matches(searchMatches))
             m_listBoxList->Append(it->first);
@@ -242,11 +224,36 @@ CMakeHelpTab::OnSplitterSwitch(wxCommandEvent& event)
 /* ************************************************************************ */
 
 void
+CMakeHelpTab::OnThreadStart(wxThreadEvent& event)
+{
+    // Show gauge
+    if (!m_gaugeLoad->IsShown()) {
+        m_gaugeLoad->Show();
+        Layout();
+    }
+}
+
+/* ************************************************************************ */
+
+void
 CMakeHelpTab::OnThreadUpdate(wxThreadEvent& event)
 {
     // Notify about update
     m_gaugeLoad->SetValue(event.GetInt());
     m_gaugeLoad->Update();
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpTab::OnThreadDone(wxThreadEvent& event)
+{
+    // Hide gauge
+    m_gaugeLoad->Hide();
+    Layout();
+
+    // Publish loaded data
+    PublishData();
 }
 
 /* ************************************************************************ */
@@ -266,7 +273,61 @@ CMakeHelpTab::OnClose(wxCloseEvent& event)
 void
 CMakeHelpTab::OnUpdateUi(wxUpdateUIEvent& event)
 {
-    event.Enable(!m_busy);
+    // Disable UI when background thread is running
+    event.Enable(!GetThread() || !GetThread()->IsRunning());
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpTab::ShowTopic(int topic)
+{
+    const CMake* cmake = m_plugin->GetCMake();
+    wxASSERT(cmake);
+
+    switch (topic) {
+    default:
+        m_data = NULL;
+        break;
+
+    case 0:
+        m_data = &cmake->GetModules();
+        break;
+
+    case 1:
+        m_data = &cmake->GetCommands();
+        break;
+
+    case 2:
+        m_data = &cmake->GetVariables();
+        break;
+
+    case 3:
+        m_data = &cmake->GetProperties();
+        break;
+    }
+
+    // Clear filter
+    m_searchCtrlFilter->Clear();
+
+    // List all items
+    ListAll();
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpTab::PublishData()
+{
+    // The background thread must not working now
+    if (GetThread() && GetThread()->IsRunning())
+        return;
+
+    // Set CMake version
+    m_staticTextVersionValue->SetLabel(m_plugin->GetCMake()->GetVersion());
+
+    // Show the first topic
+    ShowTopic(0);
 }
 
 /* ************************************************************************ */
@@ -274,31 +335,11 @@ CMakeHelpTab::OnUpdateUi(wxUpdateUIEvent& event)
 wxThread::ExitCode
 CMakeHelpTab::Entry()
 {
-    // Show gauge
-    if (!m_gaugeLoad->IsShown()) {
-        m_gaugeLoad->Show();
-        Layout();
-    }
-
-    m_busy = true;
+    CMake* cmake = m_plugin->GetCMake();
+    wxASSERT(cmake);
 
     // Load data
-    bool done = m_plugin->GetCMake()->LoadData(m_force, this);
-
-    m_busy = false;
-
-    // Done
-    if (done) {
-        m_gaugeLoad->Hide();
-        Layout();
-
-        // Set CMake version
-        m_staticTextVersionValue->SetLabel(m_plugin->GetCMake()->GetVersion());
-
-        wxCommandEvent event;
-        event.SetInt(0);
-        OnChangeTopic(event);
-    }
+    cmake->LoadData(m_force, this);
 
     return static_cast<wxThread::ExitCode>(0);
 }
@@ -309,26 +350,67 @@ void
 CMakeHelpTab::LoadData(bool force)
 {
     // Thread is busy
-    if (m_busy) {
+    if (GetThread() && GetThread()->IsRunning()) {
         return;
     }
 
-    // Unable to reload data
+    // Invalid cmake executable
+    wxASSERT(m_plugin->GetCMake());
     if (!m_plugin->GetCMake()->IsOk()) {
         return;
     }
 
     m_force = force;
 
+    // Create a new joinable thread
     if (CreateThread(wxTHREAD_JOINABLE) != wxTHREAD_NO_ERROR) {
         CL_ERROR("Could not create the worker thread!");
         return;
     }
 
+    // For sure :)
+    wxASSERT(GetThread());
+
+    // Run the thread
     if (GetThread()->Run() != wxTHREAD_NO_ERROR) {
         CL_ERROR("Could not run the worker thread!");
         return;
     }
+}
+
+/* ************************************************************************ */
+
+bool
+CMakeHelpTab::RequestStop() const
+{
+    return GetThread() && GetThread()->TestDestroy();
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpTab::Start()
+{
+    AddPendingEvent(wxThreadEvent(EVT_THREAD_START));
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpTab::Update(float value)
+{
+    // It safe to use stack version because we don't use wxString value.
+    wxThreadEvent event(EVT_THREAD_UPDATE);
+    event.SetInt(value * m_gaugeLoad->GetRange()); // GetRange is const so it should be thread-safe
+    AddPendingEvent(event);
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpTab::Done()
+{
+    AddPendingEvent(wxThreadEvent(EVT_THREAD_DONE));
 }
 
 /* ************************************************************************ */

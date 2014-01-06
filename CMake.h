@@ -37,12 +37,6 @@
 #include <wx/wxsqlite3.h>
 
 /* ************************************************************************ */
-/* DECLARATIONS                                                             */
-/* ************************************************************************ */
-
-wxDECLARE_EVENT(EVT_UPDATE_THREAD, wxThreadEvent);
-
-/* ************************************************************************ */
 /* CLASSES                                                                  */
 /* ************************************************************************ */
 
@@ -54,6 +48,47 @@ wxDECLARE_EVENT(EVT_UPDATE_THREAD, wxThreadEvent);
  */
 class CMake
 {
+
+// Public Structures
+public:
+
+
+    /**
+     * @brief Helper class that helps notify about loading state.
+     */
+    class LoadNotifier
+    {
+    public:
+
+        /**
+         * @brief Checks if loading should be stopped.
+         *
+         * @return
+         */
+        virtual bool RequestStop() const = 0;
+
+
+        /**
+         * @brief Loading is started.
+         */
+        virtual void Start() = 0;
+
+
+        /**
+         * @brief Update loading progress.
+         *
+         * @param value Value is in range [0, 100].
+         */
+        virtual void Update(float value) = 0;
+
+
+        /**
+         * @brief Loading is done.
+         */
+        virtual void Done() = 0;
+
+    };
+
 
 // Public Types
 public:
@@ -190,13 +225,13 @@ public:
     /**
      * @brief Loads data from CMake application.
      *
-     * @param force   If data should be loaded from cmake instead of
-     *                SQLite database.
-     * @param handler Optional update thread handler.
+     * @param force    If data should be loaded from cmake instead of
+     *                 SQLite database.
+     * @param notifier Optional progress notifier.
      *
      * @return If data was loaded.
      */
-    bool LoadData(bool force = false, wxEvtHandler* handler = NULL);
+    bool LoadData(bool force = false, LoadNotifier* notifier = NULL);
 
 
 // Private Operations
@@ -214,7 +249,7 @@ private:
      *
      * @param handler Optional update thread handler.
      */
-    void LoadFromCMake(wxEvtHandler* handler);
+    void LoadFromCMake(LoadNotifier* notifier = NULL);
 
 
     /**
