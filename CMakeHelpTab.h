@@ -214,7 +214,15 @@ public:
      *
      * @param value Value is in range [0, 100].
      */
-    virtual void Update(float value);
+    virtual void Update(int value);
+
+
+    /**
+     * @brief Increase loading progress.
+     *
+     * @param value
+     */
+    virtual void Inc(int value);
 
 
     /**
@@ -275,6 +283,8 @@ private:
     /// Temporary variable.
     bool m_force;
 
+    /// Current progress state.
+    int m_progress;
 };
 
 /* ************************************************************************ */

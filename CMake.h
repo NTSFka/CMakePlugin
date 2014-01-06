@@ -79,7 +79,15 @@ public:
          *
          * @param value Value is in range [0, 100].
          */
-        virtual void Update(float value) = 0;
+        virtual void Update(int value) = 0;
+
+
+        /**
+         * @brief Increase loading progress.
+         *
+         * @param value
+         */
+        virtual void Inc(int value) = 0;
 
 
         /**
@@ -247,9 +255,11 @@ private:
     /**
      * @brief Reads everything from CMake.
      *
-     * @param handler Optional update thread handler.
+     * @param handler Optional progress notifier.
+     *
+     * @return If data was loaded.
      */
-    void LoadFromCMake(LoadNotifier* notifier = NULL);
+    bool LoadFromCMake(LoadNotifier* notifier = NULL);
 
 
     /**
@@ -264,6 +274,18 @@ private:
      * @brief Stores data into SQLite3 database.
      */
     void StoreIntoDatabase();
+
+
+    /**
+     * @brief Loads help of type from command into list.
+     *
+     * @param type    Help type.
+     * @param list    Output variable.
+     * @param handler Progress notifier.
+     * @param limit   Notifier limit.
+     */
+    void LoadList(const wxString& type, CMake::HelpMap& list,
+                  LoadNotifier* notifier, int limit);
 
 
 // Private Data Members
@@ -290,9 +312,6 @@ private:
 
     /// Path of database file.
     wxFileName m_dbFileName;
-
-    /// A database that contains all cmake help content.
-    wxSQLite3Database m_db;
 
     /// Was the database initialized properly?
     bool m_dbInitialized;

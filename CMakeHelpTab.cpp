@@ -57,6 +57,7 @@ CMakeHelpTab::CMakeHelpTab(wxWindow* parent, CMakePlugin* plugin)
     , m_force(false)
 {
     wxASSERT(plugin);
+    wxASSERT(m_gaugeLoad->GetRange() == 100); // Must be 100
 
     Bind(wxEVT_CLOSE_WINDOW, &CMakeHelpTab::OnClose, this);
     Bind(EVT_THREAD_START, &CMakeHelpTab::OnThreadStart, this);
@@ -397,12 +398,26 @@ CMakeHelpTab::Start()
 /* ************************************************************************ */
 
 void
-CMakeHelpTab::Update(float value)
+CMakeHelpTab::Update(int value)
 {
+    m_progress = value;
+
     // It safe to use stack version because we don't use wxString value.
     wxThreadEvent event(EVT_THREAD_UPDATE);
-    event.SetInt(value * m_gaugeLoad->GetRange()); // GetRange is const so it should be thread-safe
+    event.SetInt(value);
     AddPendingEvent(event);
+}
+
+/* ************************************************************************ */
+
+void
+CMakeHelpTab::Inc(int value)
+{
+    // There is nothing to add
+    if (!value)
+        return;
+
+    Update(m_progress + value);
 }
 
 /* ************************************************************************ */
