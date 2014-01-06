@@ -285,7 +285,7 @@
 										}, {
 											"type":	"multi-string",
 											"m_label":	"Tooltip:",
-											"m_value":	""
+											"m_value":	"Path to cmake executable."
 										}, {
 											"type":	"colour",
 											"m_label":	"Bg Colour:",
@@ -439,7 +439,7 @@
 										}, {
 											"type":	"multi-string",
 											"m_label":	"Tooltip:",
-											"m_value":	""
+											"m_value":	"You can specify default generator for all projects (if is not overrided by project settings). If generator is not selected the CMake uses platform's default."
 										}, {
 											"type":	"colour",
 											"m_label":	"Bg Colour:",
@@ -1493,7 +1493,7 @@
 														}, {
 															"type":	"multi-string",
 															"m_label":	"Tooltip:",
-															"m_value":	""
+															"m_value":	"Double click to insert in the current editor."
 														}, {
 															"type":	"colour",
 															"m_label":	"Bg Colour:",
@@ -2146,7 +2146,7 @@
 										}, {
 											"type":	"multi-string",
 											"m_label":	"Tooltip:",
-											"m_value":	""
+											"m_value":	"Allow you to specify parent project. Specify this when project is sub-directory (see add_subdirectory) and it's built with the parent project."
 										}, {
 											"type":	"colour",
 											"m_label":	"Bg Colour:",
@@ -2308,7 +2308,7 @@
 										}, {
 											"type":	"multi-string",
 											"m_label":	"Tooltip:",
-											"m_value":	"Directory must contains CMakeLists.txt"
+											"m_value":	"Path to directory where CMakeLists.txt is located."
 										}, {
 											"type":	"colour",
 											"m_label":	"Bg Colour:",
@@ -2470,7 +2470,7 @@
 										}, {
 											"type":	"multi-string",
 											"m_label":	"Tooltip:",
-											"m_value":	""
+											"m_value":	"Directory where the project will be built. Path is relative to $(ProjectPath)."
 										}, {
 											"type":	"colour",
 											"m_label":	"Bg Colour:",
@@ -2632,7 +2632,7 @@
 										}, {
 											"type":	"multi-string",
 											"m_label":	"Tooltip:",
-											"m_value":	""
+											"m_value":	"Generator that will be used for CMake configuration. If no generator is selected, plugin uses global default generator selected in plugin settings."
 										}, {
 											"type":	"colour",
 											"m_label":	"Bg Colour:",
@@ -2794,7 +2794,7 @@
 										}, {
 											"type":	"multi-string",
 											"m_label":	"Tooltip:",
-											"m_value":	""
+											"m_value":	"When is selected pass -DCMAKE_BUILD_TYPE to cmake."
 										}, {
 											"type":	"colour",
 											"m_label":	"Bg Colour:",
@@ -2961,7 +2961,7 @@
 								}, {
 									"type":	"multi-string",
 									"m_label":	"Tooltip:",
-									"m_value":	""
+									"m_value":	"Argument list used when CMake is called. Each argument must be separated by new line. Multiple arguments on the one line are OK too if they're separated by space.\\nDo not use arguments -DCMAKE_BUILD_TYPE, -G and 'path', they are passed by the plugin.\\n\\nExample:\\n-DCMAKE_CXX_FLAGS=-g\\n-DCMAKE_C_FLAGS=-g"
 								}, {
 									"type":	"colour",
 									"m_label":	"Bg Colour:",

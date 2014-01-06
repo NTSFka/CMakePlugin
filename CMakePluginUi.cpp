@@ -37,6 +37,7 @@ CMakeSettingsDialogBase::CMakeSettingsDialogBase(wxWindow* parent, wxWindowID id
     flexGridSizer->Add(m_staticTextProgram, 0, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 0);
     
     m_filePickerProgram = new wxFilePickerCtrl(this, wxID_ANY, wxEmptyString, wxT("Select a file"), wxT("*"), wxDefaultPosition, wxSize(-1,-1), wxFLP_DEFAULT_STYLE|wxFLP_USE_TEXTCTRL);
+    m_filePickerProgram->SetToolTip(_("Path to cmake executable."));
     
     flexGridSizer->Add(m_filePickerProgram, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 0);
     m_filePickerProgram->SetMinSize(wxSize(200,-1));
@@ -47,6 +48,7 @@ CMakeSettingsDialogBase::CMakeSettingsDialogBase(wxWindow* parent, wxWindowID id
     
     wxArrayString m_choiceDefaultGeneratorArr;
     m_choiceDefaultGenerator = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxSize(-1,-1), m_choiceDefaultGeneratorArr, 0);
+    m_choiceDefaultGenerator->SetToolTip(_("You can specify default generator for all projects (if is not overrided by project settings). If generator is not selected the CMake uses platform's default."));
     
     flexGridSizer->Add(m_choiceDefaultGenerator, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 0);
     
@@ -141,6 +143,7 @@ CMakeHelpTabBase::CMakeHelpTabBase(wxWindow* parent, wxWindowID id, const wxPoin
     
     wxArrayString m_listBoxListArr;
     m_listBoxList = new wxListBox(m_splitterPageList, wxID_ANY, wxDefaultPosition, wxSize(-1,-1), m_listBoxListArr, wxLB_SINGLE);
+    m_listBoxList->SetToolTip(_("Double click to insert in the current editor."));
     
     boxSizerList->Add(m_listBoxList, 1, wxALL|wxEXPAND, 0);
     m_listBoxList->SetMinSize(wxSize(100,200));
@@ -238,6 +241,7 @@ CMakeProjectSettingsPanelBase::CMakeProjectSettingsPanelBase(wxWindow* parent, w
     
     wxArrayString m_choiceParentArr;
     m_choiceParent = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxSize(-1,-1), m_choiceParentArr, 0);
+    m_choiceParent->SetToolTip(_("Allow you to specify parent project. Specify this when project is sub-directory (see add_subdirectory) and it's built with the parent project."));
     
     flexGridSizer->Add(m_choiceParent, 0, wxALL|wxEXPAND, 0);
     
@@ -246,7 +250,7 @@ CMakeProjectSettingsPanelBase::CMakeProjectSettingsPanelBase(wxWindow* parent, w
     flexGridSizer->Add(m_staticTextSourceDir, 0, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 0);
     
     m_dirPickerSourceDir = new wxDirPickerCtrl(this, wxID_ANY, wxEmptyString, wxT("Select a folder"), wxDefaultPosition, wxSize(-1,-1), wxDIRP_DEFAULT_STYLE|wxDIRP_USE_TEXTCTRL);
-    m_dirPickerSourceDir->SetToolTip(_("Directory must contains CMakeLists.txt"));
+    m_dirPickerSourceDir->SetToolTip(_("Path to directory where CMakeLists.txt is located."));
     
     flexGridSizer->Add(m_dirPickerSourceDir, 0, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 0);
     
@@ -255,6 +259,7 @@ CMakeProjectSettingsPanelBase::CMakeProjectSettingsPanelBase(wxWindow* parent, w
     flexGridSizer->Add(m_staticTextBuildDir, 0, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 0);
     
     m_dirPickerBuildDir = new wxDirPickerCtrl(this, wxID_ANY, wxEmptyString, wxT("Select a folder"), wxDefaultPosition, wxSize(-1,-1), wxDIRP_DEFAULT_STYLE|wxDIRP_USE_TEXTCTRL);
+    m_dirPickerBuildDir->SetToolTip(_("Directory where the project will be built. Path is relative to $(ProjectPath)."));
     
     flexGridSizer->Add(m_dirPickerBuildDir, 0, wxALL|wxEXPAND, 0);
     
@@ -264,6 +269,7 @@ CMakeProjectSettingsPanelBase::CMakeProjectSettingsPanelBase(wxWindow* parent, w
     
     wxArrayString m_choiceGeneratorArr;
     m_choiceGenerator = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxSize(-1,-1), m_choiceGeneratorArr, 0);
+    m_choiceGenerator->SetToolTip(_("Generator that will be used for CMake configuration. If no generator is selected, plugin uses global default generator selected in plugin settings."));
     
     flexGridSizer->Add(m_choiceGenerator, 0, wxALL|wxEXPAND, 0);
     
@@ -278,6 +284,7 @@ CMakeProjectSettingsPanelBase::CMakeProjectSettingsPanelBase(wxWindow* parent, w
     m_comboBoxBuildTypeArr.Add(wxT("RelWithDebInfo"));
     m_comboBoxBuildTypeArr.Add(wxT("MinSizeRel"));
     m_comboBoxBuildType = new wxComboBox(this, wxID_ANY, wxT(""), wxDefaultPosition, wxSize(-1,-1), m_comboBoxBuildTypeArr, 0);
+    m_comboBoxBuildType->SetToolTip(_("When is selected pass -DCMAKE_BUILD_TYPE to cmake."));
     
     flexGridSizer->Add(m_comboBoxBuildType, 0, wxALL|wxEXPAND, 0);
     
@@ -286,6 +293,7 @@ CMakeProjectSettingsPanelBase::CMakeProjectSettingsPanelBase(wxWindow* parent, w
     boxSizer->Add(m_staticTextArguments, 0, wxALL, 5);
     
     m_textCtrlArguments = new wxTextCtrl(this, wxID_ANY, wxT(""), wxDefaultPosition, wxSize(-1,-1), wxTE_MULTILINE);
+    m_textCtrlArguments->SetToolTip(_("Argument list used when CMake is called. Each argument must be separated by new line. Multiple arguments on the one line are OK too if they're separated by space.\nDo not use arguments -DCMAKE_BUILD_TYPE, -G and 'path', they are passed by the plugin.\n\nExample:\n-DCMAKE_CXX_FLAGS=-g\n-DCMAKE_C_FLAGS=-g"));
     
     boxSizer->Add(m_textCtrlArguments, 1, wxALL|wxEXPAND, 5);
     
