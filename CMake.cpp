@@ -71,6 +71,7 @@ static wxString CreateHtml(const wxArrayString& array)
 
 CMake::CMake(const wxFileName& path)
     : m_path(path)
+    , m_version("?")
     , m_dbFileName(wxStandardPaths::Get().GetUserDataDir(), "cmake.db")
 {
     // Prepare database
@@ -172,10 +173,10 @@ CMake::LoadData(bool force, LoadNotifier* notifier)
         // Unable to find version
         if (!output.IsEmpty()) {
             const wxString& versionLine = output[0];
-            wxRegEx expression("cmake version ([0-9\\.]+)");
+            wxRegEx expression("cmake version (.+)");
 
             if (expression.IsValid() && expression.Matches(versionLine)) {
-                m_version = expression.GetMatch(versionLine, 1);
+                m_version = expression.GetMatch(versionLine, 1).Trim().Trim(false);
             }
         }
     }
@@ -464,7 +465,7 @@ CMake::LoadList(const wxString& type, CMake::HelpMap& list,
 
         // Trim name
         wxString name = *it;
-        name.Trim().Trim(true);
+        name.Trim().Trim(false);
 
         // Export help
         wxArrayString desc;
