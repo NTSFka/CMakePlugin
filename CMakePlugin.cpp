@@ -652,7 +652,7 @@ CMakePlugin::OnExportMakefile(clBuildEvent& event)
 
         // Generated makefile
         content <<
-            "CMAKE      := " << cmake << "\n"
+            "CMAKE      := \"" << cmake << "\"\n"
             "BUILD_DIR  := " << buildDirEsc << "\n"
             "SOURCE_DIR := " << sourceDirEsc << "\n"
             "CMAKE_ARGS := " << CreateArguments(*settings, *m_configuration.get()) << "\n"
@@ -667,7 +667,7 @@ CMakePlugin::OnExportMakefile(clBuildEvent& event)
             "\n"
             "# Rule that detects if cmake is called\n"
             "$(BUILD_DIR)/Makefile: .cmake_dirty | $(BUILD_DIR)\n"
-            "\tcd $(BUILD_DIR) && $(CMAKE) $(CMAKE_ARGS) \"$(SOURCE_DIR)\"\n"
+            "\tcd \"$(BUILD_DIR)\" && $(CMAKE) $(CMAKE_ARGS) \"$(SOURCE_DIR)\"\n"
             "\n"
             "# This rule / file allows force cmake run\n"
             ".cmake_dirty:\n"
