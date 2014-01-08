@@ -147,19 +147,19 @@ static wxString CreateArguments(const CMakeProjectSettings& settings,
     const wxString& buildDir = settings.buildDirectory;
     wxArrayString args;
 
-    // Generator
-    if (!settings.generator.IsEmpty())
-        args.Add("-G \"" + settings.generator + "\"");
-
-    // Build Type
-    wxString buildType = settings.buildType;
+    // Get generator
+    wxString generator = settings.generator;
 
     // Use global value
-    if (buildType.IsEmpty())
-        buildType = configuration.GetDefaultGenerator();
+    if (generator.IsEmpty())
+        generator = configuration.GetDefaultGenerator();
 
-    if (!buildType.IsEmpty())
-        args.Add("-DCMAKE_BUILD_TYPE=" + buildType);
+    // Generator
+    if (!generator.IsEmpty())
+        args.Add("-G \"" + generator + "\"");
+
+    if (!settings.buildType.IsEmpty())
+        args.Add("-DCMAKE_BUILD_TYPE=" + settings.buildType);
 
     // Copy additional arguments
     for (wxArrayString::const_iterator it = settings.arguments.begin(),
