@@ -59,7 +59,11 @@ static wxString CreateHtml(const wxArrayString& array)
         if (it != array.begin()) {
             result += "<br />";
         }
-        result += *it;
+        wxString esc = *it;
+        // Escape
+        esc.Replace("<", "&lt;");
+        esc.Replace(">", "&gt;");
+        result += esc;
     }
 
     return result;

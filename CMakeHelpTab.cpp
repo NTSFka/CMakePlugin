@@ -332,6 +332,7 @@ CMakeHelpTab::PublishData()
     m_staticTextVersionValue->SetLabel(m_plugin->GetCMake()->GetVersion());
 
     // Show the first topic
+    m_radioBoxTopic->SetSelection(0);
     ShowTopic(0);
 }
 
